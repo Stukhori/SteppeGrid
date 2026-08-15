@@ -1,0 +1,14 @@
+site:
+  name: REPLACE_ME
+  latitude: REPLACE_ME
+  longitude: REPLACE_ME
+  country: Kazakhstan
+
+weather:
+  provider: open-meteo
+  model: era5
+  start_date: 2025-01-01
+  end_date: 2026-01-01
+  cache_directory: ../../data/weather/cache
+
+output_directory: ../../outputs/pilot_site

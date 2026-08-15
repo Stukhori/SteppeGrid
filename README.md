@@ -77,6 +77,35 @@ python -m pip install -e ".[visualization]"
 python -m steppegrid.visualize outputs/hourly.csv --output outputs/diagnostics.png
 ```
 
+## Pilot-site annual analysis
+
+Edit `examples/sites/pilot_site.yaml` and replace every `REPLACE_ME` value with the real village name and coordinates. The configured period must be one complete calendar year using the half-open convention, such as `2025-01-01` through `2026-01-01`.
+
+Install the optional plotting dependency and run:
+
+```powershell
+python -m pip install -e ".[visualization]"
+python -m steppegrid site analyze --config examples/sites/pilot_site.yaml
+```
+
+The workflow validates all 8,760 normal-year or 8,784 leap-year UTC records, reuses the existing ERA5 cache, and writes:
+
+```text
+outputs/pilot_site/
+  weather_summary.json
+  weather_summary.csv
+  monthly_summary.csv
+  provenance.json
+  report.md
+  simulation_weather_reference.yaml
+  wind_distribution.png
+  monthly_wind.png
+  monthly_solar.png
+  wind_solar_seasonality.png
+```
+
+The simulation reference contains location, dates, provider, model, and cache location fields compatible with the existing scenario schema. It is a fragment to combine with explicit load, solar, turbine, battery, grid, and outage settings; the workflow does not invent those inputs.
+
 ## Input CSV schemas
 
 Weather CSV columns must be exactly:

@@ -23,7 +23,11 @@ class WeatherSummary:
     missing_records: int
 
 
-def _percentile(values: list[float], fraction: float) -> float:
+def percentile(values: list[float], fraction: float) -> float:
+    if not values:
+        raise ValueError("percentile requires at least one value")
+    if not 0 <= fraction <= 1:
+        raise ValueError("percentile fraction must be between zero and one")
     ordered = sorted(values)
     position = (len(ordered) - 1) * fraction
     lower_index = int(position)
@@ -42,7 +46,7 @@ def summarize_weather(dataset: WeatherDataset) -> WeatherSummary:
         records=len(dataset.series.timestamps),
         mean_wind_speed_m_s=fmean(wind),
         median_wind_speed_m_s=median(wind),
-        percentile_95_wind_speed_m_s=_percentile(wind, 0.95),
+        percentile_95_wind_speed_m_s=percentile(wind, 0.95),
         maximum_wind_speed_m_s=max(wind),
         mean_solar_irradiance_w_m2=fmean(solar),
         # Hourly mean irradiance multiplied by one hour gives Wh/m2 per record.

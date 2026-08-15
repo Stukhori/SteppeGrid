@@ -14,6 +14,9 @@ Every consequential assumption should become configurable or supported by a cite
 | Open-Meteo dates | API dates are inclusive; SteppeGrid end datetimes are exclusive | Provider validates every selected UTC hour |
 | Radiation timing | `shortwave_radiation` is the mean over the preceding hour | One-hour integration permits Wh/m2 inspection totals |
 | Wind height | Open-Meteo wind is 10 m above ground | No hub-height or terrain correction is applied |
+| Pilot year | Complete UTC calendar year, January 1 to next January 1 | 8,760 or 8,784 hours according to calendar |
+| Wind bands | `<2`, `2-<3`, `3-<5`, `5-8`, and `>8` m/s | Descriptive only, not turbine cut-in/out classes |
+| Seasonal correlation | Pearson correlation of 12 monthly mean wind values with 12 monthly irradiation totals | Association does not establish resilience |
 | Irradiance validation | CSV values must be 0-2000 W/m2 by default | Configurable screening ceiling, not a physical maximum |
 | Solar | Linear irradiance scaling with a configurable performance ratio and DC-capacity cap | Replace or validate with a sourced PV model |
 | Solar temperature | Temperature has no effect | Model after module/inverter specifications exist |

@@ -30,6 +30,7 @@
 - Add grid import/export limits, tariffs, and time-varying carbon intensity.
 - Track stored-energy provenance for defensible renewable-fraction reporting.
 - Add regression fixtures from source-attributed field or benchmark data.
+- Apply the pilot-site workflow to a user-supplied rural Kazakhstan village and review the annual report.
 
 ## Phase 3: scenario analysis
 

@@ -96,3 +96,13 @@ The 10 m wind series is passed to the current wind power curve without hub-heigh
 ### Cache and audit trail
 
 The cache key hashes provider, model, requested coordinates, exact start/end datetimes, variables, units, and timezone. A complete entry contains `raw.json`, deterministic normalized `weather.csv`, and `metadata.json`. Normal cache use never refreshes automatically. `--refresh` is explicit. Cache hits normalize from retained raw JSON again, so the source/transformation boundary remains auditable and cached data remain usable offline.
+
+## Pilot-site resource analysis
+
+Pilot analysis requires one complete UTC calendar year: 8,760 hours normally or 8,784 hours in a leap year. Expected timestamps are generated from the configured half-open interval; no fixed annual count is assumed without checking the calendar.
+
+Wind summaries use ERA5 10 m wind speed. Percentiles use linear interpolation between ordered observations, and standard deviation is the population standard deviation for the analyzed year. Speed bands are descriptive only and have no turbine-operating interpretation.
+
+Open-Meteo shortwave radiation is a preceding-hour mean in W/m2. Each record represents one hour, so monthly and annual horizontal irradiation use `sum(irradiance_w_m2 * 1 hour) / 1000`, producing kWh/m2. No panel-plane transformation is implied.
+
+The seasonal plot independently min-max normalizes the 12 monthly mean wind values and 12 monthly irradiation totals. The reported Pearson correlation is between those same 12 unnormalized series. It describes monthly association only and does not demonstrate energy-system complementarity or resilience.

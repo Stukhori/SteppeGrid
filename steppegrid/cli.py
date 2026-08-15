@@ -10,6 +10,8 @@ from pathlib import Path
 from steppegrid.examples.synthetic import synthetic_24_hour_scenario
 from steppegrid.export import export_hourly_results_csv
 from steppegrid.scenario import ResolvedScenario, load_and_resolve_scenario
+from steppegrid.site.workflow import analyze_pilot_site
+from steppegrid.site.config import PilotSiteConfigError
 from steppegrid.simulation.models import SimulationResult
 from steppegrid.simulation.models import Location
 from steppegrid.simulation.simulator import simulate
@@ -87,6 +89,15 @@ def build_parser() -> argparse.ArgumentParser:
     fetch_parser.add_argument("--model", choices=("era5",), default="era5")
     fetch_parser.add_argument("--cache-dir", type=Path, default=Path("data/weather/cache"))
     fetch_parser.add_argument("--refresh", action="store_true")
+
+    site_parser = subparsers.add_parser("site", help="pilot-site analysis workflows")
+    site_subparsers = site_parser.add_subparsers(dest="site_command", required=True)
+    analyze_parser = site_subparsers.add_parser(
+        "analyze", help="analyze one complete ERA5 weather year"
+    )
+    analyze_parser.add_argument("--config", required=True, type=Path)
+    analyze_parser.add_argument("--output", type=Path)
+    analyze_parser.add_argument("--refresh", action="store_true")
     return parser
 
 
@@ -129,7 +140,8 @@ Missing records: {summary.missing_records}"""
 
 
 def main(argv: list[str] | None = None) -> None:
-    args = build_parser().parse_args(argv)
+    parser = build_parser()
+    args = parser.parse_args(argv)
     if args.command == "simulate":
         resolved = load_and_resolve_scenario(
             args.scenario, refresh_weather=args.refresh_weather
@@ -149,6 +161,18 @@ def main(argv: list[str] | None = None) -> None:
             refresh=args.refresh,
         )
         print(_weather_summary(dataset))
+        return
+    if args.command == "site" and args.site_command == "analyze":
+        try:
+            output = analyze_pilot_site(
+                args.config,
+                refresh=args.refresh,
+                output_directory=args.output,
+            )
+        except PilotSiteConfigError as error:
+            parser.error(str(error))
+        print("STEPPEGRID PILOT SITE ANALYSIS")
+        print(f"Output directory: {output.resolve()}")
         return
     print(_summary(simulate(synthetic_24_hour_scenario())))
 
