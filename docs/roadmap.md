@@ -13,12 +13,14 @@
 ## Phase 1: trustworthy data interfaces
 
 - Extend the initial weather provenance schema to load and turbine datasets.
-- Add a cached historical weather provider after source evaluation.
+- Validate the cached Open-Meteo ERA5 provider against independent data.
 - Enforce timezone-aware timestamps and document resampling rules.
 - Establish validated Kazakhstan weather sources and location metadata.
 - Add critical and non-critical load series without silently deriving either.
 - Add dataset licenses, citations, uncertainty, and quality flags.
 - Add a normalized load-profile CSV provider with provenance.
+- Add a scientifically justified 10 m wind to turbine hub-height adjustment.
+- Add direct `CopernicusERA5LandProvider` access for independent validation and citation.
 
 ## Phase 2: model validation
 

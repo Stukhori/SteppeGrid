@@ -17,12 +17,15 @@ from steppegrid.simulation.models import (
     OutageInterval, SimulationInput, SolarArrayConfig,
 )
 from steppegrid.weather.csv_provider import CSVWeatherProvider
+from steppegrid.weather.open_meteo import OpenMeteoHistoricalWeatherProvider
 from steppegrid.weather.synthetic import SyntheticWeatherProvider
 
 
 class WeatherSourceConfig(DomainModel):
-    provider: Literal["synthetic", "csv"]
+    provider: Literal["synthetic", "csv", "open-meteo"]
     path: str | None = None
+    model: Literal["era5"] = "era5"
+    cache_directory: str | None = None
     source: str | None = None
     retrieved_at: datetime | None = None
     maximum_irradiance_w_m2: float = Field(default=2000.0, gt=0)
@@ -107,18 +110,43 @@ def load_scenario(path: str | Path) -> SimulationScenario:
     return SimulationScenario.model_validate(data)
 
 
-def resolve_scenario(scenario: SimulationScenario, *, base_directory: str | Path = ".") -> ResolvedScenario:
+def resolve_scenario(
+    scenario: SimulationScenario,
+    *,
+    base_directory: str | Path = ".",
+    refresh_weather: bool = False,
+) -> ResolvedScenario:
     base = Path(base_directory)
     if scenario.weather.provider == "synthetic":
         provider = SyntheticWeatherProvider()
-    else:
+    elif scenario.weather.provider == "csv":
         provider = CSVWeatherProvider(
             base / str(scenario.weather.path), source=scenario.weather.source,
             retrieved_at=scenario.weather.retrieved_at,
             maximum_irradiance_w_m2=scenario.weather.maximum_irradiance_w_m2,
             processing_notes=scenario.weather.processing_notes,
         )
-    weather = provider.get_hourly_weather(scenario.location, scenario.start_time, scenario.end_time)
+    else:
+        cache_root = (
+            base / scenario.weather.cache_directory
+            if scenario.weather.cache_directory
+            else Path("data/weather/cache")
+        )
+        provider = OpenMeteoHistoricalWeatherProvider(
+            cache_root=cache_root,
+            maximum_irradiance_w_m2=scenario.weather.maximum_irradiance_w_m2,
+        )
+    if isinstance(provider, OpenMeteoHistoricalWeatherProvider):
+        weather = provider.get_hourly_weather(
+            scenario.location,
+            scenario.start_time,
+            scenario.end_time,
+            refresh=refresh_weather,
+        )
+    else:
+        weather = provider.get_hourly_weather(
+            scenario.location, scenario.start_time, scenario.end_time
+        )
     timestamps = weather.series.timestamps
     grid = availability_with_outages(timestamps, scenario.outage_schedule)
     if not scenario.grid_available_by_default:
@@ -143,6 +171,12 @@ def resolve_scenario(scenario: SimulationScenario, *, base_directory: str | Path
     )
 
 
-def load_and_resolve_scenario(path: str | Path) -> ResolvedScenario:
+def load_and_resolve_scenario(
+    path: str | Path, *, refresh_weather: bool = False
+) -> ResolvedScenario:
     scenario_path = Path(path)
-    return resolve_scenario(load_scenario(scenario_path), base_directory=scenario_path.parent)
+    return resolve_scenario(
+        load_scenario(scenario_path),
+        base_directory=scenario_path.parent,
+        refresh_weather=refresh_weather,
+    )

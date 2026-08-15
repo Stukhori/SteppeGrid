@@ -4,14 +4,17 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import timedelta
+from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 
 from steppegrid.examples.synthetic import synthetic_24_hour_scenario
 from steppegrid.export import export_hourly_results_csv
 from steppegrid.scenario import ResolvedScenario, load_and_resolve_scenario
 from steppegrid.simulation.models import SimulationResult
+from steppegrid.simulation.models import Location
 from steppegrid.simulation.simulator import simulate
+from steppegrid.weather.inspection import summarize_weather
+from steppegrid.weather.open_meteo import OpenMeteoHistoricalWeatherProvider
 
 
 def _summary(result: SimulationResult, resolved: ResolvedScenario | None = None) -> str:
@@ -69,17 +72,83 @@ def build_parser() -> argparse.ArgumentParser:
     simulate_parser.add_argument("--scenario", required=True, type=Path)
     simulate_parser.add_argument("--format", choices=("text", "json"), default="text")
     simulate_parser.add_argument("--export-csv", type=Path)
+    simulate_parser.add_argument(
+        "--refresh-weather", action="store_true", help="bypass a live weather cache"
+    )
+
+    weather_parser = subparsers.add_parser("weather", help="fetch and inspect weather data")
+    weather_subparsers = weather_parser.add_subparsers(dest="weather_command", required=True)
+    fetch_parser = weather_subparsers.add_parser("fetch", help="fetch historical reanalysis")
+    fetch_parser.add_argument("--lat", type=float, required=True)
+    fetch_parser.add_argument("--lon", type=float, required=True)
+    fetch_parser.add_argument("--start", type=date.fromisoformat, required=True)
+    fetch_parser.add_argument("--end", type=date.fromisoformat, required=True)
+    fetch_parser.add_argument("--provider", choices=("open-meteo",), default="open-meteo")
+    fetch_parser.add_argument("--model", choices=("era5",), default="era5")
+    fetch_parser.add_argument("--cache-dir", type=Path, default=Path("data/weather/cache"))
+    fetch_parser.add_argument("--refresh", action="store_true")
     return parser
+
+
+def _utc_midnight(value: date) -> datetime:
+    return datetime.combine(value, time.min, tzinfo=timezone.utc)
+
+
+def _weather_summary(dataset) -> str:
+    provenance = dataset.provenance
+    summary = summarize_weather(dataset)
+    return f"""STEPPEGRID WEATHER DATA
+
+Provider: {provenance.provider}
+Model: {provenance.underlying_model}
+Requested coordinates: {provenance.requested_latitude}, {provenance.requested_longitude}
+Returned coordinates: {provenance.returned_latitude}, {provenance.returned_longitude}
+Approximate grid-cell distance: {provenance.coordinate_distance_km:.3f} km
+Period: {provenance.start_time.isoformat()} -> {provenance.end_time.isoformat()} (end exclusive)
+Hourly records: {summary.records}
+Timezone: {provenance.timezone}
+Wind unit: m/s
+Solar unit: W/m2
+Temperature unit: degC
+Cache: {provenance.cache_status}
+Normalized file: {provenance.normalized_data_path}
+Metadata file: {provenance.metadata_path}
+Raw response: {provenance.raw_response_path}
+
+INSPECTION
+Mean wind speed: {summary.mean_wind_speed_m_s:.3f} m/s
+Median wind speed: {summary.median_wind_speed_m_s:.3f} m/s
+95th percentile wind speed: {summary.percentile_95_wind_speed_m_s:.3f} m/s
+Maximum wind speed: {summary.maximum_wind_speed_m_s:.3f} m/s
+Mean shortwave irradiance: {summary.mean_solar_irradiance_w_m2:.3f} W/m2
+Horizontal irradiation over period: {summary.horizontal_irradiation_kwh_m2:.3f} kWh/m2
+Mean temperature: {summary.mean_temperature_c:.3f} degC
+Minimum temperature: {summary.minimum_temperature_c:.3f} degC
+Maximum temperature: {summary.maximum_temperature_c:.3f} degC
+Missing records: {summary.missing_records}"""
 
 
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
     if args.command == "simulate":
-        resolved = load_and_resolve_scenario(args.scenario)
+        resolved = load_and_resolve_scenario(
+            args.scenario, refresh_weather=args.refresh_weather
+        )
         result = simulate(resolved.simulation_input)
         if args.export_csv:
             export_hourly_results_csv(result, args.export_csv)
         print(_json_output(result, resolved) if args.format == "json" else _summary(result, resolved))
+        return
+    if args.command == "weather" and args.weather_command == "fetch":
+        location = Location(latitude=args.lat, longitude=args.lon)
+        provider = OpenMeteoHistoricalWeatherProvider(cache_root=args.cache_dir)
+        dataset = provider.get_hourly_weather(
+            location,
+            _utc_midnight(args.start),
+            _utc_midnight(args.end),
+            refresh=args.refresh,
+        )
+        print(_weather_summary(dataset))
         return
     print(_summary(simulate(synthetic_24_hour_scenario())))
 

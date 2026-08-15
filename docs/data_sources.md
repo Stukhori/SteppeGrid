@@ -2,6 +2,23 @@
 
 ## Current Data Sources
 
+### Open-Meteo ERA5 historical reanalysis
+
+- Provider: [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api)
+- Endpoint: `https://archive-api.open-meteo.com/v1/archive`
+- Selected model: ERA5, explicitly requested as `models=era5`
+- Temporal resolution: hourly
+- Dataset-level spatial resolution: 0.25 degrees, approximately 25 km
+- Variables: `temperature_2m`, `wind_speed_10m`, `shortwave_radiation`
+- Requested units: celsius, m/s, W/m2
+- Timezone: UTC
+
+ERA5 combines a numerical model with assimilated observations to reconstruct historical weather. It is not a station observation at the requested coordinate. Gridded reanalysis cannot resolve every local terrain, surface, obstacle, or building effect; this limitation is especially important for wind-resource assessment.
+
+Every successful request retains the raw API response, request parameters and URL, retrieval time, selected model, returned grid coordinates, normalized CSV, and provenance metadata. Cache files are deliberately excluded from Git.
+
+### User-supplied CSV
+
 SteppeGrid does not download or bundle a real historical weather dataset. `CSVWeatherProvider` loads a user-supplied normalized file with this exact schema:
 
 ```text
@@ -27,7 +44,7 @@ The scenario records optional turbine name, manufacturer, rating, source, eviden
 
 ## Planned Data Sources
 
-A future historical-weather provider should be isolated behind `WeatherProvider`. It must cache raw responses, record provider and dataset version, retrieval date, coordinates and grid-cell mapping, original units, all transformations, and failures or gaps. Candidate providers must be evaluated for licensing, coverage in Kazakhstan, wind measurement height, irradiance definition, temporal convention, and long-term consistency before selection.
+A future direct `CopernicusERA5LandProvider` should support independent validation, research-grade dataset citation, and higher-resolution ERA5-Land point series where appropriate. It must use the same provider-neutral `WeatherDataset` boundary and preserve raw/source provenance.
 
 Load, tariff, grid-carbon, cost, and outage sources have not been selected. Each requires its own provenance and uncertainty treatment.
 

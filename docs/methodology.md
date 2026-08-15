@@ -14,7 +14,7 @@ None are bundled. Future measured inputs may include timestamped site demand, wi
 
 ### External data
 
-No data are fetched by the current code. Strict CSV providers can load user-supplied weather and turbine curves. Weather carries source, retrieval time, coordinates, coverage, units, and processing notes. Future emissions, tariff, equipment-cost, and conventional-turbine datasets must retain comparable source and license metadata.
+Open-Meteo ERA5 reanalysis can be fetched and cached; strict CSV providers can also load user-supplied weather and turbine curves. Weather carries source, retrieval time, requested and returned coordinates, coverage, units, and processing notes. Future emissions, tariff, equipment-cost, and conventional-turbine datasets must retain comparable source and license metadata.
 
 ### User-configurable assumptions
 
@@ -80,3 +80,19 @@ Outages may be supplied as an hourly boolean series or constructed from timestam
 ## Weather normalization
 
 `WeatherProvider` returns a `WeatherDataset` containing normalized `WeatherSeries` plus `DataProvenance`. The simulator sees only `WeatherSeries`, so adding a historical provider does not alter dispatch code. The CSV provider selects `[start, end)`, requires every requested hour, and performs no unit conversion or interpolation. Its configurable default irradiance validation ceiling is 2000 W/m2; this is a corruption-screening assumption, not a physical maximum.
+
+### Open-Meteo ERA5 provider
+
+`OpenMeteoHistoricalWeatherProvider` calls the official [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) archive endpoint and explicitly selects `models=era5`. It requests hourly 2 m temperature, 10 m wind speed, and shortwave radiation in UTC, celsius, m/s, and W/m2. Open-Meteo defines shortwave radiation as the mean over the preceding hour. SteppeGrid renames fields but performs no numeric unit conversion.
+
+Open-Meteo accepts inclusive calendar dates, while SteppeGrid uses half-open datetime intervals `[start, end)`. The provider requests the inclusive API dates needed to cover the interval, then validates and selects every expected UTC hour. This handles leap years without assuming 8,760 hours.
+
+Provenance `requested_start_date` and `requested_end_date` preserve the SteppeGrid request, with the end date exclusive. `metadata.json` separately retains the inclusive `end_date` parameter actually sent to Open-Meteo.
+
+ERA5 is historical reanalysis: a numerical reconstruction informed by observations, not an exact measurement at the requested house or village. ERA5 has a dataset-level grid resolution of 0.25 degrees (approximately 25 km). Open-Meteo may return a grid-cell coordinate different from the request; both coordinates and their approximate great-circle separation are recorded.
+
+The 10 m wind series is passed to the current wind power curve without hub-height adjustment. This is a known physical mismatch for turbines whose curve applies at another height. No unvalidated wind-shear or terrain correction is applied.
+
+### Cache and audit trail
+
+The cache key hashes provider, model, requested coordinates, exact start/end datetimes, variables, units, and timezone. A complete entry contains `raw.json`, deterministic normalized `weather.csv`, and `metadata.json`. Normal cache use never refreshes automatically. `--refresh` is explicit. Cache hits normalize from retained raw JSON again, so the source/transformation boundary remains auditable and cached data remain usable offline.

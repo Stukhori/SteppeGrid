@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -28,6 +28,25 @@ class DataProvenance(DomainModel):
     original_units: dict[str, str]
     normalized_units: dict[str, str]
     processing_notes: list[str] = Field(default_factory=list)
+    provider: str | None = None
+    underlying_model: str | None = None
+    requested_latitude: float | None = Field(default=None, ge=-90, le=90)
+    requested_longitude: float | None = Field(default=None, ge=-180, le=180)
+    returned_latitude: float | None = Field(default=None, ge=-90, le=90)
+    returned_longitude: float | None = Field(default=None, ge=-180, le=180)
+    requested_start_date: date | None = None
+    requested_end_date: date | None = None
+    timezone: str | None = None
+    temporal_resolution: str | None = None
+    spatial_resolution: str | None = None
+    variables_requested: list[str] = Field(default_factory=list)
+    coordinate_distance_km: float | None = Field(default=None, ge=0)
+    cache_key: str | None = None
+    cache_status: str | None = None
+    raw_response_path: str | None = None
+    normalized_data_path: str | None = None
+    metadata_path: str | None = None
+    source_documentation: str | None = None
 
 
 def _validate_hourly(timestamps: list[datetime], values: list[object], name: str) -> None:
