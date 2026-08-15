@@ -7,6 +7,22 @@ import json
 from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 
+from steppegrid.benchmarks.outputs import write_reconstruction, write_source_integrity
+from steppegrid.benchmarks.plots import create_benchmark_plots
+from steppegrid.benchmarks.reconstruction import (
+    VALID_SHAPES,
+    VALID_VARIANTS,
+    reconstruct_hourly_load,
+)
+from steppegrid.benchmarks.sensitivity import (
+    build_shape_sensitivity,
+    write_shape_sensitivity,
+)
+from steppegrid.benchmarks.source import (
+    BenchmarkSourceError,
+    load_monthly_benchmark,
+    validate_source_integrity,
+)
 from steppegrid.examples.synthetic import synthetic_24_hour_scenario
 from steppegrid.export import export_hourly_results_csv
 from steppegrid.load.csv_provider import CSVLoadProvider, LoadDataError
@@ -115,6 +131,56 @@ def build_parser() -> argparse.ArgumentParser:
     analyze_parser.add_argument("--config", required=True, type=Path)
     analyze_parser.add_argument("--output", type=Path)
     analyze_parser.add_argument("--refresh", action="store_true")
+
+    benchmark_parser = subparsers.add_parser(
+        "benchmark", help="validate and reconstruct literature benchmarks"
+    )
+    benchmark_names = benchmark_parser.add_subparsers(
+        dest="benchmark_name", required=True
+    )
+    rodina_parser = benchmark_names.add_parser(
+        "rodina", help="Rodina literature-derived village benchmark"
+    )
+    rodina_commands = rodina_parser.add_subparsers(
+        dest="benchmark_command", required=True
+    )
+    validate_parser = rodina_commands.add_parser(
+        "validate", help="compare printed annual totals with monthly-row sums"
+    )
+    validate_parser.add_argument(
+        "--source-dir", type=Path, default=Path("data/benchmarks/rodina")
+    )
+    validate_parser.add_argument(
+        "--output", type=Path, default=Path("outputs/benchmarks/rodina")
+    )
+
+    build_load_parser = rodina_commands.add_parser(
+        "build-load", help="build one monthly-constrained hourly reconstruction"
+    )
+    build_load_parser.add_argument("--variant", choices=VALID_VARIANTS, required=True)
+    build_load_parser.add_argument("--shape", choices=VALID_SHAPES, required=True)
+    build_load_parser.add_argument("--reference-year", type=int, required=True)
+    build_load_parser.add_argument("--timezone-offset", default="+00:00")
+    build_load_parser.add_argument(
+        "--source-dir", type=Path, default=Path("data/benchmarks/rodina")
+    )
+    build_load_parser.add_argument(
+        "--output", type=Path, default=Path("outputs/benchmarks/rodina")
+    )
+
+    sensitivity_parser = rodina_commands.add_parser(
+        "sensitivity", help="compare deterministic hourly shape assumptions"
+    )
+    sensitivity_parser.add_argument("--variant", choices=VALID_VARIANTS, required=True)
+    sensitivity_parser.add_argument("--reference-year", type=int, required=True)
+    sensitivity_parser.add_argument("--timezone-offset", default="+00:00")
+    sensitivity_parser.add_argument(
+        "--source-dir", type=Path, default=Path("data/benchmarks/rodina")
+    )
+    sensitivity_parser.add_argument(
+        "--output", type=Path, default=Path("outputs/benchmarks/rodina")
+    )
+    sensitivity_parser.add_argument("--no-plots", action="store_true")
     return parser
 
 
@@ -200,6 +266,32 @@ MONTHLY ENERGY
 {monthly}"""
 
 
+def _integrity_summary(report) -> str:
+    lines = ["STEPPEGRID RODINA SOURCE INTEGRITY", ""]
+    for label, comparison in (
+        ("Load", report.load),
+        ("PV", report.pv),
+        ("Wind", report.wind),
+        ("Generation", report.generation),
+    ):
+        lines.extend(
+            [
+                label.upper(),
+                f"Published annual: {comparison.published_annual_kwh:,} kWh",
+                f"Monthly-row sum: {comparison.calculated_monthly_sum_kwh:,} kWh",
+                f"Difference: {comparison.difference_kwh:+,} kWh "
+                f"({comparison.relative_difference:+.3%})",
+                f"Equal: {'yes' if comparison.matches else 'no'}",
+                "",
+            ]
+        )
+    lines.append(
+        "Known source inconsistency: "
+        + ("DETECTED" if report.known_source_inconsistency else "not detected")
+    )
+    return "\n".join(lines)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -248,6 +340,61 @@ def main(argv: list[str] | None = None) -> None:
         print("STEPPEGRID PILOT SITE ANALYSIS")
         print(f"Output directory: {output.resolve()}")
         return
+    if args.command == "benchmark" and args.benchmark_name == "rodina":
+        try:
+            source = load_monthly_benchmark(args.source_dir)
+            if args.benchmark_command == "validate":
+                integrity = validate_source_integrity(source)
+                output = write_source_integrity(integrity, args.output)
+                print(_integrity_summary(integrity))
+                print(f"Output directory: {output.resolve()}")
+                return
+            if args.benchmark_command == "build-load":
+                result = reconstruct_hourly_load(
+                    source,
+                    variant=args.variant,
+                    shape=args.shape,
+                    reference_year=args.reference_year,
+                    timezone_offset=args.timezone_offset,
+                )
+                output = write_reconstruction(
+                    result, args.output / args.variant / args.shape
+                )
+                print("STEPPEGRID RODINA HOURLY RECONSTRUCTION")
+                print("Classification: LITERATURE_DERIVED / reconstructed, not measured")
+                print(f"Variant: {args.variant}")
+                print(f"Shape: {args.shape}")
+                print(f"Records: {result.summary.records}")
+                print(f"Annual energy: {result.summary.annual_energy_kwh:.6f} kWh")
+                print(f"Peak hourly load: {result.summary.peak_hourly_load_kwh:.6f} kWh")
+                print(f"Output directory: {output.resolve()}")
+                return
+            results = build_shape_sensitivity(
+                source,
+                variant=args.variant,
+                reference_year=args.reference_year,
+                timezone_offset=args.timezone_offset,
+            )
+            for result in results:
+                write_reconstruction(
+                    result,
+                    args.output / args.variant / result.summary.shape,
+                )
+            output = write_shape_sensitivity(results, args.output)
+            if not args.no_plots:
+                create_benchmark_plots(source, results, output)
+            print("STEPPEGRID RODINA LOAD-SHAPE SENSITIVITY")
+            print("Classification: LITERATURE_DERIVED / reconstructed, not measured")
+            print(f"Variant: {args.variant}")
+            for result in results:
+                print(
+                    f"{result.summary.shape}: peak "
+                    f"{result.summary.peak_hourly_load_kwh:.6f} kWh/hour"
+                )
+            print(f"Output directory: {output.resolve()}")
+            return
+        except (BenchmarkSourceError, ValueError, RuntimeError) as error:
+            parser.error(str(error))
     print(_summary(simulate(synthetic_24_hour_scenario())))
 
 

@@ -15,6 +15,8 @@
 - [x] Add load provenance, evidence-quality classification, and strict CSV ingestion.
 - [x] Add total and critical hourly load with deterministic synthetic providers.
 - [x] Add primitive total and critical outage-service metrics.
+- [x] Add a literature-derived monthly benchmark with source-integrity reporting.
+- [x] Add deterministic monthly-to-hourly reconstruction and shape sensitivity.
 - Validate the cached Open-Meteo ERA5 provider against independent data.
 - Enforce timezone-aware timestamps in every legacy/internal constructor; CSV load already does.
 - Establish validated Kazakhstan weather sources and location metadata.

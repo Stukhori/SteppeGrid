@@ -42,6 +42,12 @@ python -m steppegrid load inspect `
 
 The template values are synthetic formatting examples and must not be used as pilot-site evidence.
 
+## Literature-derived monthly constraints
+
+A publication may provide monthly energy without releasing hourly values. SteppeGrid can reconstruct an existing `LoadDataset` by scaling a declared deterministic shape separately within each calendar month. The monthly source rows remain literature-derived; the hourly timing remains reconstructed and assumed.
+
+The Rodina benchmark demonstrates two explicit source interpretations and three shapes. Its primary profile leaves critical load absent because the publication does not support a defensible critical-load series. See [Rodina benchmark](benchmarks/rodina.md).
+
 ## Scenario configuration
 
 For a CSV relative to the scenario file:

@@ -10,6 +10,11 @@ Every consequential assumption should become configurable or supported by a cite
 | Load quality | User selects an evidence classification retained in provenance | `UNSPECIFIED` is the safe default for unattributed CSV or legacy inline data |
 | Load scaling | One factor scales total and critical series identically | Annual targets require one complete calendar year |
 | Critical fraction | A configured fraction is constant for every hour | An assumption, never classified as measured critical demand |
+| Literature monthly load | Published rows are retained separately from printed annual totals | Source discrepancies are reported, never silently reconciled |
+| Rodina hourly timing | Flat or declared deterministic synthetic template scaled independently by month | No public measured hourly Rodina series is available in the source |
+| Rodina reference year | Calendar carrier only; 2025 gives 8,760 hours | Publication does not establish that Table 1 represents 2025 |
+| Rodina timezone | Configurable fixed offset used for timestamp construction | Publication does not establish source timezone behavior |
+| Rodina critical load | Absent | Paper does not support a defensible village-wide critical series |
 | Missing data | Any missing/misaligned hour is an error | Keep; future cleaning must be explicit upstream |
 | Weather CSV | Required normalized units are m/s, W/m2, and degC | Upstream conversions must be recorded in provenance |
 | Historical source | Open-Meteo ERA5 is reanalysis associated with a selected grid cell | Not a local station measurement |

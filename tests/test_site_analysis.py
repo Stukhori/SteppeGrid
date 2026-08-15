@@ -3,10 +3,12 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 import pytest
+import yaml
 
 from steppegrid.simulation.models import DataProvenance, Location, WeatherDataset, WeatherSeries
 from steppegrid.site.analysis import analyze_full_year, validate_complete_year
 from steppegrid.site.config import (
+    PilotLocation,
     PilotSiteConfig,
     PilotSiteConfigError,
     PilotWeatherConfig,
@@ -134,6 +136,26 @@ def test_report_generation_is_conservative_and_complete():
     assert "Annual horizontal irradiation" in report
 
 
+def test_report_includes_pilot_administrative_and_monthly_metadata():
+    config = PilotSiteConfig(
+        site=PilotLocation(
+            name="Shamshi Kaldayakova",
+            district="Kargaly District",
+            region="Aktobe Region",
+            latitude=50.578333,
+            longitude=57.544722,
+        ),
+        weather=PilotWeatherConfig(start_date="2025-01-01", end_date="2026-01-01"),
+    )
+    dataset = _year_dataset(2025)
+    analysis = analyze_full_year(dataset, config.start_datetime, config.end_datetime)
+    report = render_site_report(config, analysis, dataset.provenance)
+    assert "District: Kargaly District" in report
+    assert "Region: Aktobe Region" in report
+    assert "Mean ERA5 10 m wind" in report
+    assert "| January | 744 |" in report
+
+
 def test_workflow_is_reproducible_from_same_cached_dataset(tmp_path):
     config_path = tmp_path / "pilot.yaml"
     config_path.write_text(
@@ -172,6 +194,10 @@ output_directory: output
     assert (second / "monthly_summary.csv").is_file()
     assert (second / "provenance.json").is_file()
     assert (second / "simulation_weather_reference.yaml").is_file()
+    reference = yaml.safe_load(
+        (second / "simulation_weather_reference.yaml").read_text(encoding="utf-8")
+    )
+    assert set(reference["location"]) == {"name", "latitude", "longitude", "country"}
 
 
 def test_placeholder_pilot_config_fails_with_fields_to_replace(tmp_path):

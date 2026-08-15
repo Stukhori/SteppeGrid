@@ -17,7 +17,7 @@ from steppegrid.simulation.models import (
 SyntheticProfile = Literal["constant", "residential_like", "community_facility_like"]
 
 
-def _shape(profile: SyntheticProfile, hour: int) -> float:
+def synthetic_shape_multiplier(profile: SyntheticProfile, hour: int) -> float:
     if profile == "constant":
         return 1.0
     if profile == "residential_like":
@@ -69,7 +69,7 @@ class SyntheticLoadProvider:
         if hours <= 0 or duration != timedelta(hours=hours):
             raise ValueError("synthetic load period must contain positive whole hours")
         timestamps = [start + timedelta(hours=index) for index in range(hours)]
-        total = [_shape(self.profile, timestamp.hour) for timestamp in timestamps]
+        total = [synthetic_shape_multiplier(self.profile, timestamp.hour) for timestamp in timestamps]
         critical = (
             [value * self.critical_fraction for value in total]
             if self.critical_fraction is not None

@@ -42,6 +42,12 @@ The scenario records optional turbine name, manufacturer, rating, source, eviden
 
 `CSVLoadProvider` accepts strictly hourly total demand and optional explicit critical demand. It records a user-declared evidence classification and source type; it does not infer that a file is measured. The default is `UNSPECIFIED`. Missing records, duplicates, blanks, negative/non-finite energy, mixed UTC offsets, and critical energy above total energy are errors. See [load data](load_data.md) for schemas, evidence hierarchy, and field-data preparation.
 
+### Rodina literature-derived benchmark
+
+The checked-in Rodina source transcription cites [DOI 10.47533/2026.1606-146X.1-03](https://doi.org/10.47533/2026.1606-146X.1-03). Table 1 supplies monthly modelled load and generation values, not a released hourly utility dataset. Source metadata also preserves the paper's contextual sector load ranges and one-hour/8,760-hour modelling statements without using those ranges to infer hourly load.
+
+The printed annual load, wind, and total-generation values conflict with sums of their printed monthly rows. SteppeGrid reports both, classifies reconstructed hourly profiles as `LITERATURE_DERIVED`, and records that hourly values are reconstructed rather than measured. No coordinates or weather are attached to this benchmark.
+
 ## Synthetic Data
 
 `SyntheticWeatherProvider`, `examples/scenarios/synthetic_household.yaml`, and `data/turbine_curves/synthetic_example.csv` exist solely for deterministic development and testing. Their coordinates, weather, demand, outage, equipment sizes, and power curve are arbitrary software fixtures. They are not representative of Kazakhstan, a household, a commercial turbine, or an actual project site.

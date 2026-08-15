@@ -66,6 +66,7 @@ class LoadSourceType(str, Enum):
     BILLING_ESTIMATE = "BILLING_ESTIMATE"
     SURVEY_ESTIMATE = "SURVEY_ESTIMATE"
     LITERATURE = "LITERATURE"
+    LITERATURE_DERIVED = "LITERATURE_DERIVED"
     SYNTHETIC_MODEL = "SYNTHETIC_MODEL"
     USER_SUPPLIED_CSV = "USER_SUPPLIED_CSV"
     INLINE_SCENARIO = "INLINE_SCENARIO"
@@ -90,6 +91,20 @@ class LoadProvenance(DomainModel):
     scaling_factor: float = Field(default=1.0, gt=0)
     critical_load_method: str | None = None
     notes: str | None = None
+    location_description: str | None = None
+    source_publication: str | None = None
+    doi: str | None = None
+    source_table: str | None = None
+    published_values_transcribed: bool | None = None
+    hourly_values_measured: bool | None = None
+    hourly_values_reconstructed: bool | None = None
+    monthly_constraint_interpretation: str | None = None
+    hourly_shape_method: str | None = None
+    hourly_shape_template: str | None = None
+    reference_year: int | None = None
+    reference_year_is_source_period: bool | None = None
+    known_source_inconsistency: bool | None = None
+    timezone_assumption: str | None = None
 
 
 def _validate_hourly(timestamps: list[datetime], values: list[object], name: str) -> None:

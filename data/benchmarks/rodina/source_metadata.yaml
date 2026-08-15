@@ -1,0 +1,44 @@
+benchmark_name: Rodina literature-derived village benchmark
+location_name: Rodina
+region: Akmola Region
+country: Kazakhstan
+publication_title: Modeling of a Hybrid Energy System Based on Renewable Energy Sources and Storage Devices for the 'Rodina' Agricultural Settlement
+authors:
+  - N. G. Dzhumamukhambetov
+  - E. T. Yerbayev
+  - D. A. Dzhaparova
+  - Zh. G. Dzhumamukhambetov
+  - V. A. Yashkov
+year: 2026
+journal: Herald of the National Engineering Academy of the Republic of Kazakhstan
+issue: No. 1 (99)
+doi: https://doi.org/10.47533/2026.1606-146X.1-03
+source_url: https://journal.neark.kz/wp-content/uploads/pdf/%D0%92%D0%B5%D1%81%D1%82%D0%BD%D0%B8%D0%BA-1_2026-w.pdf
+source_type: LITERATURE_DERIVED
+source_period: Annual model period; the publication does not identify a calendar year for the table
+source_table: Table 1, monthly energy balance
+transcription_notes:
+  - Values are transcribed without correction from the printed table.
+  - Printed monthly rows and printed annual totals are preserved as separate evidence.
+  - The publication describes modelling, not a released utility interval or smart-meter dataset.
+published_annual_load_kwh: 7720000
+published_annual_pv_kwh: 2780000
+published_annual_wind_kwh: 7510000
+published_annual_generation_kwh: 10290000
+contextual_statements:
+  approximate_annual_energy_consumption_gwh: 7.8
+  simulation_timestep_hours: 1
+  simulation_duration_hours: 8760
+average_load_categories_kw:
+  dairy_plant:
+    minimum_kw: 300
+    maximum_kw: 350
+  sports_facilities:
+    minimum_kw: 250
+    maximum_kw: 300
+  social_facilities:
+    minimum_kw: 150
+    maximum_kw: 180
+  household_residential_sector:
+    minimum_kw: 400
+    maximum_kw: 500

@@ -17,16 +17,44 @@ def render_site_report(
         if analysis.monthly_wind_solar_correlation is not None
         else "undefined because one monthly series is constant"
     )
+    district = getattr(config.site, "district", None)
+    region = getattr(config.site, "region", None)
+    administrative_lines = "\n".join(
+        line
+        for line in (
+            f"- District: {district}" if district else "",
+            f"- Region: {region}" if region else "",
+        )
+        if line
+    )
+    coordinate_distance = (
+        f"{provenance.coordinate_distance_km:.3f} km"
+        if provenance.coordinate_distance_km is not None
+        else "not recorded"
+    )
+    monthly_rows = "\n".join(
+        "| "
+        f"{row.month_name} | {row.records} | {row.mean_wind_speed_10m_m_s:.3f} | "
+        f"{row.median_wind_speed_10m_m_s:.3f} | "
+        f"{row.mean_shortwave_irradiance_w_m2:.3f} | "
+        f"{row.horizontal_irradiation_kwh_m2:.3f} | {row.mean_temperature_c:.3f} |"
+        for row in analysis.monthly
+    )
     return f"""# Pilot Site Weather and Resource Report
 
 ## Pilot Site
 
 - Name: {config.site.name}
+{administrative_lines}
 - Requested coordinates: {config.site.latitude}, {config.site.longitude}
 - Returned grid coordinates: {provenance.returned_latitude}, {provenance.returned_longitude}
+- Approximate requested-to-grid distance: {coordinate_distance}
 - Country: {config.site.country}
 - Weather source: {provenance.provider}
 - Underlying model: {provenance.underlying_model}
+- Timezone: {provenance.timezone}
+- Wind variable: ERA5 10 m wind speed (`wind_speed_10m`)
+- Solar variable: ERA5 shortwave radiation (`shortwave_radiation`), hourly mean in W/m2
 - Analysis period: {config.weather.start_date.isoformat()} to {config.weather.end_date.isoformat()} (end exclusive)
 - Retrieval time: {provenance.retrieved_at.isoformat() if provenance.retrieved_at else 'not recorded'}
 - Cache key: {provenance.cache_key}
@@ -81,6 +109,12 @@ Monthly irradiation integrates each preceding-hour mean irradiance over one hour
 - Maximum: {analysis.temperature.maximum_c:.3f} degC
 
 Temperature is included as site context; the current PV equation does not use it.
+
+## Monthly Resource Summary
+
+| Month | Records | Mean ERA5 10 m wind (m/s) | Median ERA5 10 m wind (m/s) | Mean shortwave irradiance (W/m2) | Horizontal irradiation (kWh/m2) | Mean temperature (degC) |
+|---|---:|---:|---:|---:|---:|---:|
+{monthly_rows}
 
 ## Wind-Solar Seasonal Relationship
 

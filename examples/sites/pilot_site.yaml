@@ -1,7 +1,9 @@
 site:
-  name: REPLACE_ME
-  latitude: REPLACE_ME
-  longitude: REPLACE_ME
+  name: Shamshi Kaldayakova
+  district: Kargaly District
+  region: Aktobe Region
+  latitude: 50.578333
+  longitude: 57.544722
   country: Kazakhstan
 
 weather:

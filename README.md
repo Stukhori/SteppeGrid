@@ -11,6 +11,7 @@ steppegrid/
   simulation/       typed domain models, component equations, dispatch, metrics
   weather/          provider interface and synthetic/CSV/Open-Meteo providers
   load/             provider interface, strict CSV/synthetic load, scaling, inspection
+  benchmarks/       literature-source integrity and monthly load reconstruction
   data/             source-data loaders such as turbine-curve CSV parsing
   examples/         explicitly synthetic input construction
   scenario.py       serializable YAML/JSON scenario resolution
@@ -18,6 +19,7 @@ steppegrid/
   visualize.py      optional diagnostic plotting
   cli.py            scenario CLI and legacy synthetic demonstration
 data/
+  benchmarks/       checked-in source transcriptions and publication metadata
   weather/          future validated weather inputs
   load_profiles/    future measured or sourced load inputs
   turbine_curves/   future source-attributed empirical curves
@@ -141,6 +143,17 @@ python -m steppegrid load inspect --file examples/load/pilot_load_template.csv
 ```
 
 The template values are synthetic examples of the file format. See [electricity load data](docs/load_data.md) for evidence-quality classifications, scaling, critical-load assumptions, and scenario configuration.
+
+## Rodina literature benchmark
+
+SteppeGrid includes a checked-in transcription of the monthly energy table from a 2026 Rodina, Akmola Region modelling paper. The paper does not publish measured hourly demand, and its printed monthly rows conflict arithmetically with several printed annual totals. SteppeGrid preserves both and exposes the differences.
+
+```powershell
+python -m steppegrid benchmark rodina validate
+python -m steppegrid benchmark rodina sensitivity --variant published_monthly_rows --reference-year 2025 --timezone-offset +00:00
+```
+
+Generated hourly profiles are deterministic literature-derived reconstructions constrained by monthly energy. They are not measured Rodina demand. See [Rodina benchmark methodology](docs/benchmarks/rodina.md).
 
 See [data sources](docs/data_sources.md) for provenance and validation details.
 

@@ -59,7 +59,12 @@ def _write_simulation_reference(
     config: PilotSiteConfig, dataset: WeatherDataset, cache_root: Path, path: Path
 ) -> None:
     reference = {
-        "location": config.site.model_dump(mode="json"),
+        "location": {
+            "name": config.site.name,
+            "latitude": config.site.latitude,
+            "longitude": config.site.longitude,
+            "country": config.site.country,
+        },
         "start_time": config.start_datetime.isoformat(),
         "end_time": config.end_datetime.isoformat(),
         "weather": {

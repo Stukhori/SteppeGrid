@@ -16,6 +16,11 @@ class PilotSiteConfigError(ValueError):
     pass
 
 
+class PilotLocation(Location):
+    district: str | None = None
+    region: str | None = None
+
+
 class PilotWeatherConfig(DomainModel):
     provider: Literal["open-meteo"] = "open-meteo"
     model: Literal["era5"] = "era5"
@@ -34,7 +39,7 @@ class PilotWeatherConfig(DomainModel):
 
 
 class PilotSiteConfig(DomainModel):
-    site: Location
+    site: Location | PilotLocation
     weather: PilotWeatherConfig
     output_directory: str = "../../outputs/pilot_site"
 

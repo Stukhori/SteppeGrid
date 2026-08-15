@@ -87,6 +87,14 @@ Outages may be supplied as an hourly boolean series or constructed from timestam
 
 Reference profiles can use one positive `scale_factor`. A complete January-to-January calendar year can instead use `target_annual_kwh`; the factor is the target divided by the original sum. Both total and critical energy are multiplied consistently and the factor is recorded. No interpolation or shape modification occurs.
 
+### Monthly-constrained literature reconstruction
+
+Literature benchmarks preserve published monthly rows and published annual totals as separate evidence. Integrity comparisons calculate monthly sums at runtime. A discrepancy is reported and does not invalidate an otherwise exact transcription.
+
+For `flat_within_month`, every hour has weight one. Template methods use a declared deterministic synthetic hour-of-day multiplier. Each month's weights are divided by their sum and multiplied by that month's selected target; the final hour receives any floating-point residual. Monthly conservation must be within `1e-6 kWh`.
+
+The `published_monthly_rows` interpretation uses printed rows unchanged. `annual_total_normalized` applies one explicit factor to all monthly rows so their annual sum equals the separately printed annual total. Reference-year timestamps and fixed timezone offsets are simulation carriers, not claims about the publication's source period or local measurement convention.
+
 ## Weather normalization
 
 `WeatherProvider` returns a `WeatherDataset` containing normalized `WeatherSeries` plus `DataProvenance`. The simulator sees only `WeatherSeries`, so adding a historical provider does not alter dispatch code. The CSV provider selects `[start, end)`, requires every requested hour, and performs no unit conversion or interpolation. Its configurable default irradiance validation ceiling is 2000 W/m2; this is a corruption-screening assumption, not a physical maximum.
