@@ -1,0 +1,25 @@
+site:
+  name: Rodina
+  district: Tselinograd District
+  region: Akmola Region
+  country: Kazakhstan
+  latitude: 51.302445
+  longitude: 70.541645
+
+coordinate_anchor:
+  classification: VERIFIED_SAMPLING_ANCHOR
+  source: SteppeGrid Rodina benchmark research brief
+  description: Verified point within or associated with Rodina used as the ERA5 sampling anchor.
+  precision_note: The sampling anchor is not asserted to be the exact geographic centroid of the village; the coordinate digits do not imply finer source precision.
+
+local_timezone_offset: "+05:00"
+reference_year: 2025
+reference_year_is_source_period: false
+source_directory: .
+
+weather:
+  provider: open-meteo
+  model: era5
+  cache_directory: ../../weather/cache
+
+output_directory: ../../../outputs/benchmarks/rodina/paired_analysis

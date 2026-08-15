@@ -8,6 +8,12 @@ from datetime import date, datetime, time, timedelta, timezone
 from pathlib import Path
 
 from steppegrid.benchmarks.outputs import write_reconstruction, write_source_integrity
+from steppegrid.benchmarks.paired import (
+    PRIMARY_VARIANT,
+    RODINA_SITE_CONFIG,
+    RodinaPairingError,
+    analyze_rodina_paired,
+)
 from steppegrid.benchmarks.plots import create_benchmark_plots
 from steppegrid.benchmarks.reconstruction import (
     VALID_SHAPES,
@@ -181,6 +187,21 @@ def build_parser() -> argparse.ArgumentParser:
         "--output", type=Path, default=Path("outputs/benchmarks/rodina")
     )
     sensitivity_parser.add_argument("--no-plots", action="store_true")
+
+    pair_parser = rodina_commands.add_parser(
+        "pair-weather",
+        help="pair all Rodina hourly load assumptions with timezone-aligned ERA5 weather",
+    )
+    pair_parser.add_argument("--config", type=Path, default=RODINA_SITE_CONFIG)
+    pair_parser.add_argument("--reference-year", type=int, default=2025)
+    pair_parser.add_argument(
+        "--variant", choices=VALID_VARIANTS, default=PRIMARY_VARIANT
+    )
+    pair_parser.add_argument("--source-dir", type=Path)
+    pair_parser.add_argument("--cache-dir", type=Path)
+    pair_parser.add_argument("--output", type=Path)
+    pair_parser.add_argument("--refresh", action="store_true")
+    pair_parser.add_argument("--no-plots", action="store_true")
     return parser
 
 
@@ -342,6 +363,37 @@ def main(argv: list[str] | None = None) -> None:
         return
     if args.command == "benchmark" and args.benchmark_name == "rodina":
         try:
+            if args.benchmark_command == "pair-weather":
+                run = analyze_rodina_paired(
+                    args.config,
+                    reference_year=args.reference_year,
+                    variant=args.variant,
+                    refresh=args.refresh,
+                    source_directory=args.source_dir,
+                    cache_directory=args.cache_dir,
+                    output_directory=args.output,
+                    create_plots=not args.no_plots,
+                )
+                provenance = run.weather.provenance
+                print("STEPPEGRID RODINA PAIRED WEATHER-DEMAND ANALYSIS")
+                print("Classification: ERA5 weather + LITERATURE_DERIVED reconstructed load")
+                print(f"Requested coordinates: {provenance.requested_latitude}, {provenance.requested_longitude}")
+                print(f"Returned ERA5 coordinates: {provenance.returned_latitude}, {provenance.returned_longitude}")
+                print(f"Approximate grid distance: {provenance.coordinate_distance_km:.3f} km")
+                print(f"Local interval: {run.interval.local_start.isoformat()} -> {run.interval.local_end.isoformat()}")
+                print(f"UTC interval: {run.interval.utc_start.isoformat()} -> {run.interval.utc_end.isoformat()}")
+                print(f"Aligned records: {run.interval.hours}")
+                print(f"Weather cache: {provenance.cache_status}")
+                for result in run.paired_results:
+                    summary = result.summary
+                    print(
+                        f"{summary.shape}: peak {summary.peak_hourly_load_kwh:.6f} "
+                        f"kWh/hour, load factor {summary.load_factor:.6f}, "
+                        f"solar timing r={summary.hourly_load_solar_resource_correlation:.6f}, "
+                        f"wind timing r={summary.hourly_load_wind_speed_correlation:.6f}"
+                    )
+                print(f"Output directory: {run.output_directory.resolve()}")
+                return
             source = load_monthly_benchmark(args.source_dir)
             if args.benchmark_command == "validate":
                 integrity = validate_source_integrity(source)
@@ -393,7 +445,7 @@ def main(argv: list[str] | None = None) -> None:
                 )
             print(f"Output directory: {output.resolve()}")
             return
-        except (BenchmarkSourceError, ValueError, RuntimeError) as error:
+        except (BenchmarkSourceError, RodinaPairingError, ValueError, RuntimeError) as error:
             parser.error(str(error))
     print(_summary(simulate(synthetic_24_hour_scenario())))
 

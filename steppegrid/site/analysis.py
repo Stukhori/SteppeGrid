@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import calendar
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone, tzinfo
 from statistics import correlation, fmean, median, pstdev
 
 from pydantic import Field
@@ -79,21 +79,53 @@ class PilotSiteAnalysis(DomainModel):
     correlation_definition: str
 
 
-def expected_full_year_timestamps(start: datetime, end: datetime) -> list[datetime]:
+def _timezone_label(calendar_timezone: tzinfo) -> str:
+    label = calendar_timezone.tzname(None)
+    return label or str(calendar_timezone)
+
+
+def expected_full_year_timestamps(
+    start: datetime,
+    end: datetime,
+    *,
+    calendar_timezone: tzinfo = timezone.utc,
+) -> list[datetime]:
     if start.tzinfo is None or end.tzinfo is None or start.utcoffset() != timedelta(0):
         raise SiteAnalysisError("pilot year must use timezone-aware UTC datetimes")
     if end.utcoffset() != timedelta(0):
         raise SiteAnalysisError("pilot year must use timezone-aware UTC datetimes")
-    if (start.month, start.day, start.hour, start.minute, start.second) != (1, 1, 0, 0, 0):
-        raise SiteAnalysisError("pilot year must start at January 1 00:00 UTC")
-    if end != start.replace(year=start.year + 1):
-        raise SiteAnalysisError("pilot year must end at January 1 00:00 UTC of the next year")
+    local_start = start.astimezone(calendar_timezone)
+    local_end = end.astimezone(calendar_timezone)
+    if (
+        local_start.month,
+        local_start.day,
+        local_start.hour,
+        local_start.minute,
+        local_start.second,
+        local_start.microsecond,
+    ) != (1, 1, 0, 0, 0, 0):
+        raise SiteAnalysisError(
+            "pilot year must start at January 1 00:00 in the analysis timezone"
+        )
+    expected_local_end = local_start.replace(year=local_start.year + 1)
+    if local_end != expected_local_end:
+        raise SiteAnalysisError(
+            "pilot year must end at January 1 00:00 of the next year in the analysis timezone"
+        )
     hours = int((end - start).total_seconds() / 3600)
     return [start + timedelta(hours=index) for index in range(hours)]
 
 
-def validate_complete_year(dataset: WeatherDataset, start: datetime, end: datetime) -> DataQualitySummary:
-    expected = expected_full_year_timestamps(start, end)
+def validate_complete_year(
+    dataset: WeatherDataset,
+    start: datetime,
+    end: datetime,
+    *,
+    calendar_timezone: tzinfo = timezone.utc,
+) -> DataQualitySummary:
+    expected = expected_full_year_timestamps(
+        start, end, calendar_timezone=calendar_timezone
+    )
     timestamps = dataset.series.timestamps
     duplicate_count = len(timestamps) - len(set(timestamps))
     missing = [timestamp for timestamp in expected if timestamp not in set(timestamps)]
@@ -121,7 +153,7 @@ def validate_complete_year(dataset: WeatherDataset, start: datetime, end: dateti
         missing_timestamps=0,
         duplicate_timestamps=0,
         missing_required_values=0,
-        timezone="UTC",
+        timezone=_timezone_label(calendar_timezone),
     )
 
 
@@ -132,8 +164,16 @@ def _normalize(values: list[float]) -> list[float]:
     return [(value - minimum) / (maximum - minimum) for value in values]
 
 
-def analyze_full_year(dataset: WeatherDataset, start: datetime, end: datetime) -> PilotSiteAnalysis:
-    quality = validate_complete_year(dataset, start, end)
+def analyze_full_year(
+    dataset: WeatherDataset,
+    start: datetime,
+    end: datetime,
+    *,
+    calendar_timezone: tzinfo = timezone.utc,
+) -> PilotSiteAnalysis:
+    quality = validate_complete_year(
+        dataset, start, end, calendar_timezone=calendar_timezone
+    )
     wind = dataset.series.wind_speed_m_s
     solar = dataset.series.solar_irradiance_w_m2
     temperature = dataset.series.temperature_c
@@ -142,7 +182,7 @@ def analyze_full_year(dataset: WeatherDataset, start: datetime, end: datetime) -
 
     grouped: dict[int, list[int]] = defaultdict(list)
     for index, timestamp in enumerate(dataset.series.timestamps):
-        grouped[timestamp.month].append(index)
+        grouped[timestamp.astimezone(calendar_timezone).month].append(index)
 
     monthly_base: list[dict[str, float | int | str]] = []
     for month in range(1, 13):

@@ -95,6 +95,14 @@ For `flat_within_month`, every hour has weight one. Template methods use a decla
 
 The `published_monthly_rows` interpretation uses printed rows unchanged. `annual_total_normalized` applies one explicit factor to all monthly rows so their annual sum equals the separately printed annual total. Reference-year timestamps and fixed timezone offsets are simulation carriers, not claims about the publication's source period or local measurement convention.
 
+### Rodina local-year weather pairing
+
+Rodina demand shapes represent local human behavior, so reconstruction uses fixed UTC+05:00 local civil timestamps. For reference year 2025, the local half-open interval January 1 00:00 through the next January 1 00:00 maps to `2024-12-31T19:00Z` through `2025-12-31T19:00Z`. The provider fetches this exact UTC interval rather than a naive UTC calendar year. There is no daylight-saving transition.
+
+Pairing requires an exact one-to-one mapping from each local load timestamp to its UTC weather timestamp, 8,760 consecutive records, no duplicates or null required values, and complete matching boundaries. Annual load is compared before and after pairing. Monthly load conservation is always evaluated with local month boundaries so UTC conversion cannot move source constraints between reporting months.
+
+Hourly load-resource diagnostics use Pearson correlation between reconstructed hourly load and coincident shortwave radiation or ERA5 10 m wind speed. Monthly diagnostics compare local-calendar load energy with horizontal irradiation or mean wind speed. These are timing relationships between unlike raw quantities; they are not generation models, coverage fractions, performance estimates, or causal claims.
+
 ## Weather normalization
 
 `WeatherProvider` returns a `WeatherDataset` containing normalized `WeatherSeries` plus `DataProvenance`. The simulator sees only `WeatherSeries`, so adding a historical provider does not alter dispatch code. The CSV provider selects `[start, end)`, requires every requested hour, and performs no unit conversion or interpolation. Its configurable default irradiance validation ceiling is 2000 W/m2; this is a corruption-screening assumption, not a physical maximum.
@@ -117,7 +125,7 @@ The cache key hashes provider, model, requested coordinates, exact start/end dat
 
 ## Pilot-site resource analysis
 
-Pilot analysis requires one complete UTC calendar year: 8,760 hours normally or 8,784 hours in a leap year. Expected timestamps are generated from the configured half-open interval; no fixed annual count is assumed without checking the calendar.
+Annual resource analysis requires one complete calendar year in its declared analysis timezone: 8,760 hours normally or 8,784 hours in a leap year. The pilot-site workflow retains UTC as its default. Rodina uses its shifted UTC interval but groups monthly statistics in UTC+05:00. Expected timestamps are generated from the configured half-open interval; no fixed annual count is assumed without checking the calendar.
 
 Wind summaries use ERA5 10 m wind speed. Percentiles use linear interpolation between ordered observations, and standard deviation is the population standard deviation for the analyzed year. Speed bands are descriptive only and have no turbine-operating interpretation.
 

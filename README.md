@@ -150,10 +150,13 @@ SteppeGrid includes a checked-in transcription of the monthly energy table from 
 
 ```powershell
 python -m steppegrid benchmark rodina validate
-python -m steppegrid benchmark rodina sensitivity --variant published_monthly_rows --reference-year 2025 --timezone-offset +00:00
+python -m steppegrid benchmark rodina sensitivity --variant published_monthly_rows --reference-year 2025 --timezone-offset +05:00
+python -m steppegrid benchmark rodina pair-weather --reference-year 2025 --variant published_monthly_rows
 ```
 
 Generated hourly profiles are deterministic literature-derived reconstructions constrained by monthly energy. They are not measured Rodina demand. See [Rodina benchmark methodology](docs/benchmarks/rodina.md).
+
+The paired command uses the verified Rodina sampling anchor in `data/benchmarks/rodina/site.yaml`, treats UTC+05:00 as local civil time with no daylight-saving transition, and fetches the exact matching UTC interval from `2024-12-31T19:00:00Z` through `2025-12-31T19:00:00Z` (end exclusive). It validates and writes 8,760 aligned records for all three load-shape assumptions under `outputs/benchmarks/rodina/paired_analysis/`. The resulting correlations and plots describe resource-demand timing only; they are not PV/wind generation, renewable coverage, sizing, or performance estimates.
 
 See [data sources](docs/data_sources.md) for provenance and validation details.
 

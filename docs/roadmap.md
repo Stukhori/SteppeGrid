@@ -17,6 +17,8 @@
 - [x] Add primitive total and critical outage-service metrics.
 - [x] Add a literature-derived monthly benchmark with source-integrity reporting.
 - [x] Add deterministic monthly-to-hourly reconstruction and shape sensitivity.
+- [x] Pair Rodina reconstructions with a verified site anchor and timezone-correct ERA5 year.
+- [x] Add raw resource-demand timing diagnostics for all Rodina hourly assumptions.
 - Validate the cached Open-Meteo ERA5 provider against independent data.
 - Enforce timezone-aware timestamps in every legacy/internal constructor; CSV load already does.
 - Establish validated Kazakhstan weather sources and location metadata.

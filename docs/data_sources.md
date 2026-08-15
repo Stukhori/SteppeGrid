@@ -46,7 +46,9 @@ The scenario records optional turbine name, manufacturer, rating, source, eviden
 
 The checked-in Rodina source transcription cites [DOI 10.47533/2026.1606-146X.1-03](https://doi.org/10.47533/2026.1606-146X.1-03). Table 1 supplies monthly modelled load and generation values, not a released hourly utility dataset. Source metadata also preserves the paper's contextual sector load ranges and one-hour/8,760-hour modelling statements without using those ranges to infer hourly load.
 
-The printed annual load, wind, and total-generation values conflict with sums of their printed monthly rows. SteppeGrid reports both, classifies reconstructed hourly profiles as `LITERATURE_DERIVED`, and records that hourly values are reconstructed rather than measured. No coordinates or weather are attached to this benchmark.
+The printed annual load, wind, and total-generation values conflict with sums of their printed monthly rows. SteppeGrid reports both, classifies reconstructed hourly profiles as `LITERATURE_DERIVED`, and records that hourly values are reconstructed rather than measured.
+
+`data/benchmarks/rodina/site.yaml` adds a verified Rodina ERA5 sampling anchor at `51.302445, 70.541645`, described as a point within or associated with the village rather than an asserted centroid. The paired workflow retrieves Open-Meteo ERA5 weather for the exact UTC interval matching the UTC+05:00 local 2025 carrier. Cached raw weather remains under the ignored weather cache rather than becoming bundled benchmark evidence. Paired artifacts retain separate publication/load and provider/weather provenance chains.
 
 ## Synthetic Data
 

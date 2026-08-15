@@ -13,8 +13,11 @@ Every consequential assumption should become configurable or supported by a cite
 | Literature monthly load | Published rows are retained separately from printed annual totals | Source discrepancies are reported, never silently reconciled |
 | Rodina hourly timing | Flat or declared deterministic synthetic template scaled independently by month | No public measured hourly Rodina series is available in the source |
 | Rodina reference year | Calendar carrier only; 2025 gives 8,760 hours | Publication does not establish that Table 1 represents 2025 |
-| Rodina timezone | Configurable fixed offset used for timestamp construction | Publication does not establish source timezone behavior |
+| Rodina timezone | Fixed UTC+05:00 local civil time with no daylight-saving transition for weather pairing | This aligns local behavior with weather but does not establish the paper's unpublished source timestamp convention |
+| Rodina site anchor | `51.302445, 70.541645` is a verified point within or associated with Rodina used for ERA5 sampling | Not asserted to be the exact village centroid; ERA5 remains gridded |
 | Rodina critical load | Absent | Paper does not support a defensible village-wide critical series |
+| Rodina outages | Absent from paired analysis | No verified outage schedule is inferred |
+| Rodina resource correlation | Pearson association between reconstructed load and raw ERA5 irradiance or 10 m wind speed | Timing diagnostic only; not generation, coverage, or performance |
 | Missing data | Any missing/misaligned hour is an error | Keep; future cleaning must be explicit upstream |
 | Weather CSV | Required normalized units are m/s, W/m2, and degC | Upstream conversions must be recorded in provenance |
 | Historical source | Open-Meteo ERA5 is reanalysis associated with a selected grid cell | Not a local station measurement |
@@ -22,7 +25,7 @@ Every consequential assumption should become configurable or supported by a cite
 | Open-Meteo dates | API dates are inclusive; SteppeGrid end datetimes are exclusive | Provider validates every selected UTC hour |
 | Radiation timing | `shortwave_radiation` is the mean over the preceding hour | One-hour integration permits Wh/m2 inspection totals |
 | Wind height | Open-Meteo wind is 10 m above ground | No hub-height or terrain correction is applied |
-| Pilot year | Complete UTC calendar year, January 1 to next January 1 | 8,760 or 8,784 hours according to calendar |
+| Annual weather year | Complete calendar year in the declared analysis timezone | Pilot defaults to UTC; Rodina uses UTC+05:00 and matching shifted UTC coverage |
 | Wind bands | `<2`, `2-<3`, `3-<5`, `5-8`, and `>8` m/s | Descriptive only, not turbine cut-in/out classes |
 | Seasonal correlation | Pearson correlation of 12 monthly mean wind values with 12 monthly irradiation totals | Association does not establish resilience |
 | Irradiance validation | CSV values must be 0-2000 W/m2 by default | Configurable screening ceiling, not a physical maximum |
