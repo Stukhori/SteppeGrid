@@ -12,12 +12,13 @@
 
 ## Phase 1: trustworthy data interfaces
 
-- Add provenance schemas for measured and external datasets.
-- Build separate importers for weather, load, and turbine curves.
+- Extend the initial weather provenance schema to load and turbine datasets.
+- Add a cached historical weather provider after source evaluation.
 - Enforce timezone-aware timestamps and document resampling rules.
 - Establish validated Kazakhstan weather sources and location metadata.
 - Add critical and non-critical load series without silently deriving either.
 - Add dataset licenses, citations, uncertainty, and quality flags.
+- Add a normalized load-profile CSV provider with provenance.
 
 ## Phase 2: model validation
 
