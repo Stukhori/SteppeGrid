@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
+from enum import Enum
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -49,6 +51,47 @@ class DataProvenance(DomainModel):
     source_documentation: str | None = None
 
 
+class LoadDataQuality(str, Enum):
+    MEASURED = "MEASURED"
+    UTILITY_REPORTED = "UTILITY_REPORTED"
+    ESTIMATED_FROM_BILLS = "ESTIMATED_FROM_BILLS"
+    LITERATURE_DERIVED = "LITERATURE_DERIVED"
+    SYNTHETIC = "SYNTHETIC"
+    UNSPECIFIED = "UNSPECIFIED"
+
+
+class LoadSourceType(str, Enum):
+    METER = "METER"
+    UTILITY_RECORD = "UTILITY_RECORD"
+    BILLING_ESTIMATE = "BILLING_ESTIMATE"
+    SURVEY_ESTIMATE = "SURVEY_ESTIMATE"
+    LITERATURE = "LITERATURE"
+    SYNTHETIC_MODEL = "SYNTHETIC_MODEL"
+    USER_SUPPLIED_CSV = "USER_SUPPLIED_CSV"
+    INLINE_SCENARIO = "INLINE_SCENARIO"
+
+
+class LoadProvenance(DomainModel):
+    source: str
+    source_type: LoadSourceType
+    data_quality: LoadDataQuality
+    start_time: datetime
+    end_time: datetime
+    temporal_resolution: Literal["hourly"] = "hourly"
+    original_units: dict[str, str] = Field(
+        default_factory=lambda: {"total_load_kwh": "kWh/hour"}
+    )
+    normalized_units: dict[str, str] = Field(
+        default_factory=lambda: {"total_load_kwh": "kWh/hour"}
+    )
+    retrieved_or_created_at: datetime | None = None
+    location: Location | None = None
+    processing_steps: list[str] = Field(default_factory=list)
+    scaling_factor: float = Field(default=1.0, gt=0)
+    critical_load_method: str | None = None
+    notes: str | None = None
+
+
 def _validate_hourly(timestamps: list[datetime], values: list[object], name: str) -> None:
     if not timestamps:
         raise ValueError("timestamps must not be empty")
@@ -62,12 +105,55 @@ def _validate_hourly(timestamps: list[datetime], values: list[object], name: str
 class LoadProfile(DomainModel):
     timestamps: list[datetime]
     demand_kwh: list[float]
+    critical_demand_kwh: list[float] | None = None
 
     @model_validator(mode="after")
     def validate_series(self) -> LoadProfile:
         _validate_hourly(self.timestamps, self.demand_kwh, "demand_kwh")
         if any(value < 0 for value in self.demand_kwh):
             raise ValueError("demand_kwh values must be non-negative")
+        if self.critical_demand_kwh is not None:
+            if len(self.critical_demand_kwh) != len(self.timestamps):
+                raise ValueError("critical_demand_kwh and timestamps must have equal lengths")
+            if any(value < 0 for value in self.critical_demand_kwh):
+                raise ValueError("critical_demand_kwh values must be non-negative")
+            if any(
+                critical > total
+                for critical, total in zip(
+                    self.critical_demand_kwh, self.demand_kwh, strict=True
+                )
+            ):
+                raise ValueError("critical_demand_kwh cannot exceed demand_kwh")
+        return self
+
+
+class LoadDataset(DomainModel):
+    timestamps: list[datetime]
+    total_load_kwh: list[float]
+    critical_load_kwh: list[float] | None = None
+    provenance: LoadProvenance
+
+    @model_validator(mode="after")
+    def validate_series_and_provenance(self) -> LoadDataset:
+        _validate_hourly(self.timestamps, self.total_load_kwh, "total_load_kwh")
+        if any(value < 0 for value in self.total_load_kwh):
+            raise ValueError("total_load_kwh values must be non-negative")
+        if self.critical_load_kwh is not None:
+            if len(self.critical_load_kwh) != len(self.timestamps):
+                raise ValueError("critical_load_kwh and timestamps must have equal lengths")
+            if any(value < 0 for value in self.critical_load_kwh):
+                raise ValueError("critical_load_kwh values must be non-negative")
+            if any(
+                critical > total
+                for critical, total in zip(
+                    self.critical_load_kwh, self.total_load_kwh, strict=True
+                )
+            ):
+                raise ValueError("critical_load_kwh cannot exceed total_load_kwh")
+        if self.provenance.start_time != self.timestamps[0]:
+            raise ValueError("provenance start_time must match the first load timestamp")
+        if self.provenance.end_time != self.timestamps[-1] + timedelta(hours=1):
+            raise ValueError("provenance end_time must be one hour after the final timestamp")
         return self
 
 
@@ -175,16 +261,22 @@ class BatteryConfig(DomainModel):
 
 
 class SimulationInput(DomainModel):
-    load: LoadProfile
+    load: LoadProfile | LoadDataset
     weather: WeatherSeries
     grid: GridAvailability
     wind_turbine: WindTurbineConfig
     solar_array: SolarArrayConfig
     battery: BatteryConfig
+    outage_load_policy: Literal[
+        "proportional_or_existing", "critical_first"
+    ] = "proportional_or_existing"
 
     @model_validator(mode="after")
     def validate_alignment(self) -> SimulationInput:
-        if not (self.load.timestamps == self.weather.timestamps == self.grid.timestamps):
+        load_timestamps = [value.isoformat() for value in self.load.timestamps]
+        weather_timestamps = [value.isoformat() for value in self.weather.timestamps]
+        grid_timestamps = [value.isoformat() for value in self.grid.timestamps]
+        if not (load_timestamps == weather_timestamps == grid_timestamps):
             raise ValueError("load, weather, and grid timestamps must match exactly")
         return self
 
@@ -192,6 +284,9 @@ class SimulationInput(DomainModel):
 class HourlyResult(DomainModel):
     timestamp: datetime
     demand_kwh: float
+    critical_demand_kwh: float
+    critical_served_kwh: float
+    critical_unserved_kwh: float
     solar_generation_kwh: float
     wind_generation_kwh: float
     renewable_generation_kwh: float
@@ -223,6 +318,13 @@ class AggregateMetrics(DomainModel):
     outage_demand_kwh: float
     outage_served_energy_kwh: float
     outage_unserved_energy_kwh: float
+    outage_total_demand_kwh: float
+    outage_total_served_kwh: float
+    outage_total_unserved_kwh: float
+    outage_critical_demand_kwh: float
+    outage_critical_served_kwh: float
+    outage_critical_unserved_kwh: float
+    critical_load_served_fraction: float
 
 
 class SimulationResult(DomainModel):

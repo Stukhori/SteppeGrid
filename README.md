@@ -10,6 +10,7 @@ No included inputs are claimed to represent a Kazakh village, a commercial turbi
 steppegrid/
   simulation/       typed domain models, component equations, dispatch, metrics
   weather/          provider interface and synthetic/CSV/Open-Meteo providers
+  load/             provider interface, strict CSV/synthetic load, scaling, inspection
   data/             source-data loaders such as turbine-curve CSV parsing
   examples/         explicitly synthetic input construction
   scenario.py       serializable YAML/JSON scenario resolution
@@ -43,6 +44,12 @@ Export hourly results or print machine-readable metadata and metrics:
 ```powershell
 python -m steppegrid simulate --scenario examples/scenarios/synthetic_household.yaml --export-csv outputs/hourly.csv
 python -m steppegrid simulate --scenario examples/scenarios/synthetic_household.yaml --format json
+```
+
+Run the provider-based total/critical-load example:
+
+```powershell
+python -m steppegrid simulate --scenario examples/scenarios/synthetic_critical_load.yaml
 ```
 
 The old `python -m steppegrid.cli` command remains a quick synthetic demo. Scenario-relative CSV paths are resolved relative to the scenario file.
@@ -120,11 +127,26 @@ Timestamps use ISO 8601 and must be unique, chronological, and consecutive hourl
 wind_speed_m_s,power_kw
 ```
 
+Load CSV columns must be exactly either:
+
+```text
+timestamp,total_load_kwh
+timestamp,total_load_kwh,critical_load_kwh
+```
+
+Validate and summarize a load file before using it:
+
+```powershell
+python -m steppegrid load inspect --file examples/load/pilot_load_template.csv
+```
+
+The template values are synthetic examples of the file format. See [electricity load data](docs/load_data.md) for evidence-quality classifications, scaling, critical-load assumptions, and scenario configuration.
+
 See [data sources](docs/data_sources.md) for provenance and validation details.
 
 ## Scope and status
 
-The engine is suitable for reproducible scenario and dispatch studies when inputs are independently defensible. Cached Open-Meteo access is available, but no measured dataset is bundled. It is not yet suitable for investment decisions, equipment selection, site assessment, or claims about expected performance. See [methodology](docs/methodology.md), [assumptions](docs/assumptions.md), and [roadmap](docs/roadmap.md).
+The engine is suitable for reproducible scenario and dispatch studies when inputs are independently defensible. Cached Open-Meteo access is available, but no measured load dataset is bundled and SteppeGrid does not infer a village's demand. It is not yet suitable for investment decisions, equipment selection, site assessment, or claims about expected performance. See [methodology](docs/methodology.md), [assumptions](docs/assumptions.md), and [roadmap](docs/roadmap.md).
 
 ## License
 

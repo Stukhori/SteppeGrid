@@ -38,6 +38,10 @@ wind_speed_m_s,power_kw
 
 The scenario records optional turbine name, manufacturer, rating, source, evidence type, and notes. These fields describe the curve; they do not validate its scientific quality.
 
+### User-supplied electricity load
+
+`CSVLoadProvider` accepts strictly hourly total demand and optional explicit critical demand. It records a user-declared evidence classification and source type; it does not infer that a file is measured. The default is `UNSPECIFIED`. Missing records, duplicates, blanks, negative/non-finite energy, mixed UTC offsets, and critical energy above total energy are errors. See [load data](load_data.md) for schemas, evidence hierarchy, and field-data preparation.
+
 ## Synthetic Data
 
 `SyntheticWeatherProvider`, `examples/scenarios/synthetic_household.yaml`, and `data/turbine_curves/synthetic_example.csv` exist solely for deterministic development and testing. Their coordinates, weather, demand, outage, equipment sizes, and power curve are arbitrary software fixtures. They are not representative of Kazakhstan, a household, a commercial turbine, or an actual project site.
@@ -46,7 +50,7 @@ The scenario records optional turbine name, manufacturer, rating, source, eviden
 
 A future direct `CopernicusERA5LandProvider` should support independent validation, research-grade dataset citation, and higher-resolution ERA5-Land point series where appropriate. It must use the same provider-neutral `WeatherDataset` boundary and preserve raw/source provenance.
 
-Load, tariff, grid-carbon, cost, and outage sources have not been selected. Each requires its own provenance and uncertainty treatment.
+No representative Kazakhstan load, tariff, grid-carbon, cost, or outage source has been selected. User-supplied load now has an explicit provenance boundary, but scientific suitability remains the researcher's responsibility. The other inputs require their own provenance and uncertainty treatment.
 
 ## Measured HelixGen Data
 

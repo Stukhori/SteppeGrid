@@ -10,7 +10,7 @@ Every load, weather, and grid record must share the same timestamp. Missing inte
 
 ### Measured inputs
 
-None are bundled. Future measured inputs may include timestamped site demand, wind speed, irradiance, temperature, and empirical turbine power curves. Their sensor, height, calibration, sampling, aggregation, timezone, and quality-control metadata must accompany them outside the current domain model until a provenance schema is designed.
+None are bundled. User-supplied hourly load may be classified as measured only when its source supports that claim. Load provenance records source type, evidence quality, location, coverage, units, processing, scaling, and the method used to define critical demand. Weather and turbine evidence retain their existing provenance boundaries.
 
 ### External data
 
@@ -23,6 +23,8 @@ Open-Meteo ERA5 reanalysis can be fetched and cached; strict CSV providers can a
 - Battery capacity, initial and minimum state of charge, charge/discharge power limits, and one-way efficiencies.
 - Hourly grid availability.
 - Hourly electricity demand.
+- Optional hourly critical demand or an explicitly assumed critical fraction.
+- Outage load-service allocation policy.
 
 ### Calculated quantities
 
@@ -56,7 +58,7 @@ For every hour, the fixed policy is:
 5. Any residual becomes unserved energy.
 6. Renewable surplus that cannot be stored is curtailed.
 
-The current function provides one policy. A later policy interface should be introduced when a second real dispatch strategy is implemented.
+Total-energy dispatch remains this single policy. Critical service is then attributed without changing total flows. `proportional_or_existing` multiplies critical demand by the hour's total served fraction. During grid outages, `critical_first` instead assigns available served energy to critical demand before non-critical demand. It does not reserve energy across hours or automatically shed load in the physical dispatch calculation.
 
 ## Metrics and conservation
 
@@ -65,6 +67,8 @@ The current function provides one policy. A later policy interface should be int
 `renewable_fraction = min(1, (renewable_direct_to_load + battery_discharge_to_load) / total_demand)`. This preserves the original definition. It assumes initial battery energy is renewable because the model does not yet track energy provenance. The ambiguity is material: a scenario initialized from grid-charged storage would overstate renewable contribution. Provenance-aware storage must replace this assumption before external reporting.
 
 For hours with `grid_available = false`, `outage_unserved_energy_kwh` is the sum of unserved load, `outage_demand_kwh` is the sum of demand, and `outage_served_energy_kwh = outage_demand_kwh - outage_unserved_energy_kwh`. Grid imports are necessarily zero in these hours.
+
+The explicit total aliases are `outage_total_demand_kwh`, `outage_total_served_kwh`, and `outage_total_unserved_kwh`. Critical counterparts sum the hourly critical accounting fields. `critical_load_served_fraction` divides outage critical served energy by outage critical demand; a zero denominator returns `0.0`. No composite score is calculated.
 
 For each hour, tests verify:
 
@@ -76,6 +80,12 @@ renewable generation + grid import + starting battery SOC
 where served demand is total demand minus unserved energy.
 
 Outages may be supplied as an hourly boolean series or constructed from timestamp intervals. Interval starts are inclusive and ends are exclusive. Outage metrics are primitive totals over intervals where `grid.available` is false: outage demand, served energy, and unserved energy. No composite resilience score is asserted.
+
+## Load normalization
+
+`LoadProvider` returns a `LoadDataset` with total load, optional critical load, and `LoadProvenance`. CSV timestamps require a consistent explicit UTC offset and consecutive hourly coverage. Scenario resolution requires ISO-formatted timestamp equality across load, weather, and grid, so a different start, end, offset representation, missing hour, or leap-year length fails rather than truncating data.
+
+Reference profiles can use one positive `scale_factor`. A complete January-to-January calendar year can instead use `target_annual_kwh`; the factor is the target divided by the original sum. Both total and critical energy are multiplied consistently and the factor is recorded. No interpolation or shape modification occurs.
 
 ## Weather normalization
 

@@ -6,7 +6,8 @@ from pathlib import Path
 from steppegrid.simulation.models import SimulationResult
 
 RESULT_COLUMNS = (
-    "timestamp", "demand_kwh", "solar_generation_kwh", "wind_generation_kwh",
+    "timestamp", "demand_kwh", "critical_demand_kwh", "critical_served_kwh",
+    "critical_unserved_kwh", "solar_generation_kwh", "wind_generation_kwh",
     "renewable_generation_kwh", "battery_soc_kwh", "battery_charge_kwh",
     "battery_discharge_kwh", "grid_import_kwh", "unserved_energy_kwh",
     "curtailed_energy_kwh", "grid_available",
@@ -22,6 +23,9 @@ def export_hourly_results_csv(result: SimulationResult, path: str | Path) -> Non
         for row in result.hourly:
             writer.writerow({
                 "timestamp": row.timestamp.isoformat(), "demand_kwh": row.demand_kwh,
+                "critical_demand_kwh": row.critical_demand_kwh,
+                "critical_served_kwh": row.critical_served_kwh,
+                "critical_unserved_kwh": row.critical_unserved_kwh,
                 "solar_generation_kwh": row.solar_generation_kwh,
                 "wind_generation_kwh": row.wind_generation_kwh,
                 "renewable_generation_kwh": row.renewable_generation_kwh,

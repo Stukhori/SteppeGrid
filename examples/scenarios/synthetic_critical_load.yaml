@@ -1,0 +1,39 @@
+location:
+  name: Synthetic Kazakhstan Test Location
+  latitude: 50.0
+  longitude: 70.0
+  country: Kazakhstan
+start_time: 2026-01-01T00:00:00+00:00
+end_time: 2026-01-02T00:00:00+00:00
+simulation:
+  timestep_hours: 1
+dispatch:
+  outage_load_policy: critical_first
+weather:
+  provider: synthetic
+load:
+  provider: synthetic
+  profile: residential_like
+  scale_factor: 0.75
+  critical_fraction: 0.30
+solar:
+  dc_capacity_kw: 2.0
+  performance_ratio: 0.8
+wind:
+  curve_csv: ../../data/turbine_curves/synthetic_example.csv
+  name: Synthetic demonstration turbine
+  count: 1
+  source: SteppeGrid synthetic example
+  notes: Not commercial, measured, or HelixGen data.
+battery:
+  capacity_kwh: 4.0
+  initial_soc_kwh: 1.0
+  minimum_soc_kwh: 0.0
+  maximum_charge_kw: 2.0
+  maximum_discharge_kw: 2.0
+  charging_efficiency: 0.95
+  discharging_efficiency: 0.95
+grid_available_by_default: true
+outage_schedule:
+  - start: 2026-01-01T18:00:00+00:00
+    end: 2026-01-01T22:00:00+00:00

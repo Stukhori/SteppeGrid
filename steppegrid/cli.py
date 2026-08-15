@@ -9,11 +9,13 @@ from pathlib import Path
 
 from steppegrid.examples.synthetic import synthetic_24_hour_scenario
 from steppegrid.export import export_hourly_results_csv
+from steppegrid.load.csv_provider import CSVLoadProvider, LoadDataError
+from steppegrid.load.inspection import summarize_load
+from steppegrid.load.plots import create_load_plots
 from steppegrid.scenario import ResolvedScenario, load_and_resolve_scenario
 from steppegrid.site.workflow import analyze_pilot_site
 from steppegrid.site.config import PilotSiteConfigError
-from steppegrid.simulation.models import SimulationResult
-from steppegrid.simulation.models import Location
+from steppegrid.simulation.models import LoadDataQuality, Location, SimulationResult
 from steppegrid.simulation.simulator import simulate
 from steppegrid.weather.inspection import summarize_weather
 from steppegrid.weather.open_meteo import OpenMeteoHistoricalWeatherProvider
@@ -24,10 +26,6 @@ def _summary(result: SimulationResult, resolved: ResolvedScenario | None = None)
     location = resolved.scenario.location.name if resolved else "Synthetic demonstration"
     start = result.hourly[0].timestamp
     end = resolved.scenario.end_time if resolved else result.hourly[-1].timestamp + timedelta(hours=1)
-    outage_fraction = (
-        metrics.outage_served_energy_kwh / metrics.outage_demand_kwh
-        if metrics.outage_demand_kwh else 0.0
-    )
     return f"""STEPPEGRID SIMULATION
 
 Location: {location or 'Unnamed location'}
@@ -44,10 +42,13 @@ Curtailed energy:       {metrics.curtailed_energy_kwh:.3f} kWh
 Unserved energy:        {metrics.unserved_energy_kwh:.3f} kWh
 
 RESILIENCE
-Outage demand:           {metrics.outage_demand_kwh:.3f} kWh
-Outage served:           {metrics.outage_served_energy_kwh:.3f} kWh
-Outage unserved:         {metrics.outage_unserved_energy_kwh:.3f} kWh
-Outage load served:      {outage_fraction:.1%}
+Outage total demand:      {metrics.outage_total_demand_kwh:.3f} kWh
+Outage total served:      {metrics.outage_total_served_kwh:.3f} kWh
+Outage total unserved:    {metrics.outage_total_unserved_kwh:.3f} kWh
+Outage critical demand:   {metrics.outage_critical_demand_kwh:.3f} kWh
+Outage critical served:   {metrics.outage_critical_served_kwh:.3f} kWh
+Outage critical unserved: {metrics.outage_critical_unserved_kwh:.3f} kWh
+Critical load served:     {metrics.critical_load_served_fraction:.1%}
 
 RENEWABLES
 Renewable fraction:      {metrics.renewable_fraction:.1%}"""
@@ -63,6 +64,7 @@ def _json_output(result: SimulationResult, resolved: ResolvedScenario | None) ->
                 "end": resolved.scenario.end_time.isoformat(),
             },
             "weather_provenance": resolved.weather_provenance.model_dump(mode="json"),
+            "load_provenance": resolved.load_provenance.model_dump(mode="json"),
         })
     return json.dumps(payload, indent=2)
 
@@ -89,6 +91,21 @@ def build_parser() -> argparse.ArgumentParser:
     fetch_parser.add_argument("--model", choices=("era5",), default="era5")
     fetch_parser.add_argument("--cache-dir", type=Path, default=Path("data/weather/cache"))
     fetch_parser.add_argument("--refresh", action="store_true")
+
+    load_parser = subparsers.add_parser("load", help="inspect electricity-load data")
+    load_subparsers = load_parser.add_subparsers(dest="load_command", required=True)
+    inspect_parser = load_subparsers.add_parser(
+        "inspect", help="validate and summarize an hourly load CSV"
+    )
+    inspect_parser.add_argument("--file", required=True, type=Path)
+    inspect_parser.add_argument(
+        "--quality",
+        choices=tuple(quality.value for quality in LoadDataQuality),
+        default=LoadDataQuality.UNSPECIFIED.value,
+        help="evidence classification supplied by the user",
+    )
+    inspect_parser.add_argument("--source")
+    inspect_parser.add_argument("--plots-dir", type=Path)
 
     site_parser = subparsers.add_parser("site", help="pilot-site analysis workflows")
     site_subparsers = site_parser.add_subparsers(dest="site_command", required=True)
@@ -139,6 +156,50 @@ Maximum temperature: {summary.maximum_temperature_c:.3f} degC
 Missing records: {summary.missing_records}"""
 
 
+def _load_summary(dataset) -> str:
+    provenance = dataset.provenance
+    summary = summarize_load(dataset)
+    critical_energy = (
+        f"{summary.critical_energy_kwh:.3f} kWh"
+        if summary.critical_energy_kwh is not None
+        else "not supplied"
+    )
+    critical_fraction = (
+        f"{summary.critical_fraction_of_energy:.1%}"
+        if summary.critical_fraction_of_energy is not None
+        else "not supplied"
+    )
+    monthly = "\n".join(
+        f"  {month}: {energy:.3f} kWh"
+        for month, energy in summary.monthly_energy_kwh.items()
+    )
+    daily_values = list(summary.daily_energy_kwh.values())
+    return f"""STEPPEGRID LOAD DATA
+
+Source: {provenance.source}
+Source type: {provenance.source_type.value}
+Data quality: {provenance.data_quality.value}
+Period: {provenance.start_time.isoformat()} -> {provenance.end_time.isoformat()} (end exclusive)
+Hourly records: {summary.records}
+Scaling factor: {provenance.scaling_factor:g}
+Critical-load method: {provenance.critical_load_method or 'not supplied'}
+
+INSPECTION
+Total energy: {summary.total_energy_kwh:.3f} kWh
+Average hourly load: {summary.average_hourly_load_kwh:.3f} kWh
+Peak hourly load: {summary.peak_hourly_load_kwh:.3f} kWh
+Peak timestamp: {summary.peak_timestamp}
+Critical energy: {critical_energy}
+Critical fraction of energy: {critical_fraction}
+Missing hours: {summary.missing_hours}
+Duplicate timestamps: {summary.duplicate_timestamps}
+Daily energy range: {min(daily_values):.3f} -> {max(daily_values):.3f} kWh
+Average daily energy: {sum(daily_values) / len(daily_values):.3f} kWh
+
+MONTHLY ENERGY
+{monthly}"""
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv)
@@ -161,6 +222,19 @@ def main(argv: list[str] | None = None) -> None:
             refresh=args.refresh,
         )
         print(_weather_summary(dataset))
+        return
+    if args.command == "load" and args.load_command == "inspect":
+        try:
+            dataset = CSVLoadProvider(
+                args.file,
+                source=args.source,
+                data_quality=LoadDataQuality(args.quality),
+            ).read()
+            if args.plots_dir:
+                create_load_plots(dataset, args.plots_dir)
+        except (LoadDataError, RuntimeError) as error:
+            parser.error(str(error))
+        print(_load_summary(dataset))
         return
     if args.command == "site" and args.site_command == "analyze":
         try:

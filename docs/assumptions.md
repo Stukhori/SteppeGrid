@@ -5,8 +5,11 @@ Every consequential assumption should become configurable or supported by a cite
 | Area | Current assumption | Status / required evidence |
 |---|---|---|
 | Time | Consecutive fixed one-hour intervals; power is constant within each interval | Configurable sub-hourly duration is future work |
-| Timezone | The engine accepts timezone-aware or naive datetimes but requires exact equality | Require timezone-aware inputs before real ingestion |
-| Load | Input demand is interval energy in kWh | No representative demand values supplied |
+| Timezone | CSV load requires one explicit, consistent UTC offset; combined series require identical ISO timestamp representations | Other constructors can still create naive timestamps for legacy tests |
+| Load | Total and critical demand are interval energy in kWh | No representative demand values supplied or inferred |
+| Load quality | User selects an evidence classification retained in provenance | `UNSPECIFIED` is the safe default for unattributed CSV or legacy inline data |
+| Load scaling | One factor scales total and critical series identically | Annual targets require one complete calendar year |
+| Critical fraction | A configured fraction is constant for every hour | An assumption, never classified as measured critical demand |
 | Missing data | Any missing/misaligned hour is an error | Keep; future cleaning must be explicit upstream |
 | Weather CSV | Required normalized units are m/s, W/m2, and degC | Upstream conversions must be recorded in provenance |
 | Historical source | Open-Meteo ERA5 is reanalysis associated with a selected grid cell | Not a local station measurement |
@@ -28,7 +31,7 @@ Every consequential assumption should become configurable or supported by a cite
 | Battery SOC | `capacity_kwh` is maximum SOC; `minimum_soc_kwh` is inaccessible reserve | Configurable now |
 | Battery provenance | Initial SOC and all battery discharge count as renewable for renewable fraction | Replace with energy-origin tracking |
 | Grid | Unlimited import power when available; no export | Add limits, export, prices, and emissions later |
-| Dispatch | Renewable-first fixed dispatch with no forecasting | Make policy modular when alternatives exist |
+| Dispatch | Renewable-first total dispatch with no forecasting; critical service uses proportional or within-hour critical-first accounting | No inter-hour reservation or optimized shedding |
 | Outage | Boolean availability is known for each hour | Scheduled and stochastic generation are future work |
 | Costs/emissions | Not calculated | Requires sourced, dated, configurable inputs |
 | Location | Coordinates identify scenario context; synthetic weather does not use them physically | Historical providers must describe spatial resolution |
