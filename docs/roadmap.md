@@ -12,12 +12,19 @@
 
 ## Phase 1: trustworthy data interfaces
 
-- Add provenance schemas for measured and external datasets.
-- Build separate importers for weather, load, and turbine curves.
-- Enforce timezone-aware timestamps and document resampling rules.
+- [x] Add load provenance, evidence-quality classification, and strict CSV ingestion.
+- [x] Add total and critical hourly load with deterministic synthetic providers.
+- [x] Add primitive total and critical outage-service metrics.
+- [x] Add a literature-derived monthly benchmark with source-integrity reporting.
+- [x] Add deterministic monthly-to-hourly reconstruction and shape sensitivity.
+- [x] Pair Rodina reconstructions with a verified site anchor and timezone-correct ERA5 year.
+- [x] Add raw resource-demand timing diagnostics for all Rodina hourly assumptions.
+- Validate the cached Open-Meteo ERA5 provider against independent data.
+- Enforce timezone-aware timestamps in every legacy/internal constructor; CSV load already does.
 - Establish validated Kazakhstan weather sources and location metadata.
-- Add critical and non-critical load series without silently deriving either.
 - Add dataset licenses, citations, uncertainty, and quality flags.
+- Add a scientifically justified 10 m wind to turbine hub-height adjustment.
+- Add direct `CopernicusERA5LandProvider` access for independent validation and citation.
 
 ## Phase 2: model validation
 
@@ -27,6 +34,7 @@
 - Add grid import/export limits, tariffs, and time-varying carbon intensity.
 - Track stored-energy provenance for defensible renewable-fraction reporting.
 - Add regression fixtures from source-attributed field or benchmark data.
+- Apply the pilot-site workflow to a user-supplied rural Kazakhstan village and review the annual report.
 
 ## Phase 3: scenario analysis
 

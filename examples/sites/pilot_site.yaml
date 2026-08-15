@@ -1,0 +1,16 @@
+site:
+  name: Shamshi Kaldayakova
+  district: Kargaly District
+  region: Aktobe Region
+  latitude: 50.578333
+  longitude: 57.544722
+  country: Kazakhstan
+
+weather:
+  provider: open-meteo
+  model: era5
+  start_date: 2025-01-01
+  end_date: 2026-01-01
+  cache_directory: ../../data/weather/cache
+
+output_directory: ../../outputs/pilot_site

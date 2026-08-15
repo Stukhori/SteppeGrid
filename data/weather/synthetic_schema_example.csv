@@ -1,0 +1,3 @@
+timestamp,wind_speed_m_s,solar_irradiance_w_m2,temperature_c
+2026-01-01T00:00:00+00:00,5.0,0,-10.0
+2026-01-01T01:00:00+00:00,5.2,0,-10.5

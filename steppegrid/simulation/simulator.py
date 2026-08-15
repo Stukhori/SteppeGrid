@@ -12,9 +12,20 @@ TIMESTEP_HOURS = 1.0
 def simulate(inputs: SimulationInput) -> SimulationResult:
     battery = BatteryState(inputs.battery)
     hourly: list[HourlyResult] = []
+    total_load = (
+        inputs.load.total_load_kwh
+        if hasattr(inputs.load, "total_load_kwh")
+        else inputs.load.demand_kwh
+    )
+    critical_load = (
+        inputs.load.critical_load_kwh
+        if hasattr(inputs.load, "critical_load_kwh")
+        else inputs.load.critical_demand_kwh
+    )
 
     for index, timestamp in enumerate(inputs.load.timestamps):
-        demand_kwh = inputs.load.demand_kwh[index]
+        demand_kwh = total_load[index]
+        critical_demand_kwh = critical_load[index] if critical_load is not None else 0.0
         solar_kwh = solar_output_kw(
             inputs.weather.solar_irradiance_w_m2[index], inputs.solar_array
         ) * TIMESTEP_HOURS
@@ -35,11 +46,22 @@ def simulate(inputs: SimulationInput) -> SimulationResult:
         grid_import_kwh = remaining_deficit_kwh if grid_available else 0.0
         unserved_kwh = remaining_deficit_kwh - grid_import_kwh
         curtailed_kwh = surplus_kwh - charge.bus_energy_kwh
+        served_kwh = demand_kwh - unserved_kwh
+        if inputs.outage_load_policy == "critical_first" and not grid_available:
+            critical_served_kwh = min(critical_demand_kwh, served_kwh)
+        else:
+            critical_served_kwh = (
+                critical_demand_kwh * served_kwh / demand_kwh if demand_kwh else 0.0
+            )
+        critical_unserved_kwh = critical_demand_kwh - critical_served_kwh
 
         hourly.append(
             HourlyResult(
                 timestamp=timestamp,
                 demand_kwh=demand_kwh,
+                critical_demand_kwh=critical_demand_kwh,
+                critical_served_kwh=critical_served_kwh,
+                critical_unserved_kwh=critical_unserved_kwh,
                 solar_generation_kwh=solar_kwh,
                 wind_generation_kwh=wind_kwh,
                 renewable_generation_kwh=renewable_kwh,
