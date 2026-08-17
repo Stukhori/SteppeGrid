@@ -26,7 +26,8 @@ PROFILE_LABELS = {
 }
 
 SHAMSHI_STATUS = (
-    "Shamshi Kaldayakova, Aktobe Region, Kazakhstan — weather support available; real "
-    "electricity-demand data pending; optimization unavailable. No Rodina or synthetic demand "
-    "is substituted, and no Shamshi optimization has been performed."
+    "Shamshi Kaldayakova, Aktobe Region, Kazakhstan — cached ERA5 weather is available. "
+    "No default electricity demand is assumed. Phase 14 planning is enabled only after the "
+    "user explicitly supplies an estimate, proxy, monthly series, or hourly CSV; resulting "
+    "runs are estimated-demand planning scenarios, not field optima."
 )

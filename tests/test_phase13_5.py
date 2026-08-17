@@ -24,8 +24,8 @@ def test_semantic_palette_and_glossary_cover_core_concepts():
     assert COLORS["wind"] != COLORS["solar"] != COLORS["storage"]
     assert {"served_energy", "lpsp", "lolh", "npc", "eac", "curtailment", "capacity_factor", "poa", "binding_profile"} == GLOSSARY.keys()
     assert "not the percentage of uninterrupted hours" in GLOSSARY["served_energy"]
-    assert "Optimization disabled" not in SHAMSHI_STATUS
-    assert "optimization unavailable" in SHAMSHI_STATUS
+    assert "No default electricity demand is assumed" in SHAMSHI_STATUS
+    assert "estimated-demand planning scenarios" in SHAMSHI_STATUS
 
 
 def test_design_comparison_is_calculated_from_frozen_values():

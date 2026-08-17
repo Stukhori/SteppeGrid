@@ -2,12 +2,25 @@
 
 SteppeGrid is an open-source research software project for studying renewable-energy resilience in rural Kazakhstan. It provides a deterministic hourly model of load, solar PV, empirical wind-turbine output, battery storage, grid availability, curtailment, and unserved energy. Location-aware scenarios can use strict hourly CSV weather, deterministic synthetic weather, or cached ERA5 historical reanalysis from Open-Meteo.
 
+## Interactive Planning
+
+The application now has two modes: `Explore Benchmark` preserves the frozen Rodina research results, while `Plan a System` creates isolated user scenarios. To use it:
+
+1. Install and launch with `python -m pip install -e ".[app]"` and `streamlit run app.py`.
+2. Choose `Plan a System`.
+3. Select Rodina, Shamshi, or custom coordinates.
+4. Provide explicit annual/monthly demand, reuse Rodina benchmark demand, or upload `timestamp,demand_kwh` hourly CSV data.
+5. Choose 95% or 99% annual served energy and allowed catalog technologies.
+6. Review provenance/weather coverage, then press **Run Planner**.
+
+Estimated, proxy-derived, reconstructed, synthetic, and user-provided demand can all drive the same physical optimization, but their evidence class remains visible in the UI and exports. No default Shamshi demand is invented. A planning scenario is not a field-validated optimum, and annual served-energy fraction is not uptime. See [the Phase 14 planner guide](docs/phase14_scenario_planner.md).
+
 ## Current research status
 
-Phases 1–13 of the Rodina benchmark are complete. The final validation layer records provenance,
+Phases 1–14 are complete; the Rodina benchmark remains frozen through its Phase 12 validation. The final validation layer records provenance,
 checks the aligned 8,760-hour reconstruction, reproduces the selected 95%/99% designs without a new
-optimizer search, and consolidates publication-style tables and figures. Phase 13 adds a read-only
-interactive planning application over those frozen results.
+optimizer search, and consolidates publication-style tables and figures. Phase 13/13.5 provides the
+benchmark explorer, and Phase 14 adds isolated user-defined planning scenarios.
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\run_phase12.py --mode verify
@@ -17,8 +30,8 @@ interactive planning application over those frozen results.
 Final artifacts live in `outputs/benchmarks/rodina/phase12/`; reproduction details are in
 [the Rodina reproduction guide](docs/reproducing_rodina_results.md). Rodina hourly demand is
 reconstructed rather than measured, and annual served-energy fraction is not uptime. A future
-Shamshi field case remains contingent on obtaining real electricity-demand data; no Shamshi
-optimization is currently reported.
+Shamshi field validation remains contingent on obtaining measured electricity-demand data. Phase 14
+can model Shamshi only from an explicit user estimate/proxy/upload, labeled as a planning scenario.
 
 Launch the interactive MVP:
 
@@ -28,11 +41,9 @@ streamlit run app.py
 ```
 
 The polished analytical app compares the frozen 95% and 99% designs and explores demand, weather,
-generation, hourly dispatch, reliability, economics, sensitivity, assumptions, and provenance. It
-never runs an optimizer. See [the Phase 13 application guide](docs/phase13_application.md) and
+generation, hourly dispatch, reliability, economics, sensitivity, assumptions, and provenance.
+Benchmark navigation never runs an optimizer; only the explicit Phase 14 planner action does. See [the Phase 13 application guide](docs/phase13_application.md) and
 [the Phase 13.5 UI/UX guide](docs/phase13_5_ui_ux.md).
-
-Shamshi optimization will be enabled only after real demand data are available.
 
 No included inputs are claimed to represent a Kazakh village, a commercial turbine, or HelixGen. The bundled scenario and turbine curve are synthetic demonstration data.
 
@@ -44,6 +55,8 @@ steppegrid/
   weather/          provider interface and synthetic/CSV/Open-Meteo providers
   load/             provider interface, strict CSV/synthetic load, scaling, inspection
   benchmarks/       literature-source integrity and monthly load reconstruction
+  planning/          typed scenarios, demand workflows, generalized sizing, isolated exports
+  app/               benchmark explorer and Phase 14 planning UI components
   data/             source-data loaders such as turbine-curve CSV parsing
   examples/         explicitly synthetic input construction
   scenario.py       serializable YAML/JSON scenario resolution

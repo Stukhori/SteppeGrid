@@ -1,5 +1,9 @@
 # Phase 13 interactive planning application
 
+> Historical phase note: this document describes the read-only Phase 13 release. Phase 14 now adds
+> the separate `Plan a System` workflow; the frozen explorer described here remains intact. See
+> [the Phase 14 planner guide](phase14_scenario_planner.md).
+
 Phase 13 adds a Streamlit application over the frozen Phase 9–12 Rodina benchmark. It does not
 change the scientific model, rerun optimization, or add a Shamshi result. The interface is a
 research-results explorer, not an investment or equipment-selection tool.

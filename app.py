@@ -19,8 +19,10 @@ from steppegrid.app.components import (
 from steppegrid.app.data import AppDataError
 from steppegrid.app.formatting import RECONSTRUCTION_NOTICE, SCENARIO_NOTICE, energy, money, percent, power, readable
 from steppegrid.app.services import PlanningService
+from steppegrid.app.planner import render_planner
 from steppegrid.app.state import NAVIGATION, PROFILE_LABELS, SHAMSHI_STATUS, TARGET_LABELS
 from steppegrid.app.theme import COLORS, apply_theme
+from steppegrid.planning.service import ScenarioPlanningService
 
 st.set_page_config(page_title="SteppeGrid | Rodina Benchmark", page_icon="⚡", layout="wide", initial_sidebar_state="expanded")
 apply_theme()
@@ -29,6 +31,11 @@ apply_theme()
 @st.cache_resource
 def service() -> PlanningService:
     return PlanningService()
+
+
+@st.cache_resource
+def scenario_service() -> ScenarioPlanningService:
+    return ScenarioPlanningService()
 
 
 def target_selector(key: str) -> float:
@@ -50,12 +57,12 @@ def overview(api: PlanningService) -> None:
         f"Rodina benchmark · {site['region']} · 2025 ERA5 · {energy(demand['monthly_rows_reconstructed_annual_kwh'])} reconstructed demand",
         [("VALIDATED", "success"), ("RECONSTRUCTED DEMAND", "warning"), ("ERA5 WEATHER", "info"), ("FROZEN BENCHMARK", "success")],
     )
-    section_header("Study status", "One completed literature benchmark and one deliberately unavailable field case.")
+    section_header("Study status", "One completed literature benchmark and one explicit-estimate planning site.")
     left, right = st.columns(2)
     with left:
         site_status("Rodina, Akmola Region", "BENCHMARK COMPLETE", ["Data: reconstructed demand + cached ERA5 weather", "Optimization: frozen 95% and 99% designs available"])
     with right:
-        site_status("Shamshi Kaldayakova, Aktobe Region", "FIELD CASE PENDING", ["Weather support: available", "Demand: unavailable · Optimization: disabled"], pending=True)
+        site_status("Shamshi Kaldayakova, Aktobe Region", "ESTIMATE WORKFLOW ENABLED", ["Weather: ERA5 support available", "Demand: user estimate, proxy, monthly totals, or hourly CSV required"], pending=True)
 
     section_header("The result in one view", "Annual served energy is an energy metric—not uptime.")
     for column, design, label in zip(st.columns(2), (lower, higher), ("95% DESIGN", "99% DESIGN"), strict=True):
@@ -321,20 +328,38 @@ ROUTES = {
 
 if "active_page" not in st.session_state:
     st.session_state.active_page = "Overview"
+if "app_mode" not in st.session_state:
+    st.session_state.app_mode = "Explore Benchmark"
 with st.sidebar:
     st.markdown("## ⚡ SteppeGrid")
-    st.caption("EXPLORE BENCHMARK · RODINA")
-    for group, pages in NAVIGATION.items():
-        st.markdown(f'<div class="sg-nav-group">{group}</div>', unsafe_allow_html=True)
-        for name in pages:
-            if st.button(name, key=f"nav_{name}", type="primary" if st.session_state.active_page == name else "tertiary", width="stretch"):
-                st.session_state.active_page = name
-                st.rerun()
-    st.divider(); sidebar_status()
-    st.caption("Plan a System · Phase 14 not enabled")
+    left, right = st.columns(2)
+    with left:
+        if st.button("Explore", type="primary" if st.session_state.app_mode == "Explore Benchmark" else "tertiary", width="stretch"):
+            st.session_state.app_mode = "Explore Benchmark"
+            st.rerun()
+    with right:
+        if st.button("Plan", type="primary" if st.session_state.app_mode == "Plan a System" else "tertiary", width="stretch"):
+            st.session_state.app_mode = "Plan a System"
+            st.rerun()
+    if st.session_state.app_mode == "Explore Benchmark":
+        st.caption("EXPLORE BENCHMARK · RODINA")
+        for group, pages in NAVIGATION.items():
+            st.markdown(f'<div class="sg-nav-group">{group}</div>', unsafe_allow_html=True)
+            for name in pages:
+                if st.button(name, key=f"nav_{name}", type="primary" if st.session_state.active_page == name else "tertiary", width="stretch"):
+                    st.session_state.active_page = name
+                    st.rerun()
+        st.divider()
+        sidebar_status()
+    else:
+        st.caption("PLAN A SYSTEM · USER SCENARIO")
+        st.info("Demand is always explicit. User scenarios are isolated from frozen benchmark outputs.")
 
 try:
-    ROUTES[st.session_state.active_page](service())
+    if st.session_state.app_mode == "Plan a System":
+        render_planner(scenario_service())
+    else:
+        ROUTES[st.session_state.active_page](service())
 except AppDataError as error:
     st.error(str(error))
     st.code("python scripts/run_phase12.py --mode verify", language="powershell")

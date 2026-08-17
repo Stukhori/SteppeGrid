@@ -148,21 +148,40 @@ def benchmark_wind(weather: WeatherDataset, *, shear_exponent: float) -> tuple[d
     return results,profiles
 
 
-def _poa(weather: WeatherDataset) -> list[float]:
+def _poa(
+    weather: WeatherDataset,
+    *,
+    latitude: float = REFERENCE_TILT_DEG,
+    longitude: float = 70.541645,
+    tilt_deg: float | None = None,
+    azimuth_deg: float | None = None,
+) -> list[float]:
     series=weather.series
+    tilt = abs(latitude) if tilt_deg is None else tilt_deg
+    azimuth = (REFERENCE_AZIMUTH_DEG if latitude >= 0 else 0.0) if azimuth_deg is None else azimuth_deg
     times=pd.DatetimeIndex([t-timedelta(minutes=30) for t in series.timestamps])
-    pos=pvlib.solarposition.get_solarposition(times,REFERENCE_TILT_DEG,70.541645)
+    pos=pvlib.solarposition.get_solarposition(times,latitude,longitude)
     ghi=pd.Series(series.solar_irradiance_w_m2,index=times)
     dni=pd.Series(series.direct_normal_irradiance_w_m2,index=times)
     dhi=pd.Series(series.diffuse_radiation_w_m2,index=times)
-    poa=pvlib.irradiance.get_total_irradiance(REFERENCE_TILT_DEG,REFERENCE_AZIMUTH_DEG,
+    poa=pvlib.irradiance.get_total_irradiance(tilt,azimuth,
         pos.apparent_zenith,pos.azimuth,dni,ghi,dhi,model="isotropic")
     return [max(0,float(v)) for v in poa["poa_global"]]
 
 
-def benchmark_pv(weather: WeatherDataset) -> tuple[dict[str,dict],dict[str,list[float]]]:
-    timestamps=[t.astimezone(timezone(timedelta(hours=5))) for t in weather.series.timestamps]
-    poa=_poa(weather); results={}; profiles={}
+def benchmark_pv(
+    weather: WeatherDataset,
+    *,
+    latitude: float = REFERENCE_TILT_DEG,
+    longitude: float = 70.541645,
+    tilt_deg: float | None = None,
+    azimuth_deg: float | None = None,
+    timezone_offset_hours: float = 5,
+) -> tuple[dict[str,dict],dict[str,list[float]]]:
+    tilt = abs(latitude) if tilt_deg is None else tilt_deg
+    azimuth = (REFERENCE_AZIMUTH_DEG if latitude >= 0 else 0.0) if azimuth_deg is None else azimuth_deg
+    timestamps=[t.astimezone(timezone(timedelta(hours=timezone_offset_hours))) for t in weather.series.timestamps]
+    poa=_poa(weather, latitude=latitude, longitude=longitude, tilt_deg=tilt, azimuth_deg=azimuth); results={}; profiles={}
     for module_key,module in PV_MODULES.items():
         cell=[ta+(module.noct_c-20)/800*g for ta,g in zip(weather.series.temperature_c,poa,strict=True)]
         for inverter_key,inverter in INVERTERS.items():
@@ -177,8 +196,8 @@ def benchmark_pv(weather: WeatherDataset) -> tuple[dict[str,dict],dict[str,list[
             annual_dc,annual_ac=math.fsum(dc),math.fsum(ac)
             results[key]={"module":module.model,"inverter":inverter.model,"module_count":count,
                 "dc_capacity_kw":dc_capacity,"ac_capacity_kw":inverter.rated_ac_power_kw,
-                "dc_ac_ratio":dc_capacity/inverter.rated_ac_power_kw,"tilt_deg":REFERENCE_TILT_DEG,
-                "azimuth_deg":REFERENCE_AZIMUTH_DEG,"annual_poa_kwh_m2":math.fsum(poa)/1000,
+                "dc_ac_ratio":dc_capacity/inverter.rated_ac_power_kw,"tilt_deg":tilt,
+                "azimuth_deg":azimuth,"annual_poa_kwh_m2":math.fsum(poa)/1000,
                 "annual_dc_kwh":annual_dc,"annual_ac_kwh":annual_ac,
                 "dc_specific_yield_kwh_per_kwp":annual_dc/dc_capacity,
                 "ac_specific_yield_kwh_per_kwp":annual_ac/dc_capacity,

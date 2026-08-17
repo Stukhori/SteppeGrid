@@ -1,5 +1,9 @@
 # Phase 13.5 UI/UX redesign
 
+> Historical phase note: this document describes the Phase 13.5 release boundary. Phase 14 now
+> enables explicit-estimate planning, including Shamshi scenarios, while preserving this benchmark
+> explorer. See [the Phase 14 planner guide](phase14_scenario_planner.md).
+
 Phase 13.5 turns the functional Streamlit MVP into a coherent analytical product while preserving
 the frozen Phase 9–12 scientific pipeline and all Phase 13 capabilities. It introduces no new
 scientific methodology, optimization, sensitivity scenarios, or field-case claims.

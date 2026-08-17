@@ -35,7 +35,7 @@ class RenewablePortfolio:
 
 def scale_trace(portfolio: RenewablePortfolio, wind: Mapping[str, Sequence[float]],
                 pv: Mapping[str, Sequence[float]]) -> list[float]:
-    source = next(iter(wind.values()), next(iter(pv.values())))
+    source = next(iter(wind.values())) if wind else next(iter(pv.values()))
     zeros = [0.0] * len(source)
     wt = wind[portfolio.wind_key] if portfolio.wind_key else zeros
     pt = pv[portfolio.pv_key] if portfolio.pv_key else zeros

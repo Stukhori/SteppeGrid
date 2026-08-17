@@ -32,7 +32,8 @@ def test_app_terminology_preserves_research_limits():
     assert "not uptime" in RECONSTRUCTION_NOTICE
     assert "not confidence intervals" in SCENARIO_NOTICE
     assert "not global re-optimization" in SCENARIO_NOTICE
-    assert "no Shamshi optimization" in SHAMSHI_STATUS
+    assert "No default electricity demand is assumed" in SHAMSHI_STATUS
+    assert "not field optima" in SHAMSHI_STATUS
 
 
 def test_adaptation_metadata_is_unambiguous():
