@@ -77,7 +77,7 @@ def comparison_table(rows: list[dict]) -> None:
 def audit_status(checks: int, blockers: int, warnings: int, tests: int) -> None:
     cols = st.columns(4)
     cols[0].metric("Validation checks", checks); cols[1].metric("Correctness blockers", blockers)
-    cols[2].metric("Scope warnings", warnings); cols[3].metric("Phase 12 tests", tests)
+    cols[2].metric("Scope warnings", warnings); cols[3].metric("Regression tests", tests)
 
 
 def limitations(groups: Mapping[str, Iterable[str]]) -> None:
@@ -87,8 +87,8 @@ def limitations(groups: Mapping[str, Iterable[str]]) -> None:
 
 
 def sidebar_status() -> None:
-    st.markdown('<div class="sg-sidebar-status"><b>RODINA BENCHMARK</b><span>Validated · Frozen through Phase 12</span></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sg-sidebar-status"><b>SHAMSHI</b><span>Demand pending · Optimization disabled</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="sg-sidebar-status"><b>RODINA BENCHMARK</b><span>Validated · 95% and 99% results</span></div>', unsafe_allow_html=True)
+    st.markdown('<div class="sg-sidebar-status sg-featured-site"><b>MY VILLAGE</b><span>Shamshi Kaldayakova · 95% result</span></div>', unsafe_allow_html=True)
 
 
 def design_comparison_rows(lower: dict, higher: dict) -> list[dict]:

@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "steppegrid"
-version = "0.1.0"
-description = "Transparent hourly renewable-energy resilience simulation core"
+version = "1.0.0"
+description = "Renewable microgrid planning for rural Kazakhstan"
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }

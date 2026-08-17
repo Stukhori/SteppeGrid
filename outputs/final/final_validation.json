@@ -1,0 +1,223 @@
+{
+  "schema_version": "steppegrid.final-validation.v1",
+  "version": "1.0.0",
+  "checks": [
+    {
+      "check": "seven_production_sites",
+      "status": "PASS",
+      "message": "Found 7 production sites"
+    },
+    {
+      "check": "weather_katon_karagay",
+      "status": "PASS",
+      "message": "Cached weather file present"
+    },
+    {
+      "check": "weather_metadata_katon_karagay",
+      "status": "PASS",
+      "message": "Weather SHA-256 metadata valid"
+    },
+    {
+      "check": "demand_hash_katon_karagay",
+      "status": "PASS",
+      "message": "Demand hash retained"
+    },
+    {
+      "check": "source_metadata_katon_karagay",
+      "status": "PASS",
+      "message": "Source metadata retained"
+    },
+    {
+      "check": "weather_kegen",
+      "status": "PASS",
+      "message": "Cached weather file present"
+    },
+    {
+      "check": "weather_metadata_kegen",
+      "status": "PASS",
+      "message": "Weather SHA-256 metadata valid"
+    },
+    {
+      "check": "demand_hash_kegen",
+      "status": "PASS",
+      "message": "Demand hash retained"
+    },
+    {
+      "check": "source_metadata_kegen",
+      "status": "PASS",
+      "message": "Source metadata retained"
+    },
+    {
+      "check": "weather_rodina",
+      "status": "PASS",
+      "message": "Cached weather file present"
+    },
+    {
+      "check": "weather_metadata_rodina",
+      "status": "PASS",
+      "message": "Weather SHA-256 metadata valid"
+    },
+    {
+      "check": "demand_hash_rodina",
+      "status": "PASS",
+      "message": "Demand hash retained"
+    },
+    {
+      "check": "source_metadata_rodina",
+      "status": "PASS",
+      "message": "Source metadata retained"
+    },
+    {
+      "check": "weather_sai_otes",
+      "status": "PASS",
+      "message": "Cached weather file present"
+    },
+    {
+      "check": "weather_metadata_sai_otes",
+      "status": "PASS",
+      "message": "Weather SHA-256 metadata valid"
+    },
+    {
+      "check": "demand_hash_sai_otes",
+      "status": "PASS",
+      "message": "Demand hash retained"
+    },
+    {
+      "check": "source_metadata_sai_otes",
+      "status": "PASS",
+      "message": "Source metadata retained"
+    },
+    {
+      "check": "weather_shamshi_kaldayakova",
+      "status": "PASS",
+      "message": "Cached weather file present"
+    },
+    {
+      "check": "weather_metadata_shamshi_kaldayakova",
+      "status": "PASS",
+      "message": "Weather SHA-256 metadata valid"
+    },
+    {
+      "check": "demand_hash_shamshi_kaldayakova",
+      "status": "PASS",
+      "message": "Demand hash retained"
+    },
+    {
+      "check": "source_metadata_shamshi_kaldayakova",
+      "status": "PASS",
+      "message": "Source metadata retained"
+    },
+    {
+      "check": "weather_shayan",
+      "status": "PASS",
+      "message": "Cached weather file present"
+    },
+    {
+      "check": "weather_metadata_shayan",
+      "status": "PASS",
+      "message": "Weather SHA-256 metadata valid"
+    },
+    {
+      "check": "demand_hash_shayan",
+      "status": "PASS",
+      "message": "Demand hash retained"
+    },
+    {
+      "check": "source_metadata_shayan",
+      "status": "PASS",
+      "message": "Source metadata retained"
+    },
+    {
+      "check": "weather_togyzkuduk",
+      "status": "PASS",
+      "message": "Cached weather file present"
+    },
+    {
+      "check": "weather_metadata_togyzkuduk",
+      "status": "PASS",
+      "message": "Weather SHA-256 metadata valid"
+    },
+    {
+      "check": "demand_hash_togyzkuduk",
+      "status": "PASS",
+      "message": "Demand hash retained"
+    },
+    {
+      "check": "source_metadata_togyzkuduk",
+      "status": "PASS",
+      "message": "Source metadata retained"
+    },
+    {
+      "check": "app_data_service",
+      "status": "PASS",
+      "message": "Read-only application data service loaded"
+    },
+    {
+      "check": "rodina_outputs",
+      "status": "PASS",
+      "message": "Rodina 95% and 99% outputs loaded"
+    },
+    {
+      "check": "frozen_audit",
+      "status": "PASS",
+      "message": "Frozen audit reports 0 blockers"
+    },
+    {
+      "check": "shamshi_95",
+      "status": "PASS",
+      "message": "Latest saved Shamshi 95% result loaded"
+    },
+    {
+      "check": "phase17_outputs",
+      "status": "WARNING",
+      "message": "No Phase 17 output package is present; comparisons use latest valid saved results"
+    },
+    {
+      "check": "artifact_README.md",
+      "status": "PASS",
+      "message": "README.md"
+    },
+    {
+      "check": "artifact_steppegrid_final_report.md",
+      "status": "PASS",
+      "message": "docs\\steppegrid_final_report.md"
+    },
+    {
+      "check": "artifact_steppegrid_portfolio_summary.md",
+      "status": "PASS",
+      "message": "docs\\steppegrid_portfolio_summary.md"
+    },
+    {
+      "check": "artifact_steppegrid_research_abstract.md",
+      "status": "PASS",
+      "message": "docs\\steppegrid_research_abstract.md"
+    },
+    {
+      "check": "artifact_steppegrid_plain_language_summary.md",
+      "status": "PASS",
+      "message": "docs\\steppegrid_plain_language_summary.md"
+    },
+    {
+      "check": "artifact_reproduce_steppegrid.md",
+      "status": "PASS",
+      "message": "docs\\reproduce_steppegrid.md"
+    },
+    {
+      "check": "final_figures",
+      "status": "PASS",
+      "message": "Found 9 figures"
+    },
+    {
+      "check": "final_tables",
+      "status": "PASS",
+      "message": "Found 6 tables"
+    }
+  ],
+  "passes": 41,
+  "warnings": 1,
+  "blockers": 0,
+  "site_count": 7,
+  "app_data_status": "PASS",
+  "frozen_benchmark_status": "PASS",
+  "cross_village_output_status": "WARNING"
+}

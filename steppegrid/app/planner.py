@@ -42,14 +42,7 @@ def result_is_stale(result, scenario: PlanningScenario | None) -> bool:
 def _source_configuration(mode: DemandMode) -> tuple[DemandSourceType, DemandConfidence]:
     if mode is DemandMode.RODINA_BENCHMARK:
         return DemandSourceType.SOURCE_RECONSTRUCTED, DemandConfidence.STRONG_SOURCE_RECONSTRUCTION
-    label = st.selectbox(
-        "Demand evidence class",
-        [DemandSourceType.SYNTHETIC_ESTIMATE, DemandSourceType.PROXY_DERIVED],
-        format_func=lambda value: readable(value.value),
-        key="planner_demand_source",
-    )
-    confidence = DemandConfidence.PROXY_ESTIMATE if label is DemandSourceType.PROXY_DERIVED else DemandConfidence.SYNTHETIC_PLANNING_ESTIMATE
-    return label, confidence
+    return DemandSourceType.USER_PROVIDED, DemandConfidence.USER_PROVIDED_UNVERIFIED
 
 
 def _build_inputs(registry: SiteRegistry) -> tuple[PlanningScenario | None, object | None, str | None]:
@@ -115,29 +108,22 @@ def _build_inputs(registry: SiteRegistry) -> tuple[PlanningScenario | None, obje
     registered_specification = None
     if mode == "registered_dataset":
         assert registered_site is not None
-        demand_options = {f"{item.name} · {item.classification.value}": item.demand_id for item in registered_site.demand_datasets}
+        demand_options = {item.name: item.demand_id for item in registered_site.demand_datasets}
         demand_label = st.selectbox("Registered demand dataset", list(demand_options), key="planner_registered_demand")
         demand_id = demand_options[demand_label]
         dataset = registry.get_demand_dataset(registered_site.site_id, demand_id)
         registered_demand_sha256 = dataset.demand_sha256
         registered_specification = registry.demand_specification(registered_site.site_id, demand_id)
         uploaded = registry.build_demand(registered_site.site_id, demand_id)
-        st.caption(
-            f"{dataset.annual_energy_kwh:,.0f} kWh/year · {dataset.classification.value} · "
-            f"SHA-256 {dataset.demand_sha256[:12]}…"
-        )
+        st.caption(f"Annual demand: {energy(dataset.annual_energy_kwh)}")
         source_type, confidence, method = dataset.classification, dataset.confidence, dataset.profile_method
         shape = dataset.profile_shape
     elif mode is DemandMode.RODINA_BENCHMARK:
         source_type, confidence = _source_configuration(mode)
         method = "Frozen Phase 9 literature monthly-row reconstruction"
     elif mode is DemandMode.HOURLY_UPLOAD:
-        source_type = st.selectbox(
-            "Uploaded data classification",
-            [DemandSourceType.USER_PROVIDED, DemandSourceType.MEASURED, DemandSourceType.SOURCE_REPORTED, DemandSourceType.PROXY_DERIVED],
-            format_func=lambda value: readable(value.value),
-        )
-        confidence = DemandConfidence.MEASURED if source_type is DemandSourceType.MEASURED else (DemandConfidence.PROXY_ESTIMATE if source_type is DemandSourceType.PROXY_DERIVED else DemandConfidence.USER_PROVIDED_UNVERIFIED)
+        source_type = DemandSourceType.USER_PROVIDED
+        confidence = DemandConfidence.USER_PROVIDED_UNVERIFIED
         upload = st.file_uploader("Hourly CSV", type="csv", help="Exact columns: timestamp,demand_kwh. Values are kWh per hourly interval.")
         method = st.text_input("Demand method / source note", value="User-uploaded hourly demand CSV")
         if upload is not None:
@@ -310,8 +296,8 @@ def _render_result(run: PlanningRun) -> None:
 def render_planner(api: ScenarioPlanningService, registry: SiteRegistry | None = None) -> None:
     registry = registry or api.registry
     page_header(
-        "Plan a System · Phase 16", "Multi-village scenario planner",
-        "Select a registered site and demand dataset, or use temporary coordinates, then run Planner V2.",
+        "Interactive planning", "Plan a System",
+        "Choose a site, define demand and reliability, select technologies, then review the recommended system.",
         [("USER SCENARIO", "info"), ("ERA5 WEATHER", "info"), ("EXPLICIT RUN", "success")],
     )
     callout("Planning-model boundary", "A result is a modeled planning scenario—not a field-validated optimum, procurement quote, confidence interval, or probability distribution.", "warning")
@@ -323,19 +309,15 @@ def render_planner(api: ScenarioPlanningService, registry: SiteRegistry | None =
         try:
             demand, weather = api.review(scenario, uploaded)
             preview = demand_preview(demand)
-            a, b, c, d, e = st.columns(5)
+            a, b, c, d = st.columns(4)
             with a: metric("Annual demand", energy(float(preview["annual_kwh"])))
             with b: metric("Peak hourly demand", energy(float(preview["peak_hourly_kwh"])))
-            with c: metric("Demand confidence", str(preview["confidence"]))
-            with d: metric("Weather cache", "READY" if weather["cache_available"] else "FETCH ON RUN")
-            with e: metric("Load factor", percent(float(preview["load_factor"]), 1))
+            with c: metric("Weather", "Ready" if weather["cache_available"] else "Prepared on run")
+            with d: metric("Load factor", percent(float(preview["load_factor"]), 1))
             st.bar_chart(pd.DataFrame({"month": MONTHS, "demand_kwh": preview["monthly_kwh"]}).set_index("month"))
             preview_frame = pd.DataFrame({"timestamp": demand.timestamps[:168], "demand_kwh": demand.demand_kwh[:168]}).set_index("timestamp")
             st.line_chart(preview_frame)
             st.caption(f"Scenario ID: `{scenario.scenario_id}` · input SHA-256: `{scenario.input_hash}`")
-            st.caption(f"Demand: {preview['source_type']} · {preview['method']} · SHA-256 `{preview['sha256']}`")
-            if scenario.site.site_classification == "FIELD_CASE":
-                st.info("FIELD_CASE is descriptive only. Synthetic or proxy demand does not make this a field-validated result.")
             if st.button("Run Planner", type="primary", width="stretch"):
                 with st.status("Running planning workflow…", expanded=True) as status:
                     run = api.run(scenario, uploaded, progress=st.write)

@@ -1,0 +1,3 @@
+site,target,served_fraction,unmet_energy_kwh,loss_of_load_hours,longest_deficit_hours
+Rodina,0.95,0.9503758670754928,397985.5460545479,532,41
+Rodina,0.99,0.9900266228605829,79986.48465812563,109,16

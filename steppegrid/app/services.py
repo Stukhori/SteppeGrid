@@ -108,7 +108,7 @@ class PlanningService:
         rows = [row for row in self.repository.rows("fixed_sensitivity")
                 if row["scenario"] == "nominal" and float(row["target"]) == target]
         if not rows:
-            raise AppDataError(f"No nominal Phase 11 replay exists for target {target}")
+            raise AppDataError(f"No saved nominal replay exists for target {target}")
         selected = min(rows, key=lambda row: float(row["served_fraction"]))
         result = dict(selected)
         for key in (

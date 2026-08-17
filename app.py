@@ -1,4 +1,4 @@
-"""SteppeGrid Phase 13.5 analytical application."""
+"""SteppeGrid v1.0 renewable microgrid planning application."""
 
 from __future__ import annotations
 
@@ -20,13 +20,14 @@ from steppegrid.app.data import AppDataError
 from steppegrid.app.formatting import RECONSTRUCTION_NOTICE, SCENARIO_NOTICE, energy, money, percent, power, readable
 from steppegrid.app.services import PlanningService
 from steppegrid.app.planner import render_planner
-from steppegrid.app.sites import render_sites
+from steppegrid.app.sites import render_compare_sites, render_sites
+from steppegrid.app.product import FEATURED_SITE_ID, latest_result, site_rows, weather_summary
 from steppegrid.app.state import NAVIGATION, PROFILE_LABELS, SHAMSHI_STATUS, TARGET_LABELS
 from steppegrid.app.theme import COLORS, apply_theme
 from steppegrid.planning.service import ScenarioPlanningService
 from steppegrid.sites import SiteRegistry
 
-st.set_page_config(page_title="SteppeGrid | Rodina Benchmark", page_icon="⚡", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="SteppeGrid | Rural Kazakhstan Microgrid Planning", page_icon="⚡", layout="wide", initial_sidebar_state="expanded")
 apply_theme()
 
 
@@ -55,7 +56,7 @@ def profile_selector(key: str) -> str:
     return PROFILE_LABELS[label]
 
 
-def overview(api: PlanningService) -> None:
+def rodina_overview(api: PlanningService) -> None:
     manifest = api.provenance(); site = manifest["site"]; demand = manifest["demand"]
     lower, higher = api.design(0.95), api.design(0.99)
     page_header(
@@ -88,7 +89,41 @@ def overview(api: PlanningService) -> None:
 
     section_header("How the benchmark works")
     workflow(("Weather + demand", "Wind / PV models", "Hourly dispatch", "Reliability", "Sizing", "Economics", "Sensitivity"))
-    st.caption("Ordinary navigation reads frozen outputs. It never launches the Phase 10 optimizer or Phase 11/12 pipelines.")
+    st.caption("Normal pages use saved results. Optimization runs only when requested in Plan a System.")
+
+
+def overview(api: PlanningService) -> None:
+    registry = site_registry()
+    sites = registry.list_sites()
+    page_header(
+        "STEPPEGRID · v1.0",
+        "Renewable Microgrid Planning for Rural Kazakhstan",
+        "Explore village electricity demand, hourly weather, wind–solar–battery system design, reliability, and economics across Kazakhstan.",
+        [("7 VILLAGES", "success"), ("8,760 HOURS PER SITE", "info"), ("95% AND 99% TARGETS", "info")],
+    )
+    section_header("Planning platform")
+    workflow(("Weather + demand", "Wind + solar", "Battery dispatch", "Reliability", "Optimization", "Economics", "Site comparison"))
+    shamshi = registry.get_site(FEATURED_SITE_ID)
+    demand = shamshi.demand_datasets[0].annual_energy_kwh
+    resource = weather_summary(shamshi)
+    result = latest_result(FEATURED_SITE_ID, .95)
+    st.markdown('<div class="sg-site-detail sg-featured-site"><span class="sg-featured-badge">MY VILLAGE</span><h2>Shamshi Kaldayakova</h2><p>Aktobe Region</p></div>', unsafe_allow_html=True)
+    a,b,c,d = st.columns(4)
+    with a: metric("Annual demand", energy(demand))
+    with b: metric("Mean modeled wind", f"{resource['mean_wind_100m_m_s']:.2f} m/s")
+    with c: metric("Modeled solar resource", f"{resource['annual_solar_kwh_m2']:,.0f} kWh/m²")
+    with d: metric("Planning targets", "95% available · 99% not available")
+    if result:
+        design, performance, economics_data = result["design"], result["metrics"], result["economics"]
+        section_header("My Village selected system", "Latest saved 95% annual energy served planning result.")
+        w,s,b,e = st.columns(4)
+        with w: metric("Wind", power(design["wind_capacity_kw"]))
+        with s: metric("Solar", f"{power(design['pv_dc_capacity_kw'])} DC")
+        with b: metric("Storage", energy(design["battery_usable_capacity_kwh"]))
+        with e: metric("NPC", money(economics_data["net_present_cost_usd"]))
+        callout("Annual performance", f"This system supplies {percent(performance['served_fraction'], 2)} of modeled annual electricity demand. The longest continuous modeled deficit lasts {performance['longest_deficit_hours']} hours.")
+    section_header("Seven Kazakhstan sites", "Select Sites for maps and village details, or Compare Sites for normalized saved results.")
+    st.dataframe(pd.DataFrame(site_rows(registry))[["Site","Region","Annual demand (GWh/year)","95% result","99% result"]], hide_index=True, width="stretch")
 
 
 def demand_weather(api: PlanningService) -> None:
@@ -145,8 +180,8 @@ def demand_weather(api: PlanningService) -> None:
 
 
 def renewable_generation(api: PlanningService) -> None:
-    page_header("Study · Physical models", "Renewable generation", "Compare the frozen Rodina V1 equipment and inspect frozen Phase 9 modeled output traces.", [("RODINA_FROZEN_V1", "success"), ("CERTIFICATION SOURCES", "success"), ("ERA5-DERIVED SHEAR", "warning")])
-    with st.spinner("Preparing frozen Phase 9 equipment traces…"):
+    page_header("Renewable resources", "Renewable generation", "Compare Rodina Benchmark equipment and inspect saved modeled output traces.", [("RODINA BENCHMARK", "success"), ("EQUIPMENT SOURCES", "success"), ("ERA5 WEATHER", "info")])
+    with st.spinner("Loading saved equipment traces…"):
         wind_rows, pv_rows = api.generation_catalog()
     wind, pv = pd.DataFrame(wind_rows), pd.DataFrame(pv_rows)
     section_header("Wind equipment", "Annual energy and capacity factor are shown separately so rated scale remains explicit.")
@@ -175,9 +210,9 @@ def renewable_generation(api: PlanningService) -> None:
 
 
 def system_design(api: PlanningService) -> None:
-    page_header("Planning · Frozen portfolios", "System design", "Explore the two final robust designs and replay their hourly dispatch without running an optimizer.", [("RODINA_FROZEN_V1", "success"), ("PHASE 10 DESIGN", "success"), ("REPLAY ONLY", "info")])
+    page_header("Planning results", "System design", "Explore the two Rodina Benchmark designs and their hourly dispatch.", [("RODINA BENCHMARK", "success"), ("SAVED DESIGN", "success")])
     target = target_selector("design_target"); design = api.design(target); summary = api.nominal_dispatch_summary(target)
-    section_header(f"{target:.0%} annual served-energy target", "Least-cost feasible robust design from the frozen Phase 10 staged discrete search.")
+    section_header(f"{target:.0%} annual served-energy target", "Selected least-cost feasible design from the saved discrete search.")
     wind_col, solar_col, storage_col = st.columns(3)
     with wind_col: design_card("WIND", f"{design['wind_count']} × {readable(design['wind_key'])}", power(design["installed_wind_kw"]), "Installed commercial-turbine capacity")
     with solar_col: design_card("SOLAR", f"{design['pv_count']} PV blocks", f"{power(design['installed_pv_ac_kw'])} AC", f"{power(design['installed_pv_dc_kw'])} DC")
@@ -251,7 +286,7 @@ def reliability(api: PlanningService) -> None:
 
 
 def economics(api: PlanningService) -> None:
-    page_header("Planning · Reference economics", "Economics", "Compare frozen planning-cost results without implying contractor bids or procurement quotations.", [("PHASE 10 ASSUMPTIONS", "success"), ("COMPARATIVE ESTIMATE", "warning")])
+    page_header("Planning economics", "Economics", "Compare planning-cost results for the Rodina Benchmark.", [("REFERENCE COSTS", "success"), ("PLANNING ESTIMATE", "info")])
     target = target_selector("economics_target"); selected = api.design(target)
     section_header(f"{target:.0%} design economics")
     a, b, c, d = st.columns(4)
@@ -297,34 +332,22 @@ def sensitivity(api: PlanningService) -> None:
 
 
 def methodology(api: PlanningService) -> None:
-    page_header("Research · Traceability", "Methodology & provenance", "Trace source classifications, validation evidence, limitations, and candidate-selection semantics.", [("FROZEN THROUGH PHASE 12", "success"), ("0 BLOCKERS", "success")])
-    manifest, audit = api.provenance(), api.validation(); software = manifest["software"]
-    section_header("Validation state")
-    audit_status(len(audit["checks"]), audit["blockers"], audit["warnings"], software["repository_test_count_at_phase12"])
-    with st.expander("View validation checks"):
-        st.dataframe(pd.DataFrame(audit["checks"])[["category", "check", "status", "message"]], hide_index=True, width="stretch")
-    section_header("Assumptions by evidence class", "Expand only the provenance category you need.")
-    assumptions = pd.DataFrame(api.assumptions())
-    for classification, rows in assumptions.groupby("classification", sort=False):
-        with st.expander(readable(classification)):
-            st.dataframe(rows[["input", "value", "unit", "provenance_or_note"]], hide_index=True, width="stretch")
-    section_header("Provenance summary")
-    a, b, c = st.columns(3)
-    with a: design_card("SITE", f"{manifest['site']['name']}, {manifest['site']['region']}", str(manifest['site']['reference_year']), manifest['site']['timezone'])
-    with b: design_card("WEATHER", manifest['weather']['dataset'], f"{manifest['weather']['records']:,} records", manifest['weather']['provider'])
-    with c: design_card("DEMAND", "Literature reconstruction", energy(manifest['demand']['monthly_rows_reconstructed_annual_kwh']), "Not measured hourly demand")
-    st.caption(f"Frozen git provenance: {software['git']}")
-    metadata = api.adaptation_metadata()
-    callout("Saved-candidate adaptation", "Adaptive results mean the least-cost feasible design among the saved Phase 10 candidate set. Full perturbed-scenario re-optimization was not performed.")
-    st.caption(f"Single-profile label: {metadata['single_profile_comparison_provenance']['label']}")
-    section_header("Scientific limitations", "Organized by the part of the evidence chain they affect.")
-    limitations({
-        "Data": ("Rodina hourly demand is reconstructed from published monthly energy.", "The benchmark uses one ERA5 weather year."),
-        "Physical modeling": ("No wake or turbine-layout model.", "No detailed degradation or electrical power-flow model."),
-        "Economics": ("Planning/reference assumptions are comparative estimates, not bids."),
-        "Sensitivity": ("Scenario ranges are deterministic, not probability distributions or confidence intervals."),
-        "Field case": (SHAMSHI_STATUS,),
-    })
+    page_header("PLATFORM METHOD", "How SteppeGrid Works", "From hourly site inputs to a transparent renewable microgrid planning result.", [("HOURLY", "success"), ("REPRODUCIBLE", "info")])
+    sections = [
+        ("1. Site and Weather", "Each village is represented by its coordinates and a cached year of hourly ERA5 weather."),
+        ("2. Electricity Demand", "Annual, monthly, or uploaded hourly electricity demand is represented as an 8,760-hour load trace."),
+        ("3. Wind", "Hub-height wind is derived from the weather profile and converted through discrete turbine power curves."),
+        ("4. Solar", "Irradiance is converted to tilted-array PV output and limited by the selected inverter."),
+        ("5. Battery", "Charge, discharge, efficiency, power limits, and state of charge are tracked every hour."),
+        ("6. Hourly Dispatch", "Renewables serve load first; storage absorbs surplus and supplies deficits; remaining energy is curtailed or unmet."),
+        ("7. Reliability", "SteppeGrid reports annual energy served, unmet electricity, loss-of-load hours, and deficit duration—not uptime."),
+        ("8. Optimization", "A discrete search sizes supported wind, solar, and storage equipment for the selected annual energy target."),
+        ("9. Economics", "CAPEX, net present cost, equivalent annual cost, and cost per served kWh support planning comparisons."),
+        ("10. Site Comparison", "Demand-normalized metrics allow different-size villages to be compared consistently."),
+    ]
+    for title, body in sections:
+        section_header(title)
+        st.write(body)
 
 
 ROUTES = {
@@ -339,7 +362,7 @@ if "app_mode" not in st.session_state:
     st.session_state.app_mode = "Explore Benchmark"
 with st.sidebar:
     st.markdown("## ⚡ SteppeGrid")
-    left, middle, right = st.columns(3)
+    left, middle, compare, right = st.columns(4)
     with left:
         if st.button("Explore", type="primary" if st.session_state.app_mode == "Explore Benchmark" else "tertiary", width="stretch"):
             st.session_state.app_mode = "Explore Benchmark"
@@ -352,12 +375,17 @@ with st.sidebar:
         if st.button("Sites", type="primary" if st.session_state.app_mode == "Sites" else "tertiary", width="stretch"):
             st.session_state.app_mode = "Sites"
             st.rerun()
+    with compare:
+        if st.button("Compare", type="primary" if st.session_state.app_mode == "Compare Sites" else "tertiary", width="stretch"):
+            st.session_state.app_mode = "Compare Sites"
+            st.rerun()
     if st.session_state.app_mode == "Explore Benchmark":
         st.caption("EXPLORE BENCHMARK · RODINA")
         for group, pages in NAVIGATION.items():
             st.markdown(f'<div class="sg-nav-group">{group}</div>', unsafe_allow_html=True)
             for name in pages:
-                if st.button(name, key=f"nav_{name}", type="primary" if st.session_state.active_page == name else "tertiary", width="stretch"):
+                public_name = "How SteppeGrid Works" if name == "Methodology & Provenance" else name
+                if st.button(public_name, key=f"nav_{name}", type="primary" if st.session_state.active_page == name else "tertiary", width="stretch"):
                     st.session_state.active_page = name
                     st.rerun()
         st.divider()
@@ -365,15 +393,20 @@ with st.sidebar:
     elif st.session_state.app_mode == "Plan a System":
         st.caption("PLAN A SYSTEM · USER SCENARIO")
         st.info("Demand is always explicit. User scenarios are isolated from frozen benchmark outputs.")
+    elif st.session_state.app_mode == "Sites":
+        st.caption("SITES · KAZAKHSTAN")
+        st.info("Browse the seven production villages and their registered planning values.")
     else:
-        st.caption("SITES · LOCAL REGISTRY")
-        st.info("Browse registered villages or onboard a user planning site.")
+        st.caption("COMPARE SITES")
+        st.info("Compare saved planning results using normalized metrics.")
 
 try:
     if st.session_state.app_mode == "Plan a System":
         render_planner(scenario_service(), site_registry())
     elif st.session_state.app_mode == "Sites":
         render_sites(site_registry())
+    elif st.session_state.app_mode == "Compare Sites":
+        render_compare_sites(site_registry())
     else:
         ROUTES[st.session_state.active_page](service())
 except AppDataError as error:

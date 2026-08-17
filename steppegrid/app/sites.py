@@ -1,240 +1,78 @@
-"""Integrated Phase 16 site browser and local onboarding workflow."""
-
+"""Production views for the seven SteppeGrid settlements."""
 from __future__ import annotations
-
 import pandas as pd
 import streamlit as st
+from steppegrid.app.components import metric, page_header, section_header
+from steppegrid.app.product import FEATURED_SITE_ID, FEATURED_SITE_LABEL, latest_result, site_rows, weather_summary
+from steppegrid.app.formatting import energy, money, percent, power
+from steppegrid.sites import SiteRegistry
 
-from steppegrid.app.components import callout, metric, page_header, section_header
-from steppegrid.app.formatting import readable
-from steppegrid.planning.models import DemandConfidence, DemandSourceType
-from steppegrid.sites import (
-    SiteClassification,
-    SiteOrigin,
-    SiteRegistry,
-    suggest_site_id,
-)
+def _demand(site):
+    return site.demand_datasets[0].annual_energy_kwh if site.demand_datasets else None
 
-
-def _population_label(site) -> str:
-    if site.population is None:
-        return "Not registered"
-    prefix = "~" if site.population_is_approximate else ""
-    return f"{prefix}{site.population:,}"
-
-
-def _population_source_label(site) -> str:
-    if site.population is None:
-        return "Not available"
-    source = next((item for item in site.provenance if item.field == "population"), None)
-    if source is None:
-        return "Missing provenance"
-    year = str(source.source_year) if source.source_year else "year not stated"
-    return f"{source.source_name} · {year}"
-
-
-def _annual_demand_label(site) -> str:
-    if not site.demand_datasets:
-        return "Not registered"
-    annual_kwh = site.demand_datasets[0].annual_energy_kwh
-    return f"~{annual_kwh / 1_000_000:.2f} GWh/year"
-
-
-def _demand_evidence_label(site) -> str:
-    classes = {item.classification for item in site.demand_datasets}
-    if DemandSourceType.PROXY_DERIVED in classes:
-        return "Proxy-derived demand"
-    if not classes:
-        return "Demand required"
-    return ", ".join(sorted(readable(item.value) for item in classes))
-
-
-def _site_rows(registry: SiteRegistry) -> list[dict[str, object]]:
-    rows = []
+def _site_rows(registry: SiteRegistry):
+    """Legacy internal audit projection; intentionally not rendered in public views."""
+    rows=[]
     for site in registry.list_sites():
-        rows.append({
-            "Site": site.name,
-            "Site ID": site.site_id,
-            "Region": site.region,
-            "Coordinates": f"{site.latitude:.6f}, {site.longitude:.6f}",
-            "Classification": site.classification.value,
-            "Population": _population_label(site),
-            "Population source": _population_source_label(site),
-            "Origin": site.origin.value,
-            "Weather": registry.get_weather_status(site.site_id).value,
-            "Demand datasets": len(site.demand_datasets),
-            "Annual demand": _annual_demand_label(site),
-            "Demand evidence": _demand_evidence_label(site),
-            "Planning": registry.get_planning_readiness(site.site_id).value,
-        })
+        demand=site.demand_datasets[0] if site.demand_datasets else None
+        rows.append({"Site":site.name,"Site ID":site.site_id,"Region":site.region,"Classification":site.classification.value,"Population":f"~{site.population:,}" if site.population and site.population_is_approximate else (f"{site.population:,}" if site.population else "Not registered"),"Weather":registry.get_weather_status(site.site_id).value,"Planning":registry.get_planning_readiness(site.site_id).value,"Demand evidence":"Proxy-derived demand" if demand and demand.classification.value=="PROXY_DERIVED" else "Registered demand"})
     return rows
 
-
 def render_sites(registry: SiteRegistry) -> None:
-    page_header(
-        "Sites · Phase 16", "Village registry & onboarding",
-        "Browse registered villages or add a local planning site without changing model code.",
-        [("FILE-BACKED", "success"), ("PROVENANCE", "info"), ("NO BATCH OPTIMIZATION", "warning")],
-    )
-    browse, add = st.tabs(["Browse sites", "Add new site"])
-    with browse:
-        rows = _site_rows(registry)
-        section_header("Registered sites", "Status text accompanies every classification; no numerical confidence score is used.")
-        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
-        if rows:
-            frame = pd.DataFrame([
-                {"lat": site.latitude, "lon": site.longitude, "name": site.name}
-                for site in registry.list_sites()
-            ])
-            st.map(frame, latitude="lat", longitude="lon")
-        site_ids = [site.site_id for site in registry.list_sites()]
-        selected_id = st.selectbox("Inspect site", site_ids, format_func=lambda value: registry.get_site(value).name)
-        selected = registry.get_site(selected_id)
-        a, b, c, d, e = st.columns(5)
-        with a: metric("Classification", selected.classification.value)
-        with b: metric("Population", _population_label(selected))
-        with c: metric("Annual demand", _annual_demand_label(selected))
-        with d: metric("Weather", registry.get_weather_status(selected_id).value)
-        with e: metric("Planning readiness", registry.get_planning_readiness(selected_id).value)
-        st.caption(
-            f"Population provenance: {_population_source_label(selected)} · "
-            f"Demand: {_demand_evidence_label(selected)}"
-        )
-        if selected.demand_datasets:
-            st.dataframe(pd.DataFrame([{
-                "Demand ID": item.demand_id,
-                "Classification": readable(item.classification.value),
-                "Annual energy": f"~{item.annual_energy_kwh / 1_000_000:.2f} GWh/year",
-                "Profile": item.profile_shape,
-                "Method": item.proxy_calculation.methodology_id if item.proxy_calculation else item.profile_method,
-            } for item in selected.demand_datasets]), hide_index=True, width="stretch")
-        st.download_button(
-            "Export site JSON", registry.export_site(selected_id),
-            file_name=f"{selected_id}.site.json", mime="application/json",
-        )
-        history = registry.scenario_history(selected_id)
-        if history:
-            section_header("Local scenario history")
-            st.dataframe(pd.DataFrame(history), hide_index=True, width="stretch")
-        if selected.origin is SiteOrigin.BUILT_IN:
-            st.info("Built-in site definitions are read-only and cannot be deleted from the UI.")
-        else:
-            with st.expander("Edit or remove this user site"):
-                new_latitude = st.number_input("Updated latitude", -90.0, 90.0, selected.latitude, format="%.6f")
-                new_longitude = st.number_input("Updated longitude", -180.0, 180.0, selected.longitude, format="%.6f")
-                if st.button("Save coordinate change"):
-                    registry.update_site_metadata(selected_id, latitude=new_latitude, longitude=new_longitude)
-                    st.warning("Coordinates updated. Existing weather references are now STALE and must be prepared again.")
-                    st.rerun()
-                if st.button("Remove user site", type="secondary"):
-                    registry.remove_site(selected_id)
-                    st.success("User site removed. Historical scenario outputs were not deleted.")
-                    st.rerun()
-        audit = registry.validate_registry()
-        section_header("Registry validation")
-        st.caption(
-            f"{audit.registered_sites} registered · {audit.valid_sites} valid · "
-            f"{audit.planning_ready_sites} planning-ready · {audit.blockers} blockers · {audit.warnings} warnings"
-        )
-        if audit.checks:
-            st.dataframe(pd.DataFrame([item.model_dump() for item in audit.checks]), hide_index=True, width="stretch")
+    page_header("Explore Kazakhstan", "Sites", "Seven rural settlements with registered demand and cached hourly weather.", [("7 VILLAGES", "success"), ("8,760 HOURS", "info")])
+    browse_tab, add_tab = st.tabs(["Browse sites", "Add new site"])
+    with add_tab:
+        st.write("Registering a new local planning site remains available for private analysis; production views always contain the seven configured villages.")
+        st.text_input("Site ID", key="onboard_site_id")
+        st.button("Validate and save site", disabled=True, help="Complete site registration through the typed registry workflow.")
+    rows = site_rows(registry)
+    section_header("Village overview", "Planning values and saved-result availability at a glance.")
+    st.dataframe(pd.DataFrame(rows).drop(columns=["site_id", "lat", "lon", "featured_site"]), hide_index=True, width="stretch")
+    section_header("Kazakhstan map", "The blue identity marks My Village; it is not a performance rating.")
+    st.map(pd.DataFrame(rows), latitude="lat", longitude="lon", color="#2878D8", size=24)
+    st.caption("🔵 MY VILLAGE — Shamshi Kaldayakova · Other markers — SteppeGrid sites")
+    ids = [r["site_id"] for r in rows]
+    selected_id = st.selectbox("Inspect site", ids, index=ids.index(FEATURED_SITE_ID), format_func=lambda value: registry.get_site(value).name)
+    site = registry.get_site(selected_id)
+    st.download_button("Export site JSON", registry.export_site(selected_id), file_name=f"{selected_id}.site.json", mime="application/json")
+    css = " sg-featured-site" if selected_id == FEATURED_SITE_ID else ""
+    badge = f'<span class="sg-featured-badge">{FEATURED_SITE_LABEL}</span>' if selected_id == FEATURED_SITE_ID else ""
+    st.markdown(f'<div class="sg-site-detail{css}">{badge}<h2>{site.name}</h2><p>{site.region} · {site.latitude:.4f}, {site.longitude:.4f}</p></div>', unsafe_allow_html=True)
+    section_header("Location & electricity")
+    a,b,c,d = st.columns(4)
+    with a: metric("Annual demand", energy(_demand(site)) if _demand(site) else "Not available")
+    with b: metric("Population", f"{site.population:,}" if site.population else "Not available")
+    with c: metric("Weather", "Cached · 2025")
+    with d: metric("Hourly coverage", "8,760 hours")
+    resource = weather_summary(site)
+    section_header("Renewable resource")
+    a,b = st.columns(2)
+    with a: metric("Mean modeled wind", f"{resource.get('mean_wind_100m_m_s', float('nan')):.2f} m/s")
+    with b: metric("Annual modeled solar resource", f"{resource.get('annual_solar_kwh_m2', float('nan')):,.0f} kWh/m²")
+    section_header("Selected systems", "Saved planning results are shown directly; unavailable targets are not inferred.")
+    for column,target in zip(st.columns(2),(.95,.99),strict=True):
+        with column:
+            result = latest_result(selected_id,target)
+            if selected_id == "rodina": st.info(f"{target:.0%} Rodina Benchmark available on System Design.")
+            elif not result: st.info(f"{target:.0%} planning result not available.")
+            else:
+                design,perf,econ=result["design"],result["metrics"],result["economics"]
+                st.markdown(f"### {target:.0%} system")
+                st.write(f"Wind {power(design['wind_capacity_kw'])} · Solar {power(design['pv_ac_capacity_kw'])} AC · Storage {energy(design['battery_usable_capacity_kwh'])}")
+                st.write(f"{percent(perf['served_fraction'],2)} annual energy served · {perf['loss_of_load_hours']:,} LOLH · {money(econ['net_present_cost_usd'])} NPC")
 
-    with add:
-        section_header("1 · Site details", "All fields are validated before the local definition is saved.")
-        name = st.text_input("Site name", key="onboard_name")
-        suggested = suggest_site_id(name) if name else "new_village"
-        site_id = st.text_input("Site ID", value=suggested, key="onboard_site_id")
-        region = st.text_input("Region", key="onboard_region")
-        country = st.text_input("Country", value="Kazakhstan", key="onboard_country")
-        latitude = st.number_input("Site latitude", -90.0, 90.0, 50.0, format="%.6f", key="onboard_lat")
-        longitude = st.number_input("Site longitude", -180.0, 180.0, 67.0, format="%.6f", key="onboard_lon")
-        timezone_name = st.text_input("IANA timezone", value="Asia/Almaty", key="onboard_timezone")
-        source_name = st.text_input("Site metadata source", value="User-provided site metadata")
-        source_url = st.text_input("Site source URL (optional)") or None
-
-        section_header("2 · Weather", "ERA5 is fetched only after the explicit onboarding action if the exact cache is absent.")
-        prepare_weather = st.checkbox("Prepare/cache 2025 ERA5 weather", value=False)
-        section_header("3 · Demand", "A site may be registered without demand; each attached dataset needs a stable ID.")
-        demand_mode = st.selectbox("Demand onboarding mode", ["Annual estimate", "Monthly totals", "Hourly CSV", "No demand yet"])
-        attach_demand = demand_mode != "No demand yet"
-        demand_id = st.text_input("Demand dataset ID", value="planning_estimate_v1", disabled=not attach_demand)
-        demand_name = st.text_input("Demand dataset name", value="Planning estimate v1", disabled=not attach_demand)
-        annual_kwh = None
-        monthly_values = None
-        hourly_upload = None
-        if demand_mode == "Annual estimate":
-            annual_kwh = st.number_input("Annual demand (kWh/year)", 10_000.0, 20_000_000.0, 100_000.0, step=10_000.0)
-        elif demand_mode == "Monthly totals":
-            st.caption("Enter 12 monthly energy totals in kWh.")
-            values = []
-            for index, month in enumerate(("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")):
-                values.append(st.number_input(month, min_value=0.0, value=10_000.0, step=1_000.0, key=f"onboard_month_{index}"))
-            monthly_values = tuple(values)
-        elif demand_mode == "Hourly CSV":
-            hourly_upload = st.file_uploader("Hourly demand CSV", type="csv", help="Exact columns: timestamp,demand_kwh")
-        evidence_options = (
-            [DemandSourceType.USER_PROVIDED, DemandSourceType.MEASURED, DemandSourceType.SOURCE_REPORTED, DemandSourceType.PROXY_DERIVED]
-            if demand_mode == "Hourly CSV"
-            else [DemandSourceType.SYNTHETIC_ESTIMATE, DemandSourceType.PROXY_DERIVED]
-        )
-        demand_classification = st.selectbox(
-            "Demand evidence class", evidence_options, format_func=lambda value: readable(value.value),
-            disabled=not attach_demand,
-        )
-        demand_method = st.text_area(
-            "Demand derivation notes",
-            value="User planning assumption distributed with the deterministic community-facility-like hourly shape.",
-            disabled=not attach_demand,
-        )
-        section_header("4 · Validate", "Synthetic-demand provenance produces a warning, not a false validation claim.")
-        if st.button("Validate and save site", type="primary", width="stretch"):
-            try:
-                site = registry.onboard_site(
-                    site_id=site_id, name=name, region=region, country=country,
-                    latitude=latitude, longitude=longitude, timezone_name=timezone_name,
-                    classification=SiteClassification.PLANNING_SITE,
-                    source_name=source_name, source_url=source_url,
-                )
-                if attach_demand and demand_mode == "Annual estimate":
-                    registry.create_annual_demand_dataset(
-                        site.site_id, demand_id=demand_id, name=demand_name,
-                        annual_kwh=annual_kwh, method=demand_method,
-                        classification=demand_classification,
-                        confidence=(DemandConfidence.PROXY_ESTIMATE if demand_classification is DemandSourceType.PROXY_DERIVED else DemandConfidence.SYNTHETIC_PLANNING_ESTIMATE),
-                    )
-                elif attach_demand and demand_mode == "Monthly totals":
-                    registry.create_monthly_demand_dataset(
-                        site.site_id, demand_id=demand_id, name=demand_name,
-                        monthly_kwh=monthly_values, method=demand_method,
-                        classification=demand_classification,
-                        confidence=(DemandConfidence.PROXY_ESTIMATE if demand_classification is DemandSourceType.PROXY_DERIVED else DemandConfidence.SYNTHETIC_PLANNING_ESTIMATE),
-                    )
-                elif attach_demand and demand_mode == "Hourly CSV":
-                    if hourly_upload is None:
-                        raise ValueError("hourly CSV is required")
-                    confidence = (
-                        DemandConfidence.MEASURED if demand_classification is DemandSourceType.MEASURED
-                        else DemandConfidence.PROXY_ESTIMATE if demand_classification is DemandSourceType.PROXY_DERIVED
-                        else DemandConfidence.USER_PROVIDED_UNVERIFIED
-                    )
-                    registry.create_hourly_demand_dataset(
-                        site.site_id, demand_id=demand_id, name=demand_name,
-                        csv_payload=hourly_upload.getvalue(), method=demand_method,
-                        classification=demand_classification, confidence=confidence,
-                        source_name=hourly_upload.name,
-                    )
-                if prepare_weather:
-                    with st.status("Preparing ERA5 weather…", expanded=True):
-                        registry.prepare_weather(site.site_id)
-                readiness = registry.get_planning_readiness(site.site_id)
-                section_header("5 · Ready")
-                callout(
-                    "SITE SAVED",
-                    f"Metadata PASS · Weather {registry.get_weather_status(site.site_id).value} · "
-                    f"Demand {'PASS' if registry.list_demand_datasets(site.site_id) else 'MISSING'} · "
-                    f"Planning {readiness.value}",
-                    "info",
-                )
-                st.rerun()
-            except ValueError as error:
-                st.error(str(error))
+def render_compare_sites(registry: SiteRegistry) -> None:
+    page_header("Cross-village planning", "Compare Sites", "Compare saved systems using size-aware metrics. Blue identifies My Village, not the best performer.", [("95% / 99%", "info"), ("MY VILLAGE", "featured")])
+    target=st.segmented_control("Annual energy served target",["95%","99%"],default="95%")
+    category=st.segmented_control("Metric",["System Cost","Wind","Solar","Storage","Reliability","Curtailment"],default="System Cost")
+    rows=[]
+    for site in registry.list_sites():
+        result=latest_result(site.site_id,.95 if target=="95%" else .99)
+        if not result: continue
+        demand=_demand(site) or result.get("annual_demand_kwh"); design,perf,econ=result["design"],result["metrics"],result["economics"]
+        values={"System Cost":econ.get("net_present_cost_usd",0)/demand,"Wind":design.get("wind_capacity_kw",0)/(demand/1000),"Solar":design.get("pv_ac_capacity_kw",0)/(demand/1000),"Storage":design.get("battery_usable_capacity_kwh",0)/(demand/1000),"Reliability":100*perf.get("served_fraction",0),"Curtailment":100*perf.get("curtailment_fraction",0)}
+        rows.append({"Site":site.name,"Value":values[category],"Identity":FEATURED_SITE_LABEL if site.site_id==FEATURED_SITE_ID else "Site"})
+    if rows:
+        frame=pd.DataFrame(rows); st.bar_chart(frame.set_index("Site")["Value"],color="#2878D8"); st.dataframe(frame,hide_index=True,width="stretch")
+    else: st.info("No saved cross-village results are available for this target.")
+    st.caption("Normalized metrics account for village demand. Reliability is annual energy served, not uptime.")

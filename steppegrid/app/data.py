@@ -42,7 +42,7 @@ class FrozenDataRepository:
         missing = [str(self.path(key)) for key in self.REQUIRED if not self.path(key).is_file()]
         if missing:
             raise AppDataError(
-                "Frozen Phase 11/12 outputs are missing. Run "
+                "Required benchmark outputs are missing. Run "
                 "`python scripts/run_phase12.py --mode verify`. Missing: " + ", ".join(missing)
             )
 

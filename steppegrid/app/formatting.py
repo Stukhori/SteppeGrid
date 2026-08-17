@@ -35,5 +35,5 @@ RECONSTRUCTION_NOTICE = (
 SCENARIO_NOTICE = (
     "Sensitivity ranges are deterministic research scenarios, not confidence intervals or "
     "probability distributions. Fixed-design results replay the frozen designs; adaptive results "
-    "use saved Phase 10 candidate reselection, not global re-optimization."
+    "use saved candidate reselection, not global re-optimization."
 )
