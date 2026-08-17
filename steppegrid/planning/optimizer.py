@@ -14,7 +14,7 @@ from steppegrid.benchmarks.phase10 import (
     _minimum_scale,
     _portfolio,
 )
-from steppegrid.equipment.catalog import BATTERIES, INVERTERS, PV_MODULES, WIND_TURBINES
+from steppegrid.equipment.catalog import EquipmentCatalog, EquipmentCatalogVersion, get_equipment_catalog
 from steppegrid.optimization.core import (
     DispatchCache,
     RenewablePortfolio,
@@ -22,7 +22,7 @@ from steppegrid.optimization.core import (
     minimum_battery_count,
     scale_trace,
 )
-from steppegrid.optimization.economics import system_cost
+from steppegrid.optimization.economics import EconomicsVersion, system_cost
 from steppegrid.planning.models import PlanningDesign, TechnologySelection
 
 ProgressCallback = Callable[[str], None]
@@ -33,7 +33,7 @@ class SearchLimits:
     maximum_equipment_count: int = 25_000
     maximum_battery_count: int = 64
     exact_renewable_portfolio_limit: int = 2_500
-    maximum_estimated_dispatches: int = 60_000
+    maximum_estimated_dispatches: int = 500_000
 
 
 @dataclass(frozen=True)
@@ -47,14 +47,16 @@ class OptimizationOutcome:
     dispatch_simulations: int
     elapsed_seconds: float
     generation_kwh: tuple[float, ...] | None
+    dispatch_cache_hits: int = 0
+    theoretical_design_combinations: int = 0
 
 
-def _validated_selection(selection: TechnologySelection) -> None:
-    unknown_wind = set(selection.wind_keys) - set(WIND_TURBINES)
+def _validated_selection(selection: TechnologySelection, catalog: EquipmentCatalog) -> None:
+    unknown_wind = set(selection.wind_keys) - set(catalog.wind_turbines)
     unknown_pv = set(selection.pv_keys) - {
-        f"{module}__{inverter}" for module in PV_MODULES for inverter in INVERTERS
+        f"{module}__{inverter}" for module in catalog.pv_modules for inverter in catalog.inverters
     }
-    unknown_battery = set(selection.battery_keys) - set(BATTERIES)
+    unknown_battery = set(selection.battery_keys) - set(catalog.batteries)
     if unknown_wind or unknown_pv or unknown_battery:
         raise ValueError(
             f"unknown equipment keys: wind={sorted(unknown_wind)}, "
@@ -80,13 +82,14 @@ def _bounds(
     return wind_bounds, pv_bounds
 
 
-def _battery_bounds(annual_load_kwh: float, keys: Sequence[str], limits: SearchLimits) -> dict[str, int]:
+def _battery_bounds(annual_load_kwh: float, keys: Sequence[str], limits: SearchLimits,
+                    catalog: EquipmentCatalog) -> dict[str, int]:
     # Two average-load days is a deterministic scenario-aware screening ceiling.
     energy = 2 * annual_load_kwh / 365
     return {
         key: min(
             limits.maximum_battery_count,
-            max(4, math.ceil(energy / BATTERIES[key].usable_energy_capacity_kwh)),
+            max(4, math.ceil(energy / catalog.batteries[key].usable_energy_capacity_kwh)),
         )
         for key in keys
     }
@@ -111,6 +114,8 @@ def _design_and_cost(
     battery_count: int,
     wind_metadata: Mapping[str, Mapping[str, object]],
     pv_metadata: Mapping[str, Mapping[str, object]],
+    catalog: EquipmentCatalog,
+    economics_version: EconomicsVersion,
 ) -> tuple[PlanningDesign, dict[str, object]]:
     wind_kw = (
         portfolio.wind_count * float(wind_metadata[portfolio.wind_key]["rated_power_kw"])
@@ -125,7 +130,7 @@ def _design_and_cost(
         if portfolio.pv_key else 0.0
     )
     battery_kwh = (
-        battery_count * BATTERIES[battery_key].usable_energy_capacity_kwh
+        battery_count * catalog.batteries[battery_key].usable_energy_capacity_kwh
         if battery_key else 0.0
     )
     design = PlanningDesign(
@@ -145,6 +150,7 @@ def _design_and_cost(
         pv_dc_kw=pv_dc_kw,
         pv_ac_kw=pv_ac_kw,
         battery_usable_kwh=battery_kwh,
+        economics_version=economics_version,
     )
 
 
@@ -160,9 +166,11 @@ def _exact_candidates(
     selection: TechnologySelection,
     wind_metadata: Mapping[str, Mapping[str, object]],
     pv_metadata: Mapping[str, Mapping[str, object]],
+    catalog: EquipmentCatalog,
+    economics_version: EconomicsVersion,
 ) -> tuple[list[dict], DispatchCache, dict[str, list[float]]]:
     traces: dict[str, list[float]] = {}
-    cache = DispatchCache({"scenario": load}, traces, BATTERIES)
+    cache = DispatchCache({"scenario": load}, traces, catalog.batteries)
     rows: list[dict] = []
     for wind_key, pv_key, _ in _technology_pairs(selection.wind_keys, selection.pv_keys):
         wind_range = range(wind_bounds[wind_key] + 1) if wind_key else range(1)
@@ -187,7 +195,8 @@ def _exact_candidates(
                     if metrics["served_fraction"] + 1e-12 < target:
                         continue
                     design, economics = _design_and_cost(
-                        portfolio, battery_key, count, wind_metadata, pv_metadata
+                        portfolio, battery_key, count, wind_metadata, pv_metadata,
+                        catalog, economics_version,
                     )
                     rows.append({"portfolio": portfolio, "design": design, "metrics": metrics, "economics": economics})
     return rows, cache, traces
@@ -205,9 +214,11 @@ def _staged_candidates(
     selection: TechnologySelection,
     wind_metadata: Mapping[str, Mapping[str, object]],
     pv_metadata: Mapping[str, Mapping[str, object]],
+    catalog: EquipmentCatalog,
+    economics_version: EconomicsVersion,
 ) -> tuple[list[dict], DispatchCache, dict[str, list[float]]]:
     traces: dict[str, list[float]] = {}
-    cache = DispatchCache({"scenario": load}, traces, BATTERIES)
+    cache = DispatchCache({"scenario": load}, traces, catalog.batteries)
     stats = {"annual_energy_pruned": 0}
     rows_by_design: dict[str, dict] = {}
     annual_load = math.fsum(load)
@@ -244,7 +255,8 @@ def _staged_candidates(
                 if metrics["served_fraction"] + 1e-12 < target:
                     continue
                 design, economics = _design_and_cost(
-                    portfolio, battery_key, count, wind_metadata, pv_metadata
+                    portfolio, battery_key, count, wind_metadata, pv_metadata,
+                    catalog, economics_version,
                 )
                 key = (
                     f"{portfolio.key}|b={design.battery_key or 'none'}:{design.battery_count}"
@@ -265,6 +277,8 @@ def optimize_planning_trace(
     wind_metadata: Mapping[str, Mapping[str, object]],
     pv_metadata: Mapping[str, Mapping[str, object]],
     selection: TechnologySelection,
+    equipment_catalog_version: EquipmentCatalogVersion = EquipmentCatalogVersion.RODINA_FROZEN_V1,
+    economics_version: EconomicsVersion = EconomicsVersion.PHASE10_FROZEN_ECONOMICS_V1,
     limits: SearchLimits = SearchLimits(),
     progress: ProgressCallback | None = None,
 ) -> OptimizationOutcome:
@@ -276,7 +290,8 @@ def optimize_planning_trace(
         raise ValueError("load must be a non-empty finite non-negative trace")
     if math.fsum(load_kwh) <= 0:
         raise ValueError("annual load must be positive")
-    _validated_selection(selection)
+    catalog = get_equipment_catalog(equipment_catalog_version)
+    _validated_selection(selection, catalog)
     wind = {key: wind_profiles_kwh[key] for key in selection.wind_keys}
     pv = {key: pv_profiles_kwh[key] for key in selection.pv_keys}
     if any(len(trace) != len(load_kwh) for trace in (*wind.values(), *pv.values())):
@@ -284,7 +299,7 @@ def optimize_planning_trace(
     if progress:
         progress("Computing deterministic scenario-aware bounds")
     wind_bounds, pv_bounds = _bounds(math.fsum(load_kwh), wind, pv, limits)
-    battery_bounds = _battery_bounds(math.fsum(load_kwh), selection.battery_keys, limits)
+    battery_bounds = _battery_bounds(math.fsum(load_kwh), selection.battery_keys, limits, catalog)
     pairs = _technology_pairs(selection.wind_keys, selection.pv_keys)
     renewable_space = sum(
         (wind_bounds[wind_key] + 1 if wind_key else 1)
@@ -307,6 +322,7 @@ def optimize_planning_trace(
             load=load_kwh, target=target, wind=wind, pv=pv,
             wind_bounds=wind_bounds, pv_bounds=pv_bounds, battery_bounds=battery_bounds,
             selection=selection, wind_metadata=wind_metadata, pv_metadata=pv_metadata,
+            catalog=catalog, economics_version=EconomicsVersion(economics_version),
         )
     else:
         method = "phase10_staged_generalized"
@@ -316,13 +332,15 @@ def optimize_planning_trace(
             load=load_kwh, target=target, wind=wind, pv=pv,
             wind_bounds=wind_bounds, pv_bounds=pv_bounds, battery_bounds=battery_bounds,
             selection=selection, wind_metadata=wind_metadata, pv_metadata=pv_metadata,
+            catalog=catalog, economics_version=EconomicsVersion(economics_version),
         )
     elapsed = time.perf_counter() - started
     if not rows:
         return OptimizationOutcome(
             feasible=False, design=None, metrics={}, economics={}, optimizer_method=method,
             evaluated_portfolios=len(traces), dispatch_simulations=cache.simulations,
-            elapsed_seconds=elapsed, generation_kwh=None,
+            elapsed_seconds=elapsed, generation_kwh=None, dispatch_cache_hits=cache.hits,
+            theoretical_design_combinations=renewable_space * (1 + sum(value + 1 for value in battery_bounds.values())),
         )
     selected = min(
         rows,
@@ -345,6 +363,7 @@ def optimize_planning_trace(
         optimizer_method=method,
         evaluated_portfolios=len(traces),
         dispatch_simulations=cache.simulations,
-        elapsed_seconds=elapsed,
+        elapsed_seconds=elapsed, dispatch_cache_hits=cache.hits,
+        theoretical_design_combinations=renewable_space * (1 + sum(value + 1 for value in battery_bounds.values())),
         generation_kwh=tuple(traces[portfolio.key]),
     )

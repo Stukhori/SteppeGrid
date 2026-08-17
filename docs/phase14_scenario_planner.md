@@ -1,5 +1,7 @@
 # Phase 14: interactive scenario planner
 
+> Historical-version note: Phase 14 is frozen. Its reproduction script now pins `RODINA_FROZEN_V1` and `PHASE10_FROZEN_ECONOMICS_V1`. Phase 15 planning scenarios use the separately versioned Planner V2 path described in `docs/phase15_scale_aware_catalog.md`; no Phase 14 or Rodina output is retrofitted.
+
 ## Scope and scientific boundary
 
 Phase 14 adds a user-driven planning workflow without changing the frozen Rodina Phase 9–12 benchmark results. `Explore Benchmark` continues to read those frozen artifacts. `Plan a System` creates isolated, hashed user scenarios under `outputs/scenarios/` and invokes computation only after the user presses **Run Planner**.

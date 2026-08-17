@@ -7,6 +7,8 @@ import json
 import time
 from pathlib import Path
 
+from steppegrid.equipment.catalog import EquipmentCatalogVersion
+from steppegrid.optimization.economics import EconomicsVersion
 from steppegrid.planning.models import (
     DemandConfidence,
     DemandMode,
@@ -54,6 +56,8 @@ def main() -> None:
             ),
         ),
         reliability_target=float(args.target),
+        equipment_catalog_version=EquipmentCatalogVersion.RODINA_FROZEN_V1,
+        economics_version=EconomicsVersion.PHASE10_FROZEN_ECONOMICS_V1,
         technologies=TechnologySelection(
             wind_keys=("sd6",),
             pv_keys=("trina_tsm_450_neg9r28__sma_core1_stp50_41",),

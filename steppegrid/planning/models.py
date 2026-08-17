@@ -1,4 +1,4 @@
-"""Strict public models for Phase 14 planning inputs and results."""
+"""Strict public models for catalog-versioned planning inputs and results."""
 
 from __future__ import annotations
 
@@ -12,6 +12,9 @@ from typing import Literal
 from pydantic import Field, model_validator
 
 from steppegrid.simulation.models import DomainModel
+from steppegrid.equipment.catalog import EquipmentCatalogVersion
+from steppegrid.equipment.models import ProjectScale
+from steppegrid.optimization.economics import EconomicsVersion
 
 
 MINIMUM_ANNUAL_DEMAND_KWH = 10_000.0
@@ -22,6 +25,7 @@ SUPPORTED_TARGETS = (0.95, 0.99)
 class SitePreset(str, Enum):
     RODINA = "rodina"
     SHAMSHI = "shamshi"
+    REGISTERED = "registered"
     CUSTOM = "custom"
 
 
@@ -49,13 +53,35 @@ class DemandConfidence(str, Enum):
     USER_PROVIDED_UNVERIFIED = "User-provided, unverified"
 
 
+class CatalogFilterMode(str, Enum):
+    ALL_VERIFIED = "all_verified"
+    SMALL_COMMUNITY = "small_community"
+    MEDIUM_LARGE = "medium_large"
+    CUSTOM = "custom"
+
+
 class PlanningSite(DomainModel):
     preset: SitePreset
+    site_id: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
+    site_metadata_hash: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     name: str = Field(min_length=1, max_length=120)
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     country: str = Field(default="Kazakhstan", min_length=1, max_length=120)
+    region: str | None = Field(default=None, max_length=160)
+    timezone: str | None = Field(default=None, max_length=80)
     timezone_offset: str = Field(default="+05:00", pattern=r"^[+-](?:0\d|1\d|2[0-3]):[0-5]\d$")
+    site_classification: str | None = None
+    registry_origin: str | None = None
+
+    @model_validator(mode="after")
+    def registered_site_has_snapshot_identity(self) -> PlanningSite:
+        if self.preset is SitePreset.REGISTERED and not all(
+            (self.site_id, self.site_metadata_hash, self.region, self.timezone,
+             self.site_classification, self.registry_origin)
+        ):
+            raise ValueError("registered planning sites require identity, metadata hash, region, timezone, classification, and origin")
+        return self
 
 
 class DemandSpecification(DomainModel):
@@ -104,6 +130,8 @@ class TechnologySelection(DomainModel):
     wind_keys: tuple[str, ...] = ()
     pv_keys: tuple[str, ...] = ()
     battery_keys: tuple[str, ...] = ()
+    filter_mode: CatalogFilterMode = CatalogFilterMode.CUSTOM
+    scale_classes: tuple[ProjectScale, ...] = ()
 
     @model_validator(mode="after")
     def require_generation(self) -> TechnologySelection:
@@ -122,10 +150,14 @@ class PlanningScenario(DomainModel):
     demand: DemandSpecification
     reliability_target: Literal[0.95, 0.99]
     technologies: TechnologySelection
+    equipment_catalog_version: EquipmentCatalogVersion = EquipmentCatalogVersion.PLANNER_V2
+    economics_version: EconomicsVersion = EconomicsVersion.PLANNER_SCALE_AWARE_ECONOMICS_V2
     weather_provider: Literal["Open-Meteo Historical Weather API"] = (
         "Open-Meteo Historical Weather API"
     )
     weather_model: Literal["ERA5"] = "ERA5"
+    demand_id: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$")
+    registered_demand_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
     @model_validator(mode="after")
     def validate_site_demand_pair(self) -> PlanningScenario:
@@ -134,6 +166,8 @@ class PlanningScenario(DomainModel):
             and self.site.preset is not SitePreset.RODINA
         ):
             raise ValueError("Rodina benchmark demand can only be used at the Rodina site")
+        if (self.demand_id is None) != (self.registered_demand_sha256 is None):
+            raise ValueError("registered demand_id and registered_demand_sha256 must be provided together")
         annual = self.demand.annual_kwh
         if self.demand.monthly_kwh is not None:
             annual = math.fsum(self.demand.monthly_kwh)
@@ -235,13 +269,18 @@ class PlanningEconomics(DomainModel):
     economic_classes: dict[str, str]
     reference_capex_basis: dict[str, str]
     economic_sources: dict[str, str | None]
+    reference_cost_base_years: dict[str, int] = Field(default_factory=dict)
 
 
 class PlanningResult(DomainModel):
-    schema_version: Literal["phase14.v1"] = "phase14.v1"
+    schema_version: Literal["phase16.v1"] = "phase16.v1"
     scenario_id: str
     scenario_name: str
     scenario_input_hash: str = Field(pattern=r"^[0-9a-f]{64}$")
+    site_id: str | None = None
+    site_metadata_hash: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    site_snapshot: PlanningSite | None = None
+    demand_id: str | None = None
     demand_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     weather_cache_key: str
     weather_cache_status: str
@@ -256,6 +295,8 @@ class PlanningResult(DomainModel):
     demand_confidence: DemandConfidence
     demand_method: str
     reliability_target: Literal[0.95, 0.99]
+    equipment_catalog_version: EquipmentCatalogVersion = EquipmentCatalogVersion.PLANNER_V2
+    economics_version: EconomicsVersion = EconomicsVersion.PLANNER_SCALE_AWARE_ECONOMICS_V2
     feasible: bool
     design: PlanningDesign | None
     metrics: PlanningMetrics | None
@@ -263,6 +304,9 @@ class PlanningResult(DomainModel):
     optimizer_method: Literal["phase10_staged_generalized", "exact_reduced_space"]
     evaluated_portfolios: int = Field(ge=0)
     dispatch_simulations: int = Field(ge=0)
+    dispatch_cache_hits: int = Field(default=0, ge=0)
+    theoretical_design_combinations: int = Field(default=0, ge=0)
+    catalog_option_counts: dict[str, int] = Field(default_factory=dict)
     elapsed_seconds: float = Field(ge=0)
     stage_timings_seconds: dict[str, float] = Field(default_factory=dict)
     assumptions: tuple[str, ...]

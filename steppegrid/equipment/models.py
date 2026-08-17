@@ -15,6 +15,20 @@ class SourceType(str, Enum):
     MANUFACTURER_MANUAL = "manufacturer_manual"
 
 
+class EquipmentCategory(str, Enum):
+    WIND = "wind"
+    PV_MODULE = "pv_module"
+    INVERTER = "inverter"
+    BATTERY = "battery"
+
+
+class ProjectScale(str, Enum):
+    SMALL_COMMUNITY = "small_community"
+    COMMUNITY = "community"
+    COMMERCIAL = "commercial"
+    UTILITY = "utility"
+
+
 class CutOutBehavior(str, Enum):
     SPEED_THRESHOLD = "speed_threshold"
     CONTINUOUS_OPERATION = "continuous_operation"
@@ -34,6 +48,8 @@ class EquipmentProvenance(DomainModel):
     source_organization: str
     parameters_supported: tuple[str, ...]
     accessed_on: date
+    category: EquipmentCategory | None = None
+    source_year: int | None = Field(default=None, ge=1900, le=9999)
     notes: str | None = None
 
 
@@ -54,6 +70,8 @@ class WindTurbineSpec(DomainModel):
     power_curve_output_units: str = "kW"
     provenance: tuple[EquipmentProvenance, ...]
     notes: str
+    scale_class: ProjectScale = ProjectScale.SMALL_COMMUNITY
+    planning_hub_height_m: float | None = Field(default=None, gt=0)
 
     @model_validator(mode="after")
     def validate_curve(self):
@@ -67,6 +85,8 @@ class WindTurbineSpec(DomainModel):
                 raise ValueError("speed_threshold requires cut_out_wind_speed_m_s")
         elif self.cut_out_wind_speed_m_s is not None:
             raise ValueError("only speed_threshold may define cut_out_wind_speed_m_s")
+        if self.planning_hub_height_m is not None and self.planning_hub_height_m not in self.supported_hub_heights_m:
+            raise ValueError("planning hub height must be one of the documented supported heights")
         return self
 
 
@@ -83,6 +103,7 @@ class PVModuleSpec(DomainModel):
     open_circuit_voltage_v: float = Field(gt=0)
     short_circuit_current_a: float = Field(gt=0)
     provenance: tuple[EquipmentProvenance, ...]
+    scale_class: ProjectScale = ProjectScale.COMMERCIAL
 
 
 class InverterSpec(DomainModel):
@@ -97,6 +118,7 @@ class InverterSpec(DomainModel):
     mppt_voltage_max_v: float = Field(gt=0)
     maximum_dc_voltage_v: float = Field(gt=0)
     provenance: tuple[EquipmentProvenance, ...]
+    scale_class: ProjectScale = ProjectScale.COMMERCIAL
 
 
 class BatterySystemSpec(DomainModel):
@@ -111,6 +133,7 @@ class BatterySystemSpec(DomainModel):
     maximum_soc_fraction: float = Field(gt=0, le=1)
     chemistry: str
     provenance: tuple[EquipmentProvenance, ...]
+    scale_class: ProjectScale = ProjectScale.UTILITY
 
     @model_validator(mode="after")
     def validate_capacity(self):

@@ -1,10 +1,14 @@
 """Phase 8 catalog. Values are transcribed from the cited primary/certification sources."""
 
+from dataclasses import dataclass
 from datetime import date
+from enum import Enum
+from types import MappingProxyType
+from typing import Mapping
 
 from steppegrid.equipment.models import (BatterySystemSpec, CutOutBehavior,
-    EquipmentProvenance, HighWindCurvePolicy, InverterSpec, PVModuleSpec,
-    SourceType, WindTurbineSpec)
+    EquipmentCategory, EquipmentProvenance, HighWindCurvePolicy, InverterSpec,
+    ProjectScale, PVModuleSpec, SourceType, WindTurbineSpec)
 from steppegrid.simulation.models import PowerCurvePoint
 
 ACCESSED = date(2026, 8, 16)
@@ -85,3 +89,178 @@ BATTERIES = {
  "tesla_megapack_2h": BatterySystemSpec(manufacturer="Tesla",model="Megapack 2-hour",nominal_energy_capacity_kwh=3854,usable_energy_capacity_kwh=3854,maximum_charge_power_kw=1927,maximum_discharge_power_kw=1927,round_trip_efficiency=.92,minimum_soc_fraction=0,maximum_soc_fraction=1,chemistry="Lithium-ion; chemistry not specified on cited page",provenance=(_source("Tesla","Megapack 2-hour","Megapack Product Details","https://www.tesla.com/megapack/design",SourceType.MANUFACTURER_PRODUCT_PAGE,"Tesla",("energy_capacity","power","round_trip_efficiency")),)),
  "saft_intensium_max_20_he": BatterySystemSpec(manufacturer="Saft",model="Intensium Max 20 High Energy LFP",nominal_energy_capacity_kwh=2300,usable_energy_capacity_kwh=2185,maximum_charge_power_kw=1100,maximum_discharge_power_kw=1100,round_trip_efficiency=.87,minimum_soc_fraction=.05,maximum_soc_fraction=1,chemistry="Lithium iron phosphate (LFP)",provenance=(_source("Saft","Intensium Max 20 High Energy LFP","Intensium Max AC service flyer and product datasheet","https://saft.com/en/download_file?q=6X7JMGAnv3Fm6HdmtEv%252B2gtlbZ1bRRVHkjS11M6md92GD2EF7vU%252F3Oybbz3WOlG%252BxR8srpA5iCdJ%252FV3IQzTVHQyiTucngZKEg9KkYCLkowAvgaG1hurmW8dDamS2sHPRD6nNl40%252BilVbshZtuw7ZXAX12rHkyf%252ButHzMvnkP2W0N%252FE2tRw%253D%253D%2F20220502_ESS_AC_flyer_LFP_EN_protected.pdf",SourceType.MANUFACTURER_DATASHEET,"Saft",("nominal_energy","rated_power","depth_of_discharge","round_trip_efficiency","chemistry"),"Usable energy is derived as 2.3 MWh x 95% DoD; source reports 87% AC/AC round-trip efficiency for typical use."),)),
 }
+
+
+class EquipmentCatalogVersion(str, Enum):
+    RODINA_FROZEN_V1 = "RODINA_FROZEN_V1"
+    PLANNER_V2 = "PLANNER_V2"
+
+
+@dataclass(frozen=True)
+class EquipmentCatalog:
+    version: EquipmentCatalogVersion
+    wind_turbines: Mapping[str, WindTurbineSpec]
+    pv_modules: Mapping[str, PVModuleSpec]
+    inverters: Mapping[str, InverterSpec]
+    batteries: Mapping[str, BatterySystemSpec]
+
+    @property
+    def pv_block_keys(self) -> tuple[str, ...]:
+        return tuple(
+            f"{module_key}__{inverter_key}"
+            for module_key in self.pv_modules
+            for inverter_key in self.inverters
+        )
+
+
+_nps_source = EquipmentProvenance(
+    manufacturer="Northern Power Systems Srl", product_model="NPS 100C-21",
+    category=EquipmentCategory.WIND,
+    source_title="NPS 100C-21 product brochure and tabulated Class II/A power curve",
+    source_url="https://northernpower.com/wp/wp-content/uploads/2025/11/brochure-NPS-100C-21_ed2020_light_ENG.pdf",
+    source_type=SourceType.MANUFACTURER_DATASHEET,
+    source_organization="Northern Power Systems Srl", source_year=2020,
+    parameters_supported=("rated_power_kw", "rotor_diameter_m", "supported_hub_heights_m", "planning_hub_height_m", "cut_in_wind_speed_m_s", "cut_out_wind_speed_m_s", "power_curve"),
+    accessed_on=ACCESSED,
+    notes="The brochure's curve table is printed beneath an apparent NPS 100C-24 label typo, while the page heading, 100 kW rating, 21 m rotor, and surrounding specifications identify the NPS 100C-21. Negative parasitic bins at 1-2 m/s are bounded to zero and are below cut-in.",
+)
+_leitwind_source = EquipmentProvenance(
+    manufacturer="LEITNER SpA", product_model="LTW42 250 kW",
+    category=EquipmentCategory.WIND,
+    source_title="LEITWIND Product Portfolio — LTW42 tabulated power curve",
+    source_url="https://www.leitwind.com/wp-content/uploads/2025/08/Leitwind_ProductPortfolio_ENG_Esecutivo-LR_WC_S.pdf",
+    source_type=SourceType.MANUFACTURER_DATASHEET,
+    source_organization="LEITNER SpA", source_year=2025,
+    parameters_supported=("rated_power_kw", "rotor_diameter_m", "supported_hub_heights_m", "planning_hub_height_m", "cut_in_wind_speed_m_s", "cut_out_wind_speed_m_s", "power_curve"),
+    accessed_on=ACCESSED,
+    notes="The deterministic planning configuration uses the documented 39 m tower. The manufacturer table reports constant 250 kW from 15 through the 20 m/s cut-out threshold.",
+)
+
+_V2_WIND_ADDITIONS = {
+    "northern_power_nps_100c_21": WindTurbineSpec(
+        manufacturer="Northern Power Systems Srl", model="NPS 100C-21",
+        rated_power_kw=100, maximum_curve_output_kw=100, rotor_diameter_m=20.7,
+        supported_hub_heights_m=(22, 29, 37), planning_hub_height_m=37,
+        cut_in_wind_speed_m_s=3, rated_wind_speed_m_s=15,
+        cut_out_wind_speed_m_s=25, cut_out_behavior=CutOutBehavior.SPEED_THRESHOLD,
+        high_wind_curve_policy=HighWindCurvePolicy.HOLD_LAST_CERTIFIED_VALUE,
+        power_curve=_curve([(1,0),(2,0),(3,.5),(4,4.1),(5,10.5),(6,19),(7,29.4),(8,41),(9,54.3),(10,66.8),(11,77.7),(12,86.4),(13,92.8),(14,97.8),(15,100),(16,99.9),(17,99.2),(18,98.4),(19,97.5),(20,96.8),(21,96.4),(22,96.3),(23,96.8),(24,98),(25,99.2)]),
+        provenance=(_nps_source,), scale_class=ProjectScale.COMMUNITY,
+        notes="Manufacturer tabulated standard-density curve; output is zero below documented 3 m/s cut-in and above 25 m/s cut-out.",
+    ),
+    "leitwind_ltw42_250": WindTurbineSpec(
+        manufacturer="LEITNER SpA", model="LTW42 250 kW",
+        rated_power_kw=250, maximum_curve_output_kw=250, rotor_diameter_m=42,
+        supported_hub_heights_m=(28, 39), planning_hub_height_m=39,
+        cut_in_wind_speed_m_s=2.5, rated_wind_speed_m_s=11,
+        cut_out_wind_speed_m_s=20, cut_out_behavior=CutOutBehavior.SPEED_THRESHOLD,
+        high_wind_curve_policy=HighWindCurvePolicy.HOLD_LAST_CERTIFIED_VALUE,
+        power_curve=_curve([(2.5,3),(3,7),(4,22),(5,47),(6,81),(7,128),(8,190),(9,234),(10,249),(11,250),(12,250),(13,250),(14,250),(15,250),(20,250)]),
+        provenance=(_leitwind_source,), scale_class=ProjectScale.COMMERCIAL,
+        notes="Manufacturer tabulated curve for the 250 kW variant; deterministic 39 m planning tower; output is zero above documented 20 m/s cut-out.",
+    ),
+}
+
+_V2_INVERTER_ADDITIONS = {
+    "sma_sunny_tripower_x_25": InverterSpec(
+        manufacturer="SMA Solar Technology AG", model="Sunny Tripower X 25 (STP 25-50)",
+        rated_ac_power_kw=25, maximum_dc_array_power_kw=37.5,
+        maximum_efficiency=.982, constant_conversion_efficiency=.980,
+        constant_efficiency_metric="European efficiency",
+        mppt_voltage_min_v=430, mppt_voltage_max_v=800, maximum_dc_voltage_v=1000,
+        scale_class=ProjectScale.SMALL_COMMUNITY,
+        provenance=(EquipmentProvenance(
+            manufacturer="SMA Solar Technology AG", product_model="Sunny Tripower X 25 (STP 25-50)",
+            category=EquipmentCategory.INVERTER,
+            source_title="Sunny Tripower X STP 12-50 / 15-50 / 20-50 / 25-50 Datasheet",
+            source_url="https://files.sma.de/downloads/STPxx-50-DS-en-21.pdf",
+            source_type=SourceType.MANUFACTURER_DATASHEET,
+            source_organization="SMA Solar Technology AG", source_year=2023,
+            parameters_supported=("rated_ac_power_kw", "maximum_dc_array_power_kw", "maximum_efficiency", "constant_conversion_efficiency", "constant_efficiency_metric", "mppt_voltage_limits", "maximum_dc_voltage_v"),
+            accessed_on=ACCESSED,
+        ),),
+    )
+}
+
+_sungrow_255_datasheet = EquipmentProvenance(
+    manufacturer="Sungrow Power Supply Co., Ltd.", product_model="ST255CS-2H PowerStack",
+    category=EquipmentCategory.BATTERY,
+    source_title="PowerStack ST255CS-2H Datasheet",
+    source_url="https://info-support.sungrowpower.com/datasheet-materials/b4f56963-dbd2-4c43-8cbc-0808eb4cf083.pdf",
+    source_type=SourceType.MANUFACTURER_DATASHEET,
+    source_organization="Sungrow Power Supply Co., Ltd.", source_year=2025,
+    parameters_supported=("nominal_energy", "usable_energy", "rated_power", "soc_bounds", "chemistry"),
+    accessed_on=ACCESSED,
+    notes="Datasheet reports LFP, 257 kWh rated capacity, 125 kW rated power, and 0–100% depth of charge and discharge; SteppeGrid therefore treats rated capacity as usable capacity.",
+)
+_sungrow_255_product = EquipmentProvenance(
+    manufacturer="Sungrow Power Supply Co., Ltd.", product_model="ST255CS-2H PowerStack",
+    category=EquipmentCategory.BATTERY,
+    source_title="PowerStack ST255CS-2H manufacturer product specification",
+    source_url="https://www.sungrowpower.com/en/products/c-i-energy-storage-system/st255cs-2h",
+    source_type=SourceType.MANUFACTURER_PRODUCT_PAGE,
+    source_organization="Sungrow Power Supply Co., Ltd.", source_year=2025,
+    parameters_supported=("round_trip_efficiency",),
+    accessed_on=ACCESSED,
+    notes="Manufacturer reports system round-trip efficiency greater than 90%; SteppeGrid uses 90% deterministically.",
+)
+_sungrow_510_source = EquipmentProvenance(
+    manufacturer="Sungrow Power Supply Co., Ltd.", product_model="ST510CS-4H PowerStack",
+    category=EquipmentCategory.BATTERY,
+    source_title="PowerStack 255CS ST510CS-4H manufacturer product specification",
+    source_url="https://www.sungrowpower.com/us/en/products/residential-energy-storage-system/st510cs-4h-0708",
+    source_type=SourceType.MANUFACTURER_PRODUCT_PAGE,
+    source_organization="Sungrow Power Supply Co., Ltd.", source_year=2025,
+    parameters_supported=("round_trip_efficiency",),
+    accessed_on=ACCESSED,
+    notes="Manufacturer reports 90% system round-trip efficiency.",
+)
+_sungrow_510_manual = EquipmentProvenance(
+    manufacturer="Sungrow Power Supply Co., Ltd.", product_model="ST510CS-4H-AU PowerStack",
+    category=EquipmentCategory.BATTERY,
+    source_title="PowerStack ST510CS-4H-AU Energy Storage System User Manual",
+    source_url="https://info-support.sungrowpower.com/product-materials/137cdbea-46d5-4a6f-a017-e851b87088db.pdf",
+    source_type=SourceType.MANUFACTURER_MANUAL,
+    source_organization="Sungrow Power Supply Co., Ltd.", source_year=2025,
+    parameters_supported=("nominal_energy", "usable_energy", "rated_power", "soc_bounds", "chemistry"),
+    accessed_on=ACCESSED,
+    notes="Manual reports LFP, 514 kWh rated capacity, 125 kW rated power, and 0–100% depth of charge/discharge.",
+)
+_V2_BATTERY_ADDITIONS = {
+    "sungrow_powerstack_st255_2h": BatterySystemSpec(
+        manufacturer="Sungrow Power Supply Co., Ltd.", model="ST255CS-2H PowerStack",
+        nominal_energy_capacity_kwh=257, usable_energy_capacity_kwh=257,
+        maximum_charge_power_kw=125, maximum_discharge_power_kw=125,
+        round_trip_efficiency=.90, minimum_soc_fraction=0, maximum_soc_fraction=1,
+        chemistry="Lithium iron phosphate (LFP)", provenance=(_sungrow_255_datasheet, _sungrow_255_product),
+        scale_class=ProjectScale.SMALL_COMMUNITY,
+    ),
+    "sungrow_powerstack_st510_4h": BatterySystemSpec(
+        manufacturer="Sungrow Power Supply Co., Ltd.", model="ST510CS-4H PowerStack",
+        nominal_energy_capacity_kwh=514, usable_energy_capacity_kwh=514,
+        maximum_charge_power_kw=125, maximum_discharge_power_kw=125,
+        round_trip_efficiency=.90, minimum_soc_fraction=0, maximum_soc_fraction=1,
+        chemistry="Lithium iron phosphate (LFP)", provenance=(_sungrow_510_source, _sungrow_510_manual),
+        scale_class=ProjectScale.COMMUNITY,
+    ),
+}
+
+RODINA_FROZEN_V1 = EquipmentCatalog(
+    version=EquipmentCatalogVersion.RODINA_FROZEN_V1,
+    wind_turbines=MappingProxyType(dict(WIND_TURBINES)),
+    pv_modules=MappingProxyType(dict(PV_MODULES)),
+    inverters=MappingProxyType(dict(INVERTERS)),
+    batteries=MappingProxyType(dict(BATTERIES)),
+)
+PLANNER_V2 = EquipmentCatalog(
+    version=EquipmentCatalogVersion.PLANNER_V2,
+    wind_turbines=MappingProxyType({**WIND_TURBINES, **_V2_WIND_ADDITIONS}),
+    pv_modules=MappingProxyType(dict(PV_MODULES)),
+    inverters=MappingProxyType({**INVERTERS, **_V2_INVERTER_ADDITIONS}),
+    batteries=MappingProxyType({**BATTERIES, **_V2_BATTERY_ADDITIONS}),
+)
+
+
+def get_equipment_catalog(version: EquipmentCatalogVersion | str) -> EquipmentCatalog:
+    parsed = EquipmentCatalogVersion(version)
+    return RODINA_FROZEN_V1 if parsed is EquipmentCatalogVersion.RODINA_FROZEN_V1 else PLANNER_V2

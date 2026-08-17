@@ -67,8 +67,16 @@ def test_scenario_exports_are_isolated_and_hash_verified(tmp_path):
     assert first_files.directory.parent == tmp_path
     assert second_files.directory.parent == tmp_path
     provenance = json.loads(first_files.provenance_json.read_text(encoding="utf-8"))
+    scenario_payload = json.loads(first_files.scenario_json.read_text(encoding="utf-8"))
+    result_payload = json.loads(first_files.result_json.read_text(encoding="utf-8"))
     for filename, expected in provenance["file_sha256"].items():
         actual = hashlib.sha256((first_files.directory / filename).read_bytes()).hexdigest()
         assert actual == expected
     assert provenance["benchmark_outputs_modified"] is False
     assert provenance["scenario_input_hash"] == first.input_hash
+    for payload in (scenario_payload["scenario"], result_payload, provenance):
+        assert payload["equipment_catalog_version"] == "PLANNER_V2"
+        assert payload["economics_version"] == "PLANNER_SCALE_AWARE_ECONOMICS_V2"
+    reliability_header = first_files.reliability_csv.read_text(encoding="utf-8").splitlines()[0]
+    assert "equipment_catalog_version" in reliability_header
+    assert "economics_version" in reliability_header

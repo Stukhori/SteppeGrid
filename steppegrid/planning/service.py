@@ -1,4 +1,4 @@
-"""End-to-end orchestration for explicit Phase 14 planning runs."""
+"""End-to-end orchestration for explicit catalog-versioned planning runs."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Callable
 
-from steppegrid.equipment.catalog import BATTERIES
+from steppegrid.equipment.catalog import get_equipment_catalog
 from steppegrid.planning.demand import (
     estimated_annual_demand,
     estimated_monthly_demand,
@@ -30,6 +30,8 @@ from steppegrid.planning.models import (
 )
 from steppegrid.planning.optimizer import OptimizationOutcome, optimize_planning_trace
 from steppegrid.planning.outputs import ScenarioArtifacts, write_scenario_outputs
+from steppegrid.sites.registry import SiteRegistry
+from steppegrid.sites.models import WeatherStatus
 
 
 @dataclass(frozen=True)
@@ -68,6 +70,12 @@ def build_scenario_demand(
     scenario: PlanningScenario, uploaded_demand: PlanningDemand | None = None
 ) -> PlanningDemand:
     specification = scenario.demand
+    if scenario.demand_id is not None:
+        if uploaded_demand is None:
+            raise ValueError("the registered-demand scenario requires its resolved demand dataset")
+        if uploaded_demand.sha256 != scenario.registered_demand_sha256:
+            raise ValueError("registered demand content does not match the scenario SHA-256")
+        return uploaded_demand
     if specification.mode is DemandMode.RODINA_BENCHMARK:
         return rodina_benchmark_demand(specification.profile_shape)
     if specification.mode is DemandMode.HOURLY_UPLOAD:
@@ -108,7 +116,8 @@ def _dispatch_detail(
     if not outcome.feasible or outcome.design is None:
         return []
     design = outcome.design
-    battery = BATTERIES[design.battery_key] if design.battery_key else None
+    catalog = get_equipment_catalog(scenario.equipment_catalog_version)
+    battery = catalog.batteries[design.battery_key] if design.battery_key else None
     capacity = battery.nominal_energy_capacity_kwh * design.battery_count if battery else 0.0
     minimum = capacity * battery.minimum_soc_fraction if battery else 0.0
     charge_kw = battery.maximum_charge_power_kw * design.battery_count if battery else 0.0
@@ -161,13 +170,33 @@ class ScenarioPlanningService:
         *,
         cache_root: str | Path = "data/weather/cache",
         output_root: str | Path = "outputs/scenarios",
+        site_output_root: str | Path = "outputs/sites",
+        registry: SiteRegistry | None = None,
     ) -> None:
         self.cache_root = Path(cache_root)
         self.output_root = Path(output_root)
+        self.site_output_root = Path(site_output_root)
+        self.registry = registry or SiteRegistry(cache_root=self.cache_root, output_root=self.site_output_root)
 
     def review(
         self, scenario: PlanningScenario, uploaded_demand: PlanningDemand | None = None
     ) -> tuple[PlanningDemand, dict[str, object]]:
+        if scenario.site.site_id is not None:
+            registered = self.registry.get_site(scenario.site.site_id)
+            if registered.metadata_hash != scenario.site.site_metadata_hash:
+                raise ValueError("registered site metadata changed; rebuild the scenario from the current site snapshot")
+            if self.registry.get_weather_status(registered.site_id, scenario.reference_year) is not WeatherStatus.CACHED:
+                raise ValueError("registered site weather is not validated as CACHED; prepare weather before planning")
+            blockers = [
+                check.message for check in self.registry.validate_registry().checks
+                if check.site_id == registered.site_id and check.status == "BLOCKER"
+            ]
+            if blockers:
+                raise ValueError(f"registered site is invalid: {'; '.join(blockers)}")
+        if scenario.demand_id is not None and uploaded_demand is None:
+            if scenario.site.site_id is None:
+                raise ValueError("registered demand requires a registered site_id")
+            uploaded_demand = self.registry.build_demand(scenario.site.site_id, scenario.demand_id)
         demand = build_scenario_demand(scenario, uploaded_demand)
         if not MINIMUM_ANNUAL_DEMAND_KWH <= demand.annual_kwh <= MAXIMUM_ANNUAL_DEMAND_KWH:
             raise ValueError(
@@ -191,7 +220,10 @@ class ScenarioPlanningService:
         if progress:
             progress("Loading cached weather or making the explicit weather request")
         generation_started = time.perf_counter()
-        generation = prepare_generation(scenario.site, demand, cache_root=self.cache_root)
+        generation = prepare_generation(
+            scenario.site, demand, cache_root=self.cache_root,
+            equipment_catalog_version=scenario.equipment_catalog_version,
+        )
         generation_seconds = time.perf_counter() - generation_started
         if progress:
             progress("Building site-specific wind and PV unit traces")
@@ -203,6 +235,8 @@ class ScenarioPlanningService:
             wind_metadata=generation.wind_metadata,
             pv_metadata=generation.pv_metadata,
             selection=scenario.technologies,
+            equipment_catalog_version=scenario.equipment_catalog_version,
+            economics_version=scenario.economics_version,
             progress=progress,
         )
         wind_unit = (
@@ -230,6 +264,10 @@ class ScenarioPlanningService:
             scenario_id=scenario.scenario_id,
             scenario_name=scenario.name,
             scenario_input_hash=scenario.input_hash,
+            site_id=scenario.site.site_id,
+            site_metadata_hash=scenario.site.site_metadata_hash,
+            site_snapshot=scenario.site,
+            demand_id=scenario.demand_id,
             demand_sha256=demand.sha256,
             weather_cache_key=generation.weather.provenance.cache_key or "unknown",
             weather_cache_status=generation.weather.provenance.cache_status or "unknown",
@@ -244,6 +282,8 @@ class ScenarioPlanningService:
             demand_confidence=demand.confidence,
             demand_method=demand.method,
             reliability_target=scenario.reliability_target,
+            equipment_catalog_version=scenario.equipment_catalog_version,
+            economics_version=scenario.economics_version,
             feasible=outcome.feasible,
             design=outcome.design,
             metrics=metrics,
@@ -251,6 +291,13 @@ class ScenarioPlanningService:
             optimizer_method=outcome.optimizer_method,
             evaluated_portfolios=outcome.evaluated_portfolios,
             dispatch_simulations=outcome.dispatch_simulations,
+            dispatch_cache_hits=outcome.dispatch_cache_hits,
+            theoretical_design_combinations=outcome.theoretical_design_combinations,
+            catalog_option_counts={
+                "wind": len(scenario.technologies.wind_keys),
+                "pv": len(scenario.technologies.pv_keys),
+                "battery": len(scenario.technologies.battery_keys),
+            },
             elapsed_seconds=outcome.elapsed_seconds,
             stage_timings_seconds={
                 "demand_review": review_seconds,
@@ -264,14 +311,19 @@ class ScenarioPlanningService:
                 "Demand confidence labels are qualitative provenance classes, not confidence intervals.",
                 generation.shear_terminology,
                 "PV uses fixed tilt equal to absolute site latitude and an equator-facing azimuth.",
-                "Economics reuse the Phase 10 2022-real-USD reference assumptions.",
+                f"Equipment catalog: {scenario.equipment_catalog_version.value}.",
+                f"Economics method: {scenario.economics_version.value}; reference base years are explicit per technology.",
                 "Result is a planning-model result, not a field-validated optimum or procurement quote.",
             ),
             software_version=_software_version(),
         )
+        artifact_root = (
+            self.site_output_root / scenario.site.site_id / "scenarios"
+            if scenario.site.site_id else self.output_root
+        )
         artifacts = (
             write_scenario_outputs(
-                scenario, result, dispatch_rows, output_root=self.output_root
+                scenario, result, dispatch_rows, output_root=artifact_root
             )
             if save_outputs else None
         )

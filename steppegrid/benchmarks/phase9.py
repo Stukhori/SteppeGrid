@@ -114,12 +114,12 @@ def _monthly(timestamps, values):
             for month in range(1,13)]
 
 
-def benchmark_wind(weather: WeatherDataset, *, shear_exponent: float) -> tuple[dict[str,dict],dict[str,list[float]]]:
+def benchmark_wind(weather: WeatherDataset, *, shear_exponent: float, turbines=None) -> tuple[dict[str,dict],dict[str,list[float]]]:
     series = weather.series
     timestamps = [t.astimezone(timezone(timedelta(hours=5))) for t in series.timestamps]
     results, profiles = {}, {}
-    for key, turbine in WIND_TURBINES.items():
-        hub = turbine.supported_hub_heights_m[0]
+    for key, turbine in (WIND_TURBINES if turbines is None else turbines).items():
+        hub = turbine.planning_hub_height_m or turbine.supported_hub_heights_m[0]
         hub_speeds = [wind_speed_at_hub_height(v,hub,shear_exponent=shear_exponent) for v in series.wind_speed_100m_m_s]
         power = [commercial_turbine_output_kw(v,turbine,hub,shear_exponent) for v in series.wind_speed_100m_m_s]
         annual = math.fsum(power)
@@ -177,14 +177,16 @@ def benchmark_pv(
     tilt_deg: float | None = None,
     azimuth_deg: float | None = None,
     timezone_offset_hours: float = 5,
+    modules=None,
+    inverters=None,
 ) -> tuple[dict[str,dict],dict[str,list[float]]]:
     tilt = abs(latitude) if tilt_deg is None else tilt_deg
     azimuth = (REFERENCE_AZIMUTH_DEG if latitude >= 0 else 0.0) if azimuth_deg is None else azimuth_deg
     timestamps=[t.astimezone(timezone(timedelta(hours=timezone_offset_hours))) for t in weather.series.timestamps]
     poa=_poa(weather, latitude=latitude, longitude=longitude, tilt_deg=tilt, azimuth_deg=azimuth); results={}; profiles={}
-    for module_key,module in PV_MODULES.items():
+    for module_key,module in (PV_MODULES if modules is None else modules).items():
         cell=[ta+(module.noct_c-20)/800*g for ta,g in zip(weather.series.temperature_c,poa,strict=True)]
-        for inverter_key,inverter in INVERTERS.items():
+        for inverter_key,inverter in (INVERTERS if inverters is None else inverters).items():
             count=math.floor(inverter.rated_ac_power_kw/module.rated_power_kw)
             dc_capacity=count*module.rated_power_kw
             dc=[max(0,dc_capacity*g/STC_IRRADIANCE_W_M2*max(0,1+module.temperature_coefficient_pmax_per_c*(tc-STC_CELL_TEMPERATURE_C))) for g,tc in zip(poa,cell,strict=True)]

@@ -15,7 +15,11 @@ from steppegrid.simulation.models import (
     WeatherDataset,
     WindTurbineConfig,
 )
-from steppegrid.simulation.simulator import simulate
+
+def simulate(*args, **kwargs):
+    """Lazily import the simulator so equipment models can share domain types safely."""
+    from steppegrid.simulation.simulator import simulate as _simulate
+    return _simulate(*args, **kwargs)
 
 __all__ = [
     "BatteryConfig",

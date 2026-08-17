@@ -9,6 +9,7 @@ from pathlib import Path
 from steppegrid.benchmarks.phase9 import benchmark_pv, benchmark_wind
 from steppegrid.benchmarks.reconstruction import parse_fixed_utc_offset
 from steppegrid.benchmarks.wind_shear import estimate_two_height_shear
+from steppegrid.equipment.catalog import EquipmentCatalogVersion, get_equipment_catalog
 from steppegrid.planning.models import PlanningDemand, PlanningSite
 from steppegrid.simulation.models import Location, WeatherDataset
 from steppegrid.weather.open_meteo import OpenMeteoHistoricalWeatherProvider
@@ -55,6 +56,7 @@ def prepare_generation(
     demand: PlanningDemand,
     *,
     cache_root: str | Path = "data/weather/cache",
+    equipment_catalog_version: EquipmentCatalogVersion = EquipmentCatalogVersion.PLANNER_V2,
 ) -> PlanningGeneration:
     """Load/fetch weather once for an explicit run and build catalog unit traces."""
     start = demand.timestamps[0].astimezone(timezone.utc)
@@ -74,7 +76,10 @@ def prepare_generation(
         weather.series.wind_speed_100m_m_s,
         timestamps=weather.series.timestamps,
     )
-    wind_metadata, wind = benchmark_wind(weather, shear_exponent=shear.exponent)
+    catalog = get_equipment_catalog(equipment_catalog_version)
+    wind_metadata, wind = benchmark_wind(
+        weather, shear_exponent=shear.exponent, turbines=catalog.wind_turbines
+    )
     offset = parse_fixed_utc_offset(site.timezone_offset).utcoffset(None)
     offset_hours = offset.total_seconds() / 3600 if offset is not None else 0.0
     pv_metadata, pv = benchmark_pv(
@@ -84,6 +89,8 @@ def prepare_generation(
         tilt_deg=abs(site.latitude),
         azimuth_deg=180.0 if site.latitude >= 0 else 0.0,
         timezone_offset_hours=offset_hours,
+        modules=catalog.pv_modules,
+        inverters=catalog.inverters,
     )
     return PlanningGeneration(
         weather=weather,

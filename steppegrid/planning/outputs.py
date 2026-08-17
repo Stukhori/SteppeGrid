@@ -1,4 +1,4 @@
-"""Deterministic, scenario-isolated Phase 14 exports."""
+"""Deterministic, catalog-versioned scenario exports."""
 
 from __future__ import annotations
 
@@ -44,14 +44,24 @@ def write_scenario_outputs(
     dispatch_path = directory / "dispatch.csv"
     provenance_path = directory / "provenance.json"
     scenario_path.write_bytes(_json_bytes({
-        "schema_version": "phase14.v1",
+        "schema_version": "phase16.v1",
         "scenario_id": scenario.scenario_id,
         "scenario_input_hash": scenario.input_hash,
+        "site_id": scenario.site.site_id,
+        "site_metadata_hash": scenario.site.site_metadata_hash,
+        "demand_id": scenario.demand_id,
+        "registered_demand_sha256": scenario.registered_demand_sha256,
         "scenario": scenario.model_dump(mode="json"),
     }))
     result_path.write_bytes(_json_bytes(result.model_dump(mode="json")))
     reliability_row = {
         "scenario_id": result.scenario_id,
+        "site_id": result.site_id,
+        "site_metadata_hash": result.site_metadata_hash,
+        "demand_id": result.demand_id,
+        "demand_sha256": result.demand_sha256,
+        "equipment_catalog_version": result.equipment_catalog_version.value,
+        "economics_version": result.economics_version.value,
         "target": result.reliability_target,
         "served_fraction": result.metrics.served_fraction if result.metrics else None,
         "served_energy_kwh": result.metrics.served_energy_kwh if result.metrics else None,
@@ -71,9 +81,15 @@ def write_scenario_outputs(
         writer.writerows(dispatch_rows)
     files = (scenario_path, result_path, reliability_path, dispatch_path)
     provenance_path.write_bytes(_json_bytes({
-        "schema_version": "phase14.v1",
+        "schema_version": "phase16.v1",
         "scenario_id": scenario.scenario_id,
         "scenario_input_hash": scenario.input_hash,
+        "site_id": result.site_id,
+        "site_metadata_hash": result.site_metadata_hash,
+        "site_snapshot": result.site_snapshot.model_dump(mode="json") if result.site_snapshot else None,
+        "demand_id": result.demand_id,
+        "equipment_catalog_version": result.equipment_catalog_version.value,
+        "economics_version": result.economics_version.value,
         "demand_sha256": result.demand_sha256,
         "weather_cache_key": result.weather_cache_key,
         "weather_cache_status": result.weather_cache_status,

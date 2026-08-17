@@ -1,0 +1,120 @@
+{
+  "schema_version": "phase16.site.v1",
+  "site_id": "rodina",
+  "name": "Rodina",
+  "settlement_type": "agricultural settlement",
+  "country": "Kazakhstan",
+  "region": "Akmola Region",
+  "district": "Tselinograd District",
+  "latitude": 51.302445,
+  "longitude": 70.541645,
+  "timezone": "Asia/Almaty",
+  "timezone_offset": "+05:00",
+  "classification": "BENCHMARK",
+  "origin": "BUILT_IN",
+  "population": null,
+  "population_year": null,
+  "household_count": null,
+  "household_count_year": null,
+  "elevation_m": null,
+  "weather_datasets": [
+    {
+      "weather_id": "era5_2025_rodina_local_year",
+      "source": "Open-Meteo Historical Weather API",
+      "model": "ERA5",
+      "year": 2025,
+      "status": "CACHED",
+      "variables": ["temperature_2m", "wind_speed_10m", "shortwave_radiation", "wind_speed_100m", "direct_normal_irradiance", "diffuse_radiation"],
+      "start_utc": "2024-12-31T19:00:00Z",
+      "end_utc": "2025-12-31T19:00:00Z",
+      "timezone": "UTC",
+      "latitude": 51.302445,
+      "longitude": 70.541645,
+      "cache_key": "5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd",
+      "path": "data/weather/cache/open_meteo/era5/5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd/weather.csv",
+      "metadata_path": "data/weather/cache/open_meteo/era5/5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd/metadata.json",
+      "sha256": "dea975f31577ef2674e95c97a2d89c9aaaa1cdc03f65607dbfd965004a6ef396",
+      "provenance": [
+        {
+          "field": "weather",
+          "source_name": "Open-Meteo Historical Weather API / ERA5",
+          "source_type": "DERIVED",
+          "source_url": "https://open-meteo.com/en/docs/historical-weather-api",
+          "source_year": 2025,
+          "retrieved_date": "2026-08-15",
+          "notes": "Frozen Phase 9 cache; ERA5 gridded reanalysis, not site measurement."
+        }
+      ]
+    }
+  ],
+  "demand_datasets": [
+    {
+      "demand_id": "rodina_phase9_reconstruction_v1",
+      "site_id": "rodina",
+      "name": "Frozen Phase 9 monthly-row reconstruction",
+      "mode": "rodina_benchmark",
+      "classification": "SOURCE_RECONSTRUCTED",
+      "confidence": "Strong source reconstruction",
+      "reference_year": 2025,
+      "annual_energy_kwh": 8020000.0,
+      "temporal_resolution": "hourly",
+      "profile_method": "Phase 9 literature monthly-row reconstruction with deterministic community-facility-like hourly shape",
+      "profile_shape": "community_facility_like",
+      "monthly_kwh": null,
+      "path": "data/benchmarks/rodina/published_monthly_energy.csv",
+      "source_file_sha256": "602ad8890e409ba0303306a868033502278f03fa313d90e8745b6d951d0fb6cb",
+      "demand_sha256": "331983aa57dc786a0fb6adca4f8fe3fe4a68d8d271e42044f1ea9c64851705fd",
+      "provenance": [
+        {
+          "field": "demand",
+          "source_name": "Rodina literature monthly energy table",
+          "source_type": "AUTHORITATIVE_SOURCE",
+          "source_url": "https://doi.org/10.47533/2026.1606-146X.1-03",
+          "source_year": 2026,
+          "retrieved_date": "2026-08-15",
+          "notes": "Monthly rows total 8.02 GWh and are reconstructed hourly; this is not measured interval demand."
+        }
+      ],
+      "created_at_utc": "2026-08-17T00:00:00Z"
+    }
+  ],
+  "provenance": [
+    {
+      "field": "coordinates",
+      "source_name": "SteppeGrid Rodina benchmark research brief",
+      "source_type": "PROJECT_RECORD",
+      "source_url": null,
+      "source_year": 2026,
+      "retrieved_date": "2026-08-15",
+      "notes": "Verified ERA5 sampling anchor; not asserted as an exact settlement centroid."
+    },
+    {
+      "field": "name",
+      "source_name": "Rodina benchmark publication",
+      "source_type": "AUTHORITATIVE_SOURCE",
+      "source_url": "https://doi.org/10.47533/2026.1606-146X.1-03",
+      "source_year": 2026,
+      "retrieved_date": "2026-08-15",
+      "notes": null
+    },
+    {
+      "field": "region",
+      "source_name": "SteppeGrid Rodina benchmark research brief",
+      "source_type": "PROJECT_RECORD",
+      "source_url": null,
+      "source_year": 2026,
+      "retrieved_date": "2026-08-15",
+      "notes": null
+    },
+    {
+      "field": "timezone",
+      "source_name": "SteppeGrid frozen benchmark configuration",
+      "source_type": "PROJECT_RECORD",
+      "source_url": null,
+      "source_year": 2025,
+      "retrieved_date": "2026-08-15",
+      "notes": "IANA carrier Asia/Almaty with the frozen +05:00 planning offset."
+    }
+  ],
+  "notes": "Frozen Rodina benchmark identity. Registry migration does not regenerate or alter Phase 9-12 results."
+}

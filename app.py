@@ -20,9 +20,11 @@ from steppegrid.app.data import AppDataError
 from steppegrid.app.formatting import RECONSTRUCTION_NOTICE, SCENARIO_NOTICE, energy, money, percent, power, readable
 from steppegrid.app.services import PlanningService
 from steppegrid.app.planner import render_planner
+from steppegrid.app.sites import render_sites
 from steppegrid.app.state import NAVIGATION, PROFILE_LABELS, SHAMSHI_STATUS, TARGET_LABELS
 from steppegrid.app.theme import COLORS, apply_theme
 from steppegrid.planning.service import ScenarioPlanningService
+from steppegrid.sites import SiteRegistry
 
 st.set_page_config(page_title="SteppeGrid | Rodina Benchmark", page_icon="⚡", layout="wide", initial_sidebar_state="expanded")
 apply_theme()
@@ -36,6 +38,11 @@ def service() -> PlanningService:
 @st.cache_resource
 def scenario_service() -> ScenarioPlanningService:
     return ScenarioPlanningService()
+
+
+@st.cache_resource
+def site_registry() -> SiteRegistry:
+    return SiteRegistry()
 
 
 def target_selector(key: str) -> float:
@@ -55,7 +62,7 @@ def overview(api: PlanningService) -> None:
         "SteppeGrid · Explore benchmark",
         "Renewable microgrid planning for rural Kazakhstan",
         f"Rodina benchmark · {site['region']} · 2025 ERA5 · {energy(demand['monthly_rows_reconstructed_annual_kwh'])} reconstructed demand",
-        [("VALIDATED", "success"), ("RECONSTRUCTED DEMAND", "warning"), ("ERA5 WEATHER", "info"), ("FROZEN BENCHMARK", "success")],
+        [("VALIDATED", "success"), ("RECONSTRUCTED DEMAND", "warning"), ("ERA5 WEATHER", "info"), ("RODINA_FROZEN_V1", "success")],
     )
     section_header("Study status", "One completed literature benchmark and one explicit-estimate planning site.")
     left, right = st.columns(2)
@@ -138,7 +145,7 @@ def demand_weather(api: PlanningService) -> None:
 
 
 def renewable_generation(api: PlanningService) -> None:
-    page_header("Study · Physical models", "Renewable generation", "Compare catalogued commercial equipment and inspect frozen Phase 9 modeled output traces.", [("CERTIFICATION SOURCES", "success"), ("ERA5-DERIVED SHEAR", "warning")])
+    page_header("Study · Physical models", "Renewable generation", "Compare the frozen Rodina V1 equipment and inspect frozen Phase 9 modeled output traces.", [("RODINA_FROZEN_V1", "success"), ("CERTIFICATION SOURCES", "success"), ("ERA5-DERIVED SHEAR", "warning")])
     with st.spinner("Preparing frozen Phase 9 equipment traces…"):
         wind_rows, pv_rows = api.generation_catalog()
     wind, pv = pd.DataFrame(wind_rows), pd.DataFrame(pv_rows)
@@ -168,7 +175,7 @@ def renewable_generation(api: PlanningService) -> None:
 
 
 def system_design(api: PlanningService) -> None:
-    page_header("Planning · Frozen portfolios", "System design", "Explore the two final robust designs and replay their hourly dispatch without running an optimizer.", [("PHASE 10 DESIGN", "success"), ("REPLAY ONLY", "info")])
+    page_header("Planning · Frozen portfolios", "System design", "Explore the two final robust designs and replay their hourly dispatch without running an optimizer.", [("RODINA_FROZEN_V1", "success"), ("PHASE 10 DESIGN", "success"), ("REPLAY ONLY", "info")])
     target = target_selector("design_target"); design = api.design(target); summary = api.nominal_dispatch_summary(target)
     section_header(f"{target:.0%} annual served-energy target", "Least-cost feasible robust design from the frozen Phase 10 staged discrete search.")
     wind_col, solar_col, storage_col = st.columns(3)
@@ -332,7 +339,7 @@ if "app_mode" not in st.session_state:
     st.session_state.app_mode = "Explore Benchmark"
 with st.sidebar:
     st.markdown("## ⚡ SteppeGrid")
-    left, right = st.columns(2)
+    left, middle, right = st.columns(3)
     with left:
         if st.button("Explore", type="primary" if st.session_state.app_mode == "Explore Benchmark" else "tertiary", width="stretch"):
             st.session_state.app_mode = "Explore Benchmark"
@@ -340,6 +347,10 @@ with st.sidebar:
     with right:
         if st.button("Plan", type="primary" if st.session_state.app_mode == "Plan a System" else "tertiary", width="stretch"):
             st.session_state.app_mode = "Plan a System"
+            st.rerun()
+    with middle:
+        if st.button("Sites", type="primary" if st.session_state.app_mode == "Sites" else "tertiary", width="stretch"):
+            st.session_state.app_mode = "Sites"
             st.rerun()
     if st.session_state.app_mode == "Explore Benchmark":
         st.caption("EXPLORE BENCHMARK · RODINA")
@@ -351,13 +362,18 @@ with st.sidebar:
                     st.rerun()
         st.divider()
         sidebar_status()
-    else:
+    elif st.session_state.app_mode == "Plan a System":
         st.caption("PLAN A SYSTEM · USER SCENARIO")
         st.info("Demand is always explicit. User scenarios are isolated from frozen benchmark outputs.")
+    else:
+        st.caption("SITES · LOCAL REGISTRY")
+        st.info("Browse registered villages or onboard a user planning site.")
 
 try:
     if st.session_state.app_mode == "Plan a System":
-        render_planner(scenario_service())
+        render_planner(scenario_service(), site_registry())
+    elif st.session_state.app_mode == "Sites":
+        render_sites(site_registry())
     else:
         ROUTES[st.session_state.active_page](service())
 except AppDataError as error:

@@ -1,4 +1,4 @@
-"""Streamlit workflow for Phase 14 user-defined planning scenarios."""
+"""Streamlit workflow for catalog-versioned user planning scenarios."""
 
 from __future__ import annotations
 
@@ -12,26 +12,27 @@ from pydantic import ValidationError
 
 from steppegrid.app.components import callout, metric, page_header, section_header
 from steppegrid.app.formatting import energy, money, percent, readable
-from steppegrid.equipment.catalog import BATTERIES, INVERTERS, PV_MODULES, WIND_TURBINES
+from steppegrid.equipment.catalog import PLANNER_V2
+from steppegrid.equipment.models import ProjectScale
 from steppegrid.planning.demand import PlanningDemandError, demand_preview, parse_hourly_demand_csv
 from steppegrid.planning.models import (
     DemandConfidence,
     DemandMode,
     DemandSourceType,
     DemandSpecification,
+    CatalogFilterMode,
     PlanningScenario,
     PlanningSite,
     SitePreset,
     TechnologySelection,
 )
 from steppegrid.planning.service import PlanningRun, ScenarioPlanningService
-
-SITE_PRESETS = {
-    "Rodina benchmark site": (SitePreset.RODINA, "Rodina", 51.302445, 70.541645, "+05:00"),
-    "Shamshi Kaldayakova": (SitePreset.SHAMSHI, "Shamshi Kaldayakova", 50.578333, 57.544722, "+05:00"),
-    "Custom coordinates": (SitePreset.CUSTOM, "Custom site", 50.0, 67.0, "+05:00"),
-}
+from steppegrid.sites import SiteRegistry
 MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+WIND_TURBINES = PLANNER_V2.wind_turbines
+PV_MODULES = PLANNER_V2.pv_modules
+INVERTERS = PLANNER_V2.inverters
+BATTERIES = PLANNER_V2.batteries
 
 
 def result_is_stale(result, scenario: PlanningScenario | None) -> bool:
@@ -51,34 +52,77 @@ def _source_configuration(mode: DemandMode) -> tuple[DemandSourceType, DemandCon
     return label, confidence
 
 
-def _build_inputs() -> tuple[PlanningScenario | None, object | None, str | None]:
-    section_header("1 · Site", "Choose a known site or enter explicit coordinates.")
-    site_label = st.selectbox("Site preset", list(SITE_PRESETS), key="planner_site")
-    preset, default_name, default_lat, default_lon, default_offset = SITE_PRESETS[site_label]
-    if preset is SitePreset.CUSTOM:
-        name = st.text_input("Site name", value=default_name, key="planner_site_name")
-        latitude = st.number_input("Latitude", min_value=-90.0, max_value=90.0, value=default_lat, format="%.6f")
-        longitude = st.number_input("Longitude", min_value=-180.0, max_value=180.0, value=default_lon, format="%.6f")
-        timezone_offset = st.text_input("Fixed UTC offset", value=default_offset)
+def _build_inputs(registry: SiteRegistry) -> tuple[PlanningScenario | None, object | None, str | None]:
+    section_header("1 · Site", "Choose a registered village or use temporary custom coordinates.")
+    sites = registry.list_sites()
+    options = {
+        ("Rodina benchmark site" if site.site_id == "rodina" else site.name): site.site_id
+        for site in sites
+    }
+    options["Custom coordinates"] = None
+    site_label = st.selectbox("Site preset", list(options), key="planner_site")
+    selected_site_id = options[site_label]
+    registered_site = registry.get_site(selected_site_id) if selected_site_id else None
+    if registered_site is None:
+        name = st.text_input("Site name", value="Custom site", key="planner_site_name")
+        latitude = st.number_input("Latitude", min_value=-90.0, max_value=90.0, value=50.0, format="%.6f")
+        longitude = st.number_input("Longitude", min_value=-180.0, max_value=180.0, value=67.0, format="%.6f")
+        timezone_offset = st.text_input("Fixed UTC offset", value="+05:00")
+        try:
+            planning_site = PlanningSite(
+                preset=SitePreset.CUSTOM, name=name, latitude=latitude,
+                longitude=longitude, timezone_offset=timezone_offset,
+            )
+        except ValidationError as error:
+            return None, None, str(error)
     else:
-        name, latitude, longitude, timezone_offset = default_name, default_lat, default_lon, default_offset
-        st.caption(f"{latitude:.6f}, {longitude:.6f} · fixed offset {timezone_offset}")
+        planning_site = registry.planning_site(registered_site.site_id)
+        name = registered_site.name
+        st.caption(
+            f"{registered_site.latitude:.6f}, {registered_site.longitude:.6f} · "
+            f"{registered_site.timezone} · {registry.get_planning_readiness(registered_site.site_id).value}"
+        )
     st.info("Weather: Open-Meteo ERA5, 2025 hourly reanalysis. A live request occurs only after Run Planner if the exact cache is absent.")
 
     section_header("2 · Demand", "Provide the demand magnitude, timing assumption, and evidence class.")
-    allowed_modes = [DemandMode.ESTIMATED_ANNUAL, DemandMode.ESTIMATED_MONTHLY, DemandMode.HOURLY_UPLOAD]
-    if preset is SitePreset.RODINA:
+    allowed_modes: list[DemandMode | str] = [DemandMode.ESTIMATED_ANNUAL, DemandMode.ESTIMATED_MONTHLY, DemandMode.HOURLY_UPLOAD]
+    if registered_site and registered_site.demand_datasets:
+        allowed_modes.append("registered_dataset")
+    if registered_site and registered_site.classification.value == "BENCHMARK":
         allowed_modes.insert(0, DemandMode.RODINA_BENCHMARK)
-    mode = st.selectbox("Demand workflow", allowed_modes, format_func=lambda value: readable(value.value), key="planner_demand_mode")
-    shape = st.selectbox(
-        "Deterministic hourly shape",
-        ["community_facility_like", "residential_like", "flat_within_month"],
-        format_func=readable, key="planner_shape", disabled=mode is DemandMode.HOURLY_UPLOAD,
+    mode = st.selectbox(
+        "Demand workflow", allowed_modes,
+        format_func=lambda value: "Existing registered demand dataset" if value == "registered_dataset" else readable(value.value),
+        key="planner_demand_mode",
     )
+    shape = "community_facility_like"
+    if mode != "registered_dataset":
+        shape = st.selectbox(
+            "Deterministic hourly shape",
+            ["community_facility_like", "residential_like", "flat_within_month"],
+            format_func=readable, key="planner_shape", disabled=mode is DemandMode.HOURLY_UPLOAD,
+        )
     annual = None; monthly = None; uploaded = None
     upload_filename = upload_hash = None
     source_name = source_url = None; source_year = None
-    if mode is DemandMode.RODINA_BENCHMARK:
+    demand_id = registered_demand_sha256 = None
+    registered_specification = None
+    if mode == "registered_dataset":
+        assert registered_site is not None
+        demand_options = {f"{item.name} · {item.classification.value}": item.demand_id for item in registered_site.demand_datasets}
+        demand_label = st.selectbox("Registered demand dataset", list(demand_options), key="planner_registered_demand")
+        demand_id = demand_options[demand_label]
+        dataset = registry.get_demand_dataset(registered_site.site_id, demand_id)
+        registered_demand_sha256 = dataset.demand_sha256
+        registered_specification = registry.demand_specification(registered_site.site_id, demand_id)
+        uploaded = registry.build_demand(registered_site.site_id, demand_id)
+        st.caption(
+            f"{dataset.annual_energy_kwh:,.0f} kWh/year · {dataset.classification.value} · "
+            f"SHA-256 {dataset.demand_sha256[:12]}…"
+        )
+        source_type, confidence, method = dataset.classification, dataset.confidence, dataset.profile_method
+        shape = dataset.profile_shape
+    elif mode is DemandMode.RODINA_BENCHMARK:
         source_type, confidence = _source_configuration(mode)
         method = "Frozen Phase 9 literature monthly-row reconstruction"
     elif mode is DemandMode.HOURLY_UPLOAD:
@@ -124,25 +168,45 @@ def _build_inputs() -> tuple[PlanningScenario | None, object | None, str | None]
     target_label = st.segmented_control("Annual served-energy target", ["95%", "99%"], default="95%", key="planner_target")
     target = 0.95 if target_label == "95%" else 0.99
     section_header("4 · Technologies", "Limit the search to existing sourced catalog equipment.")
-    wind_keys = tuple(st.multiselect("Wind turbines", list(WIND_TURBINES), default=["sd6"], format_func=readable))
+    filter_mode = st.selectbox(
+        "Catalog filter", list(CatalogFilterMode), index=0,
+        format_func=lambda value: readable(value.value),
+        help="All verified equipment evaluates the complete V2 catalog. Other filters are explicit scenario inputs.",
+    )
+    if filter_mode is CatalogFilterMode.SMALL_COMMUNITY:
+        scales = (ProjectScale.SMALL_COMMUNITY, ProjectScale.COMMUNITY)
+    elif filter_mode is CatalogFilterMode.MEDIUM_LARGE:
+        scales = (ProjectScale.COMMERCIAL, ProjectScale.UTILITY)
+    else:
+        scales = tuple(ProjectScale)
+    eligible_wind = [key for key, item in WIND_TURBINES.items() if item.scale_class in scales]
+    eligible_inverters = [key for key, item in INVERTERS.items() if item.scale_class in scales]
+    eligible_batteries = [key for key, item in BATTERIES.items() if item.scale_class in scales]
     pv_options = [f"{module}__{inverter}" for module in PV_MODULES for inverter in INVERTERS]
-    pv_keys = tuple(st.multiselect("PV module / inverter blocks", pv_options, default=["trina_tsm_450_neg9r28__sma_core1_stp50_41"], format_func=readable))
-    battery_keys = tuple(st.multiselect("Battery systems", list(BATTERIES), default=["tesla_megapack_2h"], format_func=readable))
-    with st.expander("Selected technology planning details"):
+    eligible_pv = [key for key in pv_options if key.split("__", 1)[1] in eligible_inverters]
+    if filter_mode is CatalogFilterMode.CUSTOM:
+        wind_keys = tuple(st.multiselect("Wind turbines", list(WIND_TURBINES), default=["sd6"], format_func=readable))
+        pv_keys = tuple(st.multiselect("PV module / inverter blocks", pv_options, default=["trina_tsm_450_neg9r28__sma_core1_stp50_41"], format_func=readable))
+        battery_keys = tuple(st.multiselect("Battery systems", list(BATTERIES), default=["sungrow_powerstack_st255_2h"], format_func=readable))
+    else:
+        wind_keys, pv_keys, battery_keys = tuple(eligible_wind), tuple(eligible_pv), tuple(eligible_batteries)
+        st.caption(f"Explicit filter includes {len(wind_keys)} wind models, {len(pv_keys)} PV configurations, and {len(battery_keys)} battery systems.")
+    with st.expander("Catalog / technology details"):
         details = []
         for key in wind_keys:
             item = WIND_TURBINES[key]
-            details.append({"Technology": key, "Type": "Wind", "Rated scale": f"{item.rated_power_kw:g} kW", "Planning basis": "Phase 10 distributed-wind cost reference"})
+            details.append({"Technology": key, "Type": "Wind", "Rated scale": f"{item.rated_power_kw:g} kW", "Planning hub height": f"{item.planning_hub_height_m or item.supported_hub_heights_m[0]:g} m", "Scale class": readable(item.scale_class.value), "Source": item.provenance[0].source_url})
         for key in pv_keys:
             module_key, inverter_key = key.split("__", 1)
-            details.append({"Technology": key, "Type": "PV block", "Rated scale": f"{INVERTERS[inverter_key].rated_ac_power_kw:g} kWac", "Planning basis": "Phase 10 commercial/utility PV scale class"})
+            inverter = INVERTERS[inverter_key]
+            details.append({"Technology": key, "Type": "PV block", "Rated scale": f"{inverter.rated_ac_power_kw:g} kWac", "Planning hub height": "—", "Scale class": readable(inverter.scale_class.value), "Source": inverter.provenance[0].source_url})
         for key in battery_keys:
             item = BATTERIES[key]
-            details.append({"Technology": key, "Type": "Battery", "Rated scale": f"{item.usable_energy_capacity_kwh:g} kWh usable", "Planning basis": "Phase 10 generic Li-ion cost reference"})
+            details.append({"Technology": key, "Type": "Battery", "Rated scale": f"{item.usable_energy_capacity_kwh:g} kWh / {item.maximum_discharge_power_kw:g} kW", "Planning hub height": "—", "Scale class": readable(item.scale_class.value), "Source": item.provenance[0].source_url})
         st.dataframe(pd.DataFrame(details), hide_index=True, width="stretch")
     scenario_name = st.text_input("Scenario name", value=f"{name} planning scenario")
     try:
-        specification = DemandSpecification(
+        specification = registered_specification or DemandSpecification(
             mode=mode, source_type=source_type, confidence=confidence,
             profile_shape=shape, annual_kwh=annual, monthly_kwh=monthly,
             source_name=source_name, source_url=source_url, source_year=source_year,
@@ -150,9 +214,10 @@ def _build_inputs() -> tuple[PlanningScenario | None, object | None, str | None]
         )
         scenario = PlanningScenario(
             name=scenario_name,
-            site=PlanningSite(preset=preset, name=name, latitude=latitude, longitude=longitude, timezone_offset=timezone_offset),
+            site=planning_site,
             demand=specification, reliability_target=target,
-            technologies=TechnologySelection(wind_keys=wind_keys, pv_keys=pv_keys, battery_keys=battery_keys),
+            demand_id=demand_id, registered_demand_sha256=registered_demand_sha256,
+            technologies=TechnologySelection(wind_keys=wind_keys, pv_keys=pv_keys, battery_keys=battery_keys, filter_mode=filter_mode, scale_classes=scales),
         )
     except (ValidationError, ValueError) as error:
         return None, uploaded, str(error)
@@ -169,6 +234,12 @@ def _render_result(run: PlanningRun) -> None:
     a, b, c, d = st.columns(4)
     metrics = result.metrics; economics = result.economics
     assert metrics is not None and economics is not None
+    st.info(
+        f"Site: {result.site_id or 'temporary custom'} · Demand: {result.demand_id or 'scenario input'} · "
+        f"Catalog: {result.equipment_catalog_version.value} · Economics: {result.economics_version.value} · "
+        f"options considered: {result.catalog_option_counts.get('wind', 0)} wind, "
+        f"{result.catalog_option_counts.get('pv', 0)} PV, {result.catalog_option_counts.get('battery', 0)} battery."
+    )
     callout(
         "Estimated planning result" if result.demand_source_type is not DemandSourceType.MEASURED else "Measured-demand planning result",
         f"Demand basis: {result.demand_source_type.value} · {result.demand_confidence.value}. "
@@ -186,7 +257,7 @@ def _render_result(run: PlanningRun) -> None:
         {"Technology": "PV", "Selection": readable(design.pv_key) if design.pv_key else "None", "Count": design.pv_count, "Capacity": f"{design.pv_ac_capacity_kw:,.1f} kWac"},
         {"Technology": "Storage", "Selection": readable(design.battery_key) if design.battery_key else "None", "Count": design.battery_count, "Capacity": f"{design.battery_usable_capacity_kwh:,.1f} kWh usable"},
     ]), hide_index=True, width="stretch")
-    st.caption(f"Method: {readable(result.optimizer_method)} · {result.evaluated_portfolios:,} renewable portfolios · {result.dispatch_simulations:,} cached dispatch simulations · {result.elapsed_seconds:.2f} s")
+    st.caption(f"Method: {readable(result.optimizer_method)} · {result.theoretical_design_combinations:,} theoretical combinations · {result.evaluated_portfolios:,} renewable portfolios · {result.dispatch_simulations:,} dispatch simulations · {result.dispatch_cache_hits:,} cache hits · {result.elapsed_seconds:.2f} s")
     st.caption(
         f"Longest deficit: {metrics.longest_deficit_hours:,} h · maximum hourly deficit: "
         f"{metrics.maximum_hourly_deficit_kwh:,.1f} kWh · curtailment: {energy(metrics.curtailment_kwh)} · "
@@ -206,6 +277,10 @@ def _render_result(run: PlanningRun) -> None:
     export_json = json.dumps({"scenario": run.scenario.model_dump(mode="json"), "result": result.model_dump(mode="json")}, indent=2, sort_keys=True)
     summary_csv = pd.DataFrame([{
         "scenario_id": result.scenario_id, "scenario_input_hash": result.scenario_input_hash,
+        "site_id": result.site_id, "site_metadata_hash": result.site_metadata_hash,
+        "demand_id": result.demand_id,
+        "equipment_catalog_version": result.equipment_catalog_version.value,
+        "economics_version": result.economics_version.value,
         "demand_sha256": result.demand_sha256, "weather_sha256": result.weather_sha256,
         "demand_source_type": result.demand_source_type.value,
         "demand_confidence": result.demand_confidence.value,
@@ -226,14 +301,15 @@ def _render_result(run: PlanningRun) -> None:
     with right: st.download_button("Download result CSV", summary_csv, f"{result.scenario_id}.csv", "text/csv")
 
 
-def render_planner(api: ScenarioPlanningService) -> None:
+def render_planner(api: ScenarioPlanningService, registry: SiteRegistry | None = None) -> None:
+    registry = registry or api.registry
     page_header(
-        "Plan a System · Phase 14", "Interactive scenario planner",
-        "Define demand explicitly, review provenance and weather coverage, then run the bounded generalized Phase 10 sizing method.",
+        "Plan a System · Phase 16", "Multi-village scenario planner",
+        "Select a registered site and demand dataset, or use temporary coordinates, then run Planner V2.",
         [("USER SCENARIO", "info"), ("ERA5 WEATHER", "info"), ("EXPLICIT RUN", "success")],
     )
     callout("Planning-model boundary", "A result is a modeled planning scenario—not a field-validated optimum, procurement quote, confidence interval, or probability distribution.", "warning")
-    scenario, uploaded, error = _build_inputs()
+    scenario, uploaded, error = _build_inputs(registry)
     section_header("5 · Review & run", "The hash changes whenever a modeled input changes.")
     if error:
         st.warning(error)
@@ -252,8 +328,8 @@ def render_planner(api: ScenarioPlanningService) -> None:
             st.line_chart(preview_frame)
             st.caption(f"Scenario ID: `{scenario.scenario_id}` · input SHA-256: `{scenario.input_hash}`")
             st.caption(f"Demand: {preview['source_type']} · {preview['method']} · SHA-256 `{preview['sha256']}`")
-            if scenario.site.preset is SitePreset.SHAMSHI:
-                st.info("This will be labeled an estimated-demand planning scenario for Shamshi, not a field optimum.")
+            if scenario.site.site_classification == "FIELD_CASE":
+                st.info("FIELD_CASE is descriptive only. Synthetic or proxy demand does not make this a field-validated result.")
             if st.button("Run Planner", type="primary", width="stretch"):
                 with st.status("Running planning workflow…", expanded=True) as status:
                     run = api.run(scenario, uploaded, progress=st.write)
@@ -274,3 +350,8 @@ def render_planner(api: ScenarioPlanningService) -> None:
             {"Scenario": row["scenario_name"], "Target": row["reliability_target"], "Annual demand (kWh)": row["annual_demand_kwh"], "Demand class": row["demand_source_type"], "Wind (kW)": row["design"]["wind_capacity_kw"] if row["design"] else None, "PV (kWac)": row["design"]["pv_ac_capacity_kw"] if row["design"] else None, "Storage (kWh)": row["design"]["battery_usable_capacity_kwh"] if row["design"] else None, "Served fraction": row["metrics"].get("served_fraction") if row["metrics"] else None, "LOLH": row["metrics"].get("loss_of_load_hours") if row["metrics"] else None, "Curtailment (kWh)": row["metrics"].get("curtailment_kwh") if row["metrics"] else None, "NPC (USD)": row["economics"].get("net_present_cost_usd") if row["economics"] else None, "Method": row["optimizer_method"]}
             for row in history
         ]), hide_index=True, width="stretch")
+    if scenario is not None and scenario.site.site_id:
+        persisted = registry.scenario_history(scenario.site.site_id)
+        if persisted:
+            section_header("Site scenario history", "Local historical results retain their original site and demand hashes.")
+            st.dataframe(pd.DataFrame(persisted), hide_index=True, width="stretch")

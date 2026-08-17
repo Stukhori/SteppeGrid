@@ -1,0 +1,120 @@
+{
+  "schema_version": "phase16.site.v1",
+  "site_id": "shamshi_kaldayakova",
+  "name": "Shamshi Kaldayakova",
+  "settlement_type": "village",
+  "country": "Kazakhstan",
+  "region": "Aktobe Region",
+  "district": null,
+  "latitude": 50.578333,
+  "longitude": 57.544722,
+  "timezone": "Asia/Aqtobe",
+  "timezone_offset": "+05:00",
+  "classification": "FIELD_CASE",
+  "origin": "BUILT_IN",
+  "population": null,
+  "population_year": null,
+  "household_count": null,
+  "household_count_year": null,
+  "elevation_m": null,
+  "weather_datasets": [
+    {
+      "weather_id": "era5_2025",
+      "source": "Open-Meteo Historical Weather API",
+      "model": "ERA5",
+      "year": 2025,
+      "status": "CACHED",
+      "variables": ["temperature_2m", "wind_speed_10m", "shortwave_radiation", "wind_speed_100m", "direct_normal_irradiance", "diffuse_radiation"],
+      "start_utc": "2025-01-01T00:00:00Z",
+      "end_utc": "2026-01-01T00:00:00Z",
+      "timezone": "UTC",
+      "latitude": 50.578333,
+      "longitude": 57.544722,
+      "cache_key": "00a211eac63e8e5ccffe4b973c16fed5f887e787f03ebeaf23b2245e280d61d4",
+      "path": "data/weather/cache/open_meteo/era5/00a211eac63e8e5ccffe4b973c16fed5f887e787f03ebeaf23b2245e280d61d4/weather.csv",
+      "metadata_path": "data/weather/cache/open_meteo/era5/00a211eac63e8e5ccffe4b973c16fed5f887e787f03ebeaf23b2245e280d61d4/metadata.json",
+      "sha256": "8be8d01745afd271fd51f6ba341e15bf3b3519fbdd36ff227f2a006572ffb5b3",
+      "provenance": [
+        {
+          "field": "weather",
+          "source_name": "Open-Meteo Historical Weather API / ERA5",
+          "source_type": "DERIVED",
+          "source_url": "https://open-meteo.com/en/docs/historical-weather-api",
+          "source_year": 2025,
+          "retrieved_date": "2026-08-17",
+          "notes": "ERA5 gridded reanalysis, not site measurement."
+        }
+      ]
+    }
+  ],
+  "demand_datasets": [
+    {
+      "demand_id": "shamshi_demo_500mwh_community",
+      "site_id": "shamshi_kaldayakova",
+      "name": "500 MWh synthetic community demonstration",
+      "mode": "estimated_annual",
+      "classification": "SYNTHETIC_ESTIMATE",
+      "confidence": "Synthetic planning estimate",
+      "reference_year": 2025,
+      "annual_energy_kwh": 500000.0,
+      "temporal_resolution": "hourly",
+      "profile_method": "Phase 14 deterministic 500 MWh/year community-facility-like demonstration; not observed demand.",
+      "profile_shape": "community_facility_like",
+      "monthly_kwh": null,
+      "path": null,
+      "source_file_sha256": null,
+      "demand_sha256": "5b998ba8ab9eeda1e796791f16098e9f359e0e1dd7e1bcc5bcb64b64f3ec7864",
+      "provenance": [
+        {
+          "field": "demand",
+          "source_name": "SteppeGrid Phase 14 demonstration",
+          "source_type": "PROJECT_RECORD",
+          "source_url": null,
+          "source_year": 2026,
+          "retrieved_date": "2026-08-17",
+          "notes": "Synthetic research scenario; not measured, reported, or inferred village demand."
+        }
+      ],
+      "created_at_utc": "2026-08-17T00:00:00Z"
+    }
+  ],
+  "provenance": [
+    {
+      "field": "coordinates",
+      "source_name": "SteppeGrid Phase 14 site definition",
+      "source_type": "PROJECT_RECORD",
+      "source_url": null,
+      "source_year": 2026,
+      "retrieved_date": "2026-08-17",
+      "notes": "Existing Phase 14 planning coordinate."
+    },
+    {
+      "field": "name",
+      "source_name": "SteppeGrid Phase 14 site definition",
+      "source_type": "PROJECT_RECORD",
+      "source_url": null,
+      "source_year": 2026,
+      "retrieved_date": "2026-08-17",
+      "notes": null
+    },
+    {
+      "field": "region",
+      "source_name": "SteppeGrid Phase 14 site definition",
+      "source_type": "PROJECT_RECORD",
+      "source_url": null,
+      "source_year": 2026,
+      "retrieved_date": "2026-08-17",
+      "notes": null
+    },
+    {
+      "field": "timezone",
+      "source_name": "SteppeGrid Phase 14 site definition",
+      "source_type": "PROJECT_RECORD",
+      "source_url": null,
+      "source_year": 2026,
+      "retrieved_date": "2026-08-17",
+      "notes": "IANA carrier Asia/Aqtobe with the existing +05:00 planning offset."
+    }
+  ],
+  "notes": "Field-case classification describes intended use only. Available demand is synthetic and does not field-validate planning results."
+}

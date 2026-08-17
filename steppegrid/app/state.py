@@ -27,7 +27,9 @@ PROFILE_LABELS = {
 
 SHAMSHI_STATUS = (
     "Shamshi Kaldayakova, Aktobe Region, Kazakhstan — cached ERA5 weather is available. "
-    "No default electricity demand is assumed. Phase 14 planning is enabled only after the "
-    "user explicitly supplies an estimate, proxy, monthly series, or hourly CSV; resulting "
+    "No default electricity demand is assumed. The registry contains a clearly labeled synthetic 500 MWh "
+    "demonstration, not a default real demand. "
+    "The scale-aware planner runs only after the user explicitly selects that dataset or supplies another "
+    "estimate, proxy, monthly series, or hourly CSV; resulting "
     "runs are estimated-demand planning scenarios, not field optima."
 )
