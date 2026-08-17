@@ -1,0 +1,2 @@
+cohort,sample_size,metric_x,metric_y,pearson,interpretation
+primary_proxy,5,pv_specific_yield,95% normalized NPC,-0.11962720232316602,Exploratory descriptive correlation only

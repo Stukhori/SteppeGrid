@@ -30,14 +30,16 @@ def main():
         check("frozen_audit",audit.get("blockers")==0,f"Frozen audit reports {audit.get('blockers')} blockers")
     except Exception as error: check("app_data_service",False,str(error))
     check("shamshi_95",latest_result(FEATURED_SITE_ID,.95) is not None,"Latest saved Shamshi 95% result loaded")
-    check("phase17_outputs",(ROOT/"outputs/phase17").exists(),"No Phase 17 output package is present; comparisons use latest valid saved results",warning=True)
+    phase17_audit=ROOT/"outputs/phase17/phase17_audit.json"
+    phase17=json.loads(phase17_audit.read_text(encoding="utf-8")) if phase17_audit.is_file() else {"blockers":1}
+    check("phase17_outputs",phase17_audit.is_file() and phase17.get("blockers")==0,"Frozen Phase 17 standardized comparison is available")
     for path in [ROOT/"README.md",ROOT/"docs/steppegrid_final_report.md",ROOT/"docs/steppegrid_portfolio_summary.md",ROOT/"docs/steppegrid_research_abstract.md",ROOT/"docs/steppegrid_plain_language_summary.md",ROOT/"docs/reproduce_steppegrid.md"]:
         check(f"artifact_{path.name}",path.is_file(),str(path.relative_to(ROOT)))
     figures=list((ROOT/"outputs/final/figures").glob("*.png")); tables=list((ROOT/"outputs/final/tables").glob("*.csv"))
     check("final_figures",8<=len(figures)<=10,f"Found {len(figures)} figures")
     check("final_tables",len(tables)>=6,f"Found {len(tables)} tables")
     blockers=sum(c["status"]=="BLOCKER" for c in checks); warnings=sum(c["status"]=="WARNING" for c in checks)
-    report={"schema_version":"steppegrid.final-validation.v1","version":"1.0.0","checks":checks,"passes":sum(c["status"]=="PASS" for c in checks),"warnings":warnings,"blockers":blockers,"site_count":len(sites),"app_data_status":"PASS" if any(c["check"]=="app_data_service" and c["status"]=="PASS" for c in checks) else "BLOCKER","frozen_benchmark_status":"PASS" if audit.get("blockers")==0 else "BLOCKER","cross_village_output_status":"WARNING" if not (ROOT/"outputs/phase17").exists() else "PASS"}
+    report={"schema_version":"steppegrid.final-validation.v1","version":"1.0.0","checks":checks,"passes":sum(c["status"]=="PASS" for c in checks),"warnings":warnings,"blockers":blockers,"site_count":len(sites),"app_data_status":"PASS" if any(c["check"]=="app_data_service" and c["status"]=="PASS" for c in checks) else "BLOCKER","frozen_benchmark_status":"PASS" if audit.get("blockers")==0 else "BLOCKER","cross_village_output_status":"PASS" if phase17.get("blockers")==0 else "BLOCKER"}
     OUTPUT.parent.mkdir(parents=True,exist_ok=True); OUTPUT.write_text(json.dumps(report,indent=2)+"\n",encoding="utf-8")
     print(json.dumps(report,indent=2)); raise SystemExit(1 if blockers else 0)
 if __name__=="__main__": main()

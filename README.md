@@ -28,13 +28,15 @@ Normal pages read cached weather and saved results. Only an explicit planner run
 
 ## My Village — Shamshi Kaldayakova
 
-Shamshi Kaldayakova is the featured personal village case, shown with a semantic blue `MY VILLAGE` identity. Its current registered planning demand is 0.50 GWh/year. The latest saved 95% design contains 348.4 kW wind, 299.7 kWdc solar, and 7.71 MWh usable storage. It serves 95.66% of modeled annual electricity, with 533 loss-of-load hours, 157 hours as the longest deficit, $7.25M CAPEX, $11.60M NPC, and $0.67M/year EAC. A saved 99% Shamshi design is not available.
+Shamshi Kaldayakova is the featured personal village case, shown with a semantic blue `MY VILLAGE` identity. Its current registered planning demand is 0.50 GWh/year. The standardized 95% design contains 200 kW wind, 347.8 kWdc solar, and 1.03 MWh usable storage. It serves 95.83% of modeled annual electricity, with 549 loss-of-load hours, 139 hours as the longest deficit, $1.84M CAPEX, $2.64M NPC, and $0.15M/year EAC. The standardized 99% design contains 500 kW wind, 298.1 kWdc solar, and 1.54 MWh storage, serving 99.12% at $4.22M NPC.
 
 ## Key Results
 
 The frozen Rodina Benchmark selects 2.04 MW wind, 8.30 MWac solar, and 15.42 MWh storage at the 95% annual energy target, with $49.4M NPC. At 99%, it selects 4.98 MW wind, 20.20 MWac solar, and 23.12 MWh storage, with $105.8M NPC. The higher target more than doubles modeled NPC while reducing the longest deficit from 41 to 16 hours.
 
-Cross-village findings are limited to saved comparable outputs; SteppeGrid does not invent rankings where a complete result set is absent.
+Cross-village findings use the fourteen frozen standardized Planner V2 scenarios and distinguish the five-site proxy cohort from the Rodina and Shamshi contextual cases.
+
+The frozen standardized cross-village comparison is available in `outputs/phase17/` and can be verified with `uv run python scripts/run_phase17.py --verify`.
 
 ## Interactive Planner
 

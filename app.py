@@ -112,7 +112,7 @@ def overview(api: PlanningService) -> None:
     with a: metric("Annual demand", energy(demand))
     with b: metric("Mean modeled wind", f"{resource['mean_wind_100m_m_s']:.2f} m/s")
     with c: metric("Modeled solar resource", f"{resource['annual_solar_kwh_m2']:,.0f} kWh/m²")
-    with d: metric("Planning targets", "95% available · 99% not available")
+    with d: metric("Planning targets", "95% and 99% available")
     if result:
         design, performance, economics_data = result["design"], result["metrics"], result["economics"]
         section_header("My Village selected system", "Latest saved 95% annual energy served planning result.")
@@ -122,6 +122,10 @@ def overview(api: PlanningService) -> None:
         with b: metric("Storage", energy(design["battery_usable_capacity_kwh"]))
         with e: metric("NPC", money(economics_data["net_present_cost_usd"]))
         callout("Annual performance", f"This system supplies {percent(performance['served_fraction'], 2)} of modeled annual electricity demand. The longest continuous modeled deficit lasts {performance['longest_deficit_hours']} hours.")
+        higher = latest_result(FEATURED_SITE_ID, .99)
+        if higher:
+            hd, hm, he = higher["design"], higher["metrics"], higher["economics"]
+            callout("99% planning result", f"{power(hd['wind_capacity_kw'])} wind · {power(hd['pv_ac_capacity_kw'])} solar AC · {energy(hd['battery_usable_capacity_kwh'])} storage · {percent(hm['served_fraction'], 2)} annual energy served · {money(he['net_present_cost_usd'])} NPC")
     section_header("Seven Kazakhstan sites", "Select Sites for maps and village details, or Compare Sites for normalized saved results.")
     st.dataframe(pd.DataFrame(site_rows(registry))[["Site","Region","Annual demand (GWh/year)","95% result","99% result"]], hide_index=True, width="stretch")
 

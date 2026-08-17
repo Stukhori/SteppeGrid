@@ -1,0 +1,26 @@
+{
+  "blockers": 0,
+  "checks": [
+    {
+      "name": "site_count",
+      "status": "PASS"
+    },
+    {
+      "name": "proxy_cohort_count",
+      "status": "PASS"
+    },
+    {
+      "name": "scenario_count",
+      "status": "PASS"
+    },
+    {
+      "name": "all_feasible",
+      "status": "PASS"
+    },
+    {
+      "name": "weather_hours",
+      "status": "PASS"
+    }
+  ],
+  "schema_version": "phase17.audit.v1"
+}

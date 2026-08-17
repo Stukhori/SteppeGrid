@@ -1,8 +1,8 @@
 Site,Region,Population,Annual demand (GWh/year),Weather,95% result,99% result
-Katon-Karagay,East Kazakhstan Region,3700,2.96,Ready,Not available,Available
-Kegen,Almaty Region,9993,8.0,Ready,Available,Not available
+Katon-Karagay,East Kazakhstan Region,3700,2.96,Ready,Available,Available
+Kegen,Almaty Region,9993,8.0,Ready,Available,Available
 Rodina,Akmola Region,,8.02,Ready,Available,Available
-Sai-Otes,Mangystau Region,1880,1.51,Ready,Not available,Not available
-Shamshi Kaldayakova,Aktobe Region,,0.5,Ready,Available,Not available
-Shayan,Turkistan Region,10200,8.17,Ready,Not available,Not available
-Togyzkuduk,Karaganda Region,1110,0.89,Ready,Not available,Not available
+Sai-Otes,Mangystau Region,1880,1.51,Ready,Available,Available
+Shamshi Kaldayakova,Aktobe Region,,0.5,Ready,Available,Available
+Shayan,Turkistan Region,10200,8.17,Ready,Available,Available
+Togyzkuduk,Karaganda Region,1110,0.89,Ready,Available,Available

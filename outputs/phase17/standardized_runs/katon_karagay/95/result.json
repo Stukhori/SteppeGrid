@@ -1,0 +1,118 @@
+{
+  "annual_demand_kwh": 2963855.701579716,
+  "assumptions": [
+    "Reliability is annual served-energy fraction, not a probability of service.",
+    "Demand confidence labels are qualitative provenance classes, not confidence intervals.",
+    "ERA5-derived two-height shear exponent for this planning weather period; not a site-measured shear exponent",
+    "PV uses fixed tilt equal to absolute site latitude and an equator-facing azimuth.",
+    "Equipment catalog: PLANNER_V2.",
+    "Economics method: PLANNER_SCALE_AWARE_ECONOMICS_V2; reference base years are explicit per technology.",
+    "Result is a planning-model result, not a field-validated optimum or procurement quote."
+  ],
+  "catalog_option_counts": {
+    "battery": 4,
+    "pv": 9,
+    "wind": 2
+  },
+  "demand_confidence": "Proxy estimate",
+  "demand_id": "proxy_rural_community_v1",
+  "demand_method": "KZ_RURAL_PROXY_V1: 3,700 residents multiplied by 801.042081508 kWh/person/year, distributed with the deterministic community_facility_like profile.",
+  "demand_sha256": "3628207a6361c70a07dc13044603a426aa0f2cbd50e9d985ac76505df6540472",
+  "demand_source_type": "PROXY_DERIVED",
+  "design": {
+    "battery_count": 55,
+    "battery_key": "sungrow_powerstack_st255_2h",
+    "battery_usable_capacity_kwh": 14135.0,
+    "pv_ac_capacity_kw": 2800.0,
+    "pv_count": 28,
+    "pv_dc_capacity_kw": 2794.96,
+    "pv_key": "trina_tsm_460_neg9r28__fronius_tauro_eco_100",
+    "wind_capacity_kw": 0.0,
+    "wind_count": 0,
+    "wind_key": null
+  },
+  "dispatch_cache_hits": 9065,
+  "dispatch_simulations": 10227,
+  "economics": {
+    "cost_per_served_kwh_usd": 0.42284246995082636,
+    "economic_classes": {
+      "battery": "generic_lithium_ion_storage_reference",
+      "pv": "commercial_pv"
+    },
+    "economic_sources": {
+      "battery": "https://www.nrel.gov/docs/fy23osti/85332.pdf",
+      "pv": "https://atb.nrel.gov/electricity/2024/commercial_pv",
+      "wind": null
+    },
+    "equivalent_annual_cost_usd": 1190828.1073477266,
+    "initial_capex_usd": 12375040.4,
+    "net_present_cost_usd": 20736065.708171047,
+    "reference_capex_basis": {
+      "battery": "482.0 USD/kWh",
+      "pv": "1990.0 USD/kWdc"
+    },
+    "reference_cost_base_years": {
+      "battery": 2022,
+      "pv": 2022
+    }
+  },
+  "economics_version": "PLANNER_SCALE_AWARE_ECONOMICS_V2",
+  "elapsed_seconds": 191.81461719993968,
+  "equipment_catalog_version": "PLANNER_V2",
+  "evaluated_portfolios": 1319,
+  "feasible": true,
+  "metrics": {
+    "annual_load_kwh": 2963855.701579716,
+    "battery_throughput_kwh": 1812064.83010725,
+    "curtailment_fraction": 0.39257393601663604,
+    "curtailment_kwh": 1888879.8025848728,
+    "longest_deficit_hours": 66,
+    "loss_of_load_hours": 705,
+    "lpsp": 0.049803513782827984,
+    "maximum_hourly_deficit_kwh": 602.3190120627152,
+    "renewable_generation_kwh": 4811526.261144418,
+    "served_energy_kwh": 2816245.2732957774,
+    "served_fraction": 0.950196486217172,
+    "unmet_energy_kwh": 147610.4282839387
+  },
+  "optimizer_method": "phase10_staged_generalized",
+  "phase17_runtime_seconds": 196.4010443999432,
+  "reliability_target": 0.95,
+  "scenario_id": "scenario-aa0d7f983e87c433",
+  "scenario_input_hash": "aa0d7f983e87c433d465768c387927bf63ac180159d08477ca2922fab6bee0bb",
+  "scenario_name": "Katon-Karagay \u2014 Phase 17 standardized Planner V2 scenario \u2014 95%",
+  "scenario_timezone": "+05:00",
+  "schema_version": "phase16.v1",
+  "site_id": "katon_karagay",
+  "site_metadata_hash": "71bc8d67d2e79cadcba31cd87f62b469a64746908343ae14c1b8648945f75331",
+  "site_snapshot": {
+    "country": "Kazakhstan",
+    "latitude": 49.17466,
+    "longitude": 85.59937,
+    "name": "Katon-Karagay",
+    "preset": "registered",
+    "region": "East Kazakhstan Region",
+    "registry_origin": "BUILT_IN",
+    "site_classification": "PLANNING_SITE",
+    "site_id": "katon_karagay",
+    "site_metadata_hash": "71bc8d67d2e79cadcba31cd87f62b469a64746908343ae14c1b8648945f75331",
+    "timezone": "Asia/Almaty",
+    "timezone_offset": "+05:00"
+  },
+  "software_version": "1.0.0",
+  "stage_timings_seconds": {
+    "demand_review": 2.828110900009051,
+    "dispatch_detail": 0.051316200057044625,
+    "optimization": 191.81461719993968,
+    "total_before_export": 196.02130379993469,
+    "weather_and_generation": 0.9919604000169784
+  },
+  "theoretical_design_combinations": 166809132,
+  "weather_cache_key": "03657516dfa2ed5947b55eb966f609766adc24a836bd8b4ef3e3df2a82600901",
+  "weather_cache_status": "HIT",
+  "weather_end_utc": "2026-01-01T00:00:00Z",
+  "weather_model": "ERA5",
+  "weather_sha256": "0da14c21e76598da9f34a5d0afbe601190483c2d199b34b37bf5e54574f0334f",
+  "weather_source": "Open-Meteo Historical Weather API",
+  "weather_start_utc": "2025-01-01T00:00:00Z"
+}

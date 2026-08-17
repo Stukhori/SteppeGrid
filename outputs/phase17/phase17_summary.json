@@ -1,0 +1,18 @@
+{
+  "catalog": "PLANNER_V2",
+  "contextual_sites": 2,
+  "dispatch_cache_hits": 117685,
+  "dispatch_simulations": 119729,
+  "economics": "PLANNER_SCALE_AWARE_ECONOMICS_V2",
+  "evaluated_portfolios": 20089,
+  "feasible_runs": 14,
+  "primary_proxy_sites": 5,
+  "schema_version": "phase17.summary.v1",
+  "sites": 7,
+  "standardized_runs": 14,
+  "targets": [
+    0.95,
+    0.99
+  ],
+  "total_runtime_seconds": 2349.490864299936
+}

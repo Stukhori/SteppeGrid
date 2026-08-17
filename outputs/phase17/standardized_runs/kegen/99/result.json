@@ -1,0 +1,118 @@
+{
+  "annual_demand_kwh": 8004813.520509757,
+  "assumptions": [
+    "Reliability is annual served-energy fraction, not a probability of service.",
+    "Demand confidence labels are qualitative provenance classes, not confidence intervals.",
+    "ERA5-derived two-height shear exponent for this planning weather period; not a site-measured shear exponent",
+    "PV uses fixed tilt equal to absolute site latitude and an equator-facing azimuth.",
+    "Equipment catalog: PLANNER_V2.",
+    "Economics method: PLANNER_SCALE_AWARE_ECONOMICS_V2; reference base years are explicit per technology.",
+    "Result is a planning-model result, not a field-validated optimum or procurement quote."
+  ],
+  "catalog_option_counts": {
+    "battery": 4,
+    "pv": 9,
+    "wind": 2
+  },
+  "demand_confidence": "Proxy estimate",
+  "demand_id": "proxy_rural_community_v1",
+  "demand_method": "KZ_RURAL_PROXY_V1: 9,993 residents multiplied by 801.042081508 kWh/person/year, distributed with the deterministic community_facility_like profile.",
+  "demand_sha256": "6010f4527438fee80bfdaf47fefa2bed73d6c4c14dd6026bd0cd53b1f036eb43",
+  "demand_source_type": "PROXY_DERIVED",
+  "design": {
+    "battery_count": 64,
+    "battery_key": "sungrow_powerstack_st255_2h",
+    "battery_usable_capacity_kwh": 16448.0,
+    "pv_ac_capacity_kw": 7600.0,
+    "pv_count": 76,
+    "pv_dc_capacity_kw": 7592.400000000001,
+    "pv_key": "trina_tsm_450_neg9r28__fronius_tauro_eco_100",
+    "wind_capacity_kw": 0.0,
+    "wind_count": 0,
+    "wind_key": null
+  },
+  "dispatch_cache_hits": 8589,
+  "dispatch_simulations": 14762,
+  "economics": {
+    "cost_per_served_kwh_usd": 0.22107604236704814,
+    "economic_classes": {
+      "battery": "generic_lithium_ion_storage_reference",
+      "pv": "utility_scale_pv"
+    },
+    "economic_sources": {
+      "battery": "https://www.nrel.gov/docs/fy23osti/85332.pdf",
+      "pv": "https://atb.nrel.gov/electricity/2024/utility-scale_pv",
+      "wind": null
+    },
+    "equivalent_annual_cost_usd": 1752238.775608825,
+    "initial_capex_usd": 18795936.0,
+    "net_present_cost_usd": 30511992.59006065,
+    "reference_capex_basis": {
+      "battery": "482.0 USD/kWh",
+      "pv": "1430.0 USD/kWac"
+    },
+    "reference_cost_base_years": {
+      "battery": 2022,
+      "pv": 2022
+    }
+  },
+  "economics_version": "PLANNER_SCALE_AWARE_ECONOMICS_V2",
+  "elapsed_seconds": 272.39717549993657,
+  "equipment_catalog_version": "PLANNER_V2",
+  "evaluated_portfolios": 2656,
+  "feasible": true,
+  "metrics": {
+    "annual_load_kwh": 8004813.520509757,
+    "battery_throughput_kwh": 4667737.693623494,
+    "curtailment_fraction": 0.4369079961491921,
+    "curtailment_kwh": 6340435.45406764,
+    "longest_deficit_hours": 30,
+    "loss_of_load_hours": 178,
+    "lpsp": 0.009851380671092664,
+    "maximum_hourly_deficit_kwh": 1626.7496993358682,
+    "renewable_generation_kwh": 14512060.914313307,
+    "served_energy_kwh": 7925955.055318106,
+    "served_fraction": 0.9901486193289073,
+    "unmet_energy_kwh": 78858.46519165103
+  },
+  "optimizer_method": "phase10_staged_generalized",
+  "phase17_runtime_seconds": 276.67884129995946,
+  "reliability_target": 0.99,
+  "scenario_id": "scenario-5b677046a0db6fba",
+  "scenario_input_hash": "5b677046a0db6fba823ba1a32eb77c39b1b58f3af0bfd6e831c625e04c7f7e2d",
+  "scenario_name": "Kegen \u2014 Phase 17 standardized Planner V2 scenario \u2014 99%",
+  "scenario_timezone": "+05:00",
+  "schema_version": "phase16.v1",
+  "site_id": "kegen",
+  "site_metadata_hash": "b28c2d45217c76ff71e526cd54d0c770a65b8c65d3336cb37a2474d71ae24e43",
+  "site_snapshot": {
+    "country": "Kazakhstan",
+    "latitude": 43.014513,
+    "longitude": 79.226383,
+    "name": "Kegen",
+    "preset": "registered",
+    "region": "Almaty Region",
+    "registry_origin": "BUILT_IN",
+    "site_classification": "PLANNING_SITE",
+    "site_id": "kegen",
+    "site_metadata_hash": "b28c2d45217c76ff71e526cd54d0c770a65b8c65d3336cb37a2474d71ae24e43",
+    "timezone": "Asia/Almaty",
+    "timezone_offset": "+05:00"
+  },
+  "software_version": "1.0.0",
+  "stage_timings_seconds": {
+    "demand_review": 2.1132858999771997,
+    "dispatch_detail": 0.05572780000511557,
+    "optimization": 272.39717549993657,
+    "total_before_export": 276.3071526000276,
+    "weather_and_generation": 1.2334934000391513
+  },
+  "theoretical_design_combinations": 3296858272,
+  "weather_cache_key": "cf92cfcecd863d59987ca8dae15900ff6f5fb270bad35f62baa3ddce2bf4b763",
+  "weather_cache_status": "HIT",
+  "weather_end_utc": "2026-01-01T00:00:00Z",
+  "weather_model": "ERA5",
+  "weather_sha256": "02b7eccd76ff3ea0500c2a104be1a26a4aa5d965800c3802b80a8efe88ec835f",
+  "weather_source": "Open-Meteo Historical Weather API",
+  "weather_start_utc": "2025-01-01T00:00:00Z"
+}

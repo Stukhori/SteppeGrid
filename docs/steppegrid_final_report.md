@@ -54,11 +54,11 @@ The unchanged benchmark selects 2.04 MW wind, 8.30 MWac PV, and 15.42 MWh usable
 
 ## Cross-Village Analysis
 
-The interface compares only saved compatible results and normalizes capacity or cost by registered annual demand where appropriate. Because a complete saved paired result set is absent, v1.0 does not publish unsupported seven-site winner rankings.
+The interface consumes fourteen frozen standardized Planner V2 scenarios and normalizes capacity and cost by registered annual demand. The primary five-site proxy cohort is analyzed separately from Rodina and Shamshi. Kegen has the highest proxy-cohort PV specific yield; Togyzkuduk has the highest representative wind capacity factor; Sai-Otes has the largest proxy-cohort 95%→99% NPC escalation.
 
 ## My Village — Shamshi Kaldayakova
 
-Shamshi Kaldayakova (Aktobe Region) is the featured blue `MY VILLAGE` case. Its current registered demand is 0.50 GWh/year. Cached weather contains 8,760 modeled hours. The latest saved 95% system uses 348.4 kW wind, 299.7 kWdc / 300.0 kWac solar, and 7.708 MWh usable storage. It serves 478.31 MWh, or 95.66% of annual demand, curtails 122.02 MWh (19.94% of raw renewable generation), records 533 loss-of-load hours and a 157-hour longest deficit, and has $7.25M CAPEX, $11.60M NPC, $0.67M/year EAC, and $1.39 per served kWh. No saved 99% Shamshi design is available. The saved dispatch CSV provides the authoritative hourly example.
+Shamshi Kaldayakova (Aktobe Region) is the featured blue `MY VILLAGE` case. Its current registered demand is 0.50 GWh/year. Cached weather contains 8,760 modeled hours. The standardized 95% system uses 200 kW wind, 347.8 kWdc / 350 kWac solar, and 1.028 MWh usable storage. It serves 479.13 MWh, or 95.83% of annual demand, curtails 281.84 MWh (36.61% of raw generation), records 549 loss-of-load hours and a 139-hour longest deficit, and has $1.84M CAPEX, $2.64M NPC, $0.15M/year EAC, and $0.316 per served kWh. The 99% system uses 500 kW wind, 298.1 kWdc / 300 kWac solar, and 1.542 MWh storage; it serves 99.12% with $4.22M NPC. Saved dispatch CSVs provide the authoritative hourly examples.
 
 ## Final Results
 

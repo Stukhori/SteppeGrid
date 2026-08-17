@@ -169,8 +169,8 @@
     },
     {
       "check": "phase17_outputs",
-      "status": "WARNING",
-      "message": "No Phase 17 output package is present; comparisons use latest valid saved results"
+      "status": "PASS",
+      "message": "Frozen Phase 17 standardized comparison is available"
     },
     {
       "check": "artifact_README.md",
@@ -213,11 +213,11 @@
       "message": "Found 6 tables"
     }
   ],
-  "passes": 41,
-  "warnings": 1,
+  "passes": 42,
+  "warnings": 0,
   "blockers": 0,
   "site_count": 7,
   "app_data_status": "PASS",
   "frozen_benchmark_status": "PASS",
-  "cross_village_output_status": "WARNING"
+  "cross_village_output_status": "PASS"
 }

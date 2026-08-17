@@ -1,0 +1,69 @@
+{
+  "demand": {
+    "annual_kwh": null,
+    "confidence": "Strong source reconstruction",
+    "method_notes": "Phase 9 literature monthly-row reconstruction with deterministic community-facility-like hourly shape",
+    "mode": "rodina_benchmark",
+    "monthly_kwh": null,
+    "profile_shape": "community_facility_like",
+    "source_name": "Rodina literature monthly energy table",
+    "source_type": "SOURCE_RECONSTRUCTED",
+    "source_url": "https://doi.org/10.47533/2026.1606-146X.1-03",
+    "source_year": 2026,
+    "upload_filename": null,
+    "upload_sha256": null
+  },
+  "demand_id": "rodina_phase9_reconstruction_v1",
+  "economics_version": "PLANNER_SCALE_AWARE_ECONOMICS_V2",
+  "equipment_catalog_version": "PLANNER_V2",
+  "name": "Rodina \u2014 Phase 17 standardized Planner V2 scenario \u2014 95%",
+  "reference_year": 2025,
+  "registered_demand_sha256": "331983aa57dc786a0fb6adca4f8fe3fe4a68d8d271e42044f1ea9c64851705fd",
+  "reliability_target": 0.95,
+  "site": {
+    "country": "Kazakhstan",
+    "latitude": 51.302445,
+    "longitude": 70.541645,
+    "name": "Rodina",
+    "preset": "rodina",
+    "region": "Akmola Region",
+    "registry_origin": "BUILT_IN",
+    "site_classification": "BENCHMARK",
+    "site_id": "rodina",
+    "site_metadata_hash": "16b72631932925355e738ab97d242a5c77864bc4d7643945e63479af4784db93",
+    "timezone": "Asia/Almaty",
+    "timezone_offset": "+05:00"
+  },
+  "technologies": {
+    "battery_keys": [
+      "tesla_megapack_2h",
+      "saft_intensium_max_20_he",
+      "sungrow_powerstack_st255_2h",
+      "sungrow_powerstack_st510_4h"
+    ],
+    "filter_mode": "custom",
+    "pv_keys": [
+      "trina_tsm_450_neg9r28__sma_core1_stp50_41",
+      "trina_tsm_450_neg9r28__fronius_tauro_eco_100",
+      "trina_tsm_450_neg9r28__sma_sunny_tripower_x_25",
+      "rec_alpha_pure_rx_470__sma_core1_stp50_41",
+      "rec_alpha_pure_rx_470__fronius_tauro_eco_100",
+      "rec_alpha_pure_rx_470__sma_sunny_tripower_x_25",
+      "trina_tsm_460_neg9r28__sma_core1_stp50_41",
+      "trina_tsm_460_neg9r28__fronius_tauro_eco_100",
+      "trina_tsm_460_neg9r28__sma_sunny_tripower_x_25"
+    ],
+    "scale_classes": [
+      "small_community",
+      "community",
+      "commercial",
+      "utility"
+    ],
+    "wind_keys": [
+      "northern_power_nps_100c_21",
+      "leitwind_ltw42_250"
+    ]
+  },
+  "weather_model": "ERA5",
+  "weather_provider": "Open-Meteo Historical Weather API"
+}

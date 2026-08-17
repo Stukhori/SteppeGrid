@@ -1,0 +1,69 @@
+{
+  "demand": {
+    "annual_kwh": 1505959.113235099,
+    "confidence": "Proxy estimate",
+    "method_notes": "KZ_RURAL_PROXY_V1: approximately 1,880 residents multiplied by 801.042081508 kWh/person/year, distributed with the deterministic community_facility_like profile.",
+    "mode": "estimated_annual",
+    "monthly_kwh": null,
+    "profile_shape": "community_facility_like",
+    "source_name": "KZ_RURAL_PROXY_V1",
+    "source_type": "PROXY_DERIVED",
+    "source_url": "https://stat.gov.kz/en/industries/business-statistics/stat-energy/publications/67706/",
+    "source_year": 2022,
+    "upload_filename": null,
+    "upload_sha256": null
+  },
+  "demand_id": "proxy_rural_community_v1",
+  "economics_version": "PLANNER_SCALE_AWARE_ECONOMICS_V2",
+  "equipment_catalog_version": "PLANNER_V2",
+  "name": "Sai-Otes \u2014 Phase 17 standardized Planner V2 scenario \u2014 95%",
+  "reference_year": 2025,
+  "registered_demand_sha256": "55da305f26a5e6c8347f334c5f2e84b2bed230e29b8cedb2cce747435f8331b5",
+  "reliability_target": 0.95,
+  "site": {
+    "country": "Kazakhstan",
+    "latitude": 44.32771,
+    "longitude": 53.53314,
+    "name": "Sai-Otes",
+    "preset": "registered",
+    "region": "Mangystau Region",
+    "registry_origin": "BUILT_IN",
+    "site_classification": "PLANNING_SITE",
+    "site_id": "sai_otes",
+    "site_metadata_hash": "0617df677bae238be097c93df420ab7297df7b4c549f7058960754bac2bbc06a",
+    "timezone": "Asia/Aqtau",
+    "timezone_offset": "+05:00"
+  },
+  "technologies": {
+    "battery_keys": [
+      "tesla_megapack_2h",
+      "saft_intensium_max_20_he",
+      "sungrow_powerstack_st255_2h",
+      "sungrow_powerstack_st510_4h"
+    ],
+    "filter_mode": "custom",
+    "pv_keys": [
+      "trina_tsm_450_neg9r28__sma_core1_stp50_41",
+      "trina_tsm_450_neg9r28__fronius_tauro_eco_100",
+      "trina_tsm_450_neg9r28__sma_sunny_tripower_x_25",
+      "rec_alpha_pure_rx_470__sma_core1_stp50_41",
+      "rec_alpha_pure_rx_470__fronius_tauro_eco_100",
+      "rec_alpha_pure_rx_470__sma_sunny_tripower_x_25",
+      "trina_tsm_460_neg9r28__sma_core1_stp50_41",
+      "trina_tsm_460_neg9r28__fronius_tauro_eco_100",
+      "trina_tsm_460_neg9r28__sma_sunny_tripower_x_25"
+    ],
+    "scale_classes": [
+      "small_community",
+      "community",
+      "commercial",
+      "utility"
+    ],
+    "wind_keys": [
+      "northern_power_nps_100c_21",
+      "leitwind_ltw42_250"
+    ]
+  },
+  "weather_model": "ERA5",
+  "weather_provider": "Open-Meteo Historical Weather API"
+}

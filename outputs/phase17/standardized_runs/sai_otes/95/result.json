@@ -1,0 +1,121 @@
+{
+  "annual_demand_kwh": 1505959.113235099,
+  "assumptions": [
+    "Reliability is annual served-energy fraction, not a probability of service.",
+    "Demand confidence labels are qualitative provenance classes, not confidence intervals.",
+    "ERA5-derived two-height shear exponent for this planning weather period; not a site-measured shear exponent",
+    "PV uses fixed tilt equal to absolute site latitude and an equator-facing azimuth.",
+    "Equipment catalog: PLANNER_V2.",
+    "Economics method: PLANNER_SCALE_AWARE_ECONOMICS_V2; reference base years are explicit per technology.",
+    "Result is a planning-model result, not a field-validated optimum or procurement quote."
+  ],
+  "catalog_option_counts": {
+    "battery": 4,
+    "pv": 9,
+    "wind": 2
+  },
+  "demand_confidence": "Proxy estimate",
+  "demand_id": "proxy_rural_community_v1",
+  "demand_method": "KZ_RURAL_PROXY_V1: approximately 1,880 residents multiplied by 801.042081508 kWh/person/year, distributed with the deterministic community_facility_like profile.",
+  "demand_sha256": "55da305f26a5e6c8347f334c5f2e84b2bed230e29b8cedb2cce747435f8331b5",
+  "demand_source_type": "PROXY_DERIVED",
+  "design": {
+    "battery_count": 9,
+    "battery_key": "sungrow_powerstack_st255_2h",
+    "battery_usable_capacity_kwh": 2313.0,
+    "pv_ac_capacity_kw": 700.0,
+    "pv_count": 7,
+    "pv_dc_capacity_kw": 697.48,
+    "pv_key": "rec_alpha_pure_rx_470__fronius_tauro_eco_100",
+    "wind_capacity_kw": 500.0,
+    "wind_count": 2,
+    "wind_key": "leitwind_ltw42_250"
+  },
+  "dispatch_cache_hits": 8938,
+  "dispatch_simulations": 5223,
+  "economics": {
+    "cost_per_served_kwh_usd": 0.23799776735599176,
+    "economic_classes": {
+      "battery": "generic_lithium_ion_storage_reference",
+      "pv": "commercial_pv",
+      "wind": "large_distributed_wind"
+    },
+    "economic_sources": {
+      "battery": "https://www.nrel.gov/docs/fy23osti/85332.pdf",
+      "pv": "https://atb.nrel.gov/electricity/2024/commercial_pv",
+      "wind": "https://www.nrel.gov/docs/fy24osti/88335.pdf"
+    },
+    "equivalent_annual_cost_usd": 340741.52888129593,
+    "initial_capex_usd": 4137851.2,
+    "net_present_cost_usd": 5933382.5669618845,
+    "reference_capex_basis": {
+      "battery": "482.0 USD/kWh",
+      "pv": "1990.0 USD/kWdc",
+      "wind": "3270.0 USD/kW"
+    },
+    "reference_cost_base_years": {
+      "battery": 2022,
+      "pv": 2022,
+      "wind": 2022
+    }
+  },
+  "economics_version": "PLANNER_SCALE_AWARE_ECONOMICS_V2",
+  "elapsed_seconds": 112.2384740000125,
+  "equipment_catalog_version": "PLANNER_V2",
+  "evaluated_portfolios": 844,
+  "feasible": true,
+  "metrics": {
+    "annual_load_kwh": 1505959.113235099,
+    "battery_throughput_kwh": 341930.26793776616,
+    "curtailment_fraction": 0.44179430369727307,
+    "curtailment_kwh": 1149196.9205922643,
+    "longest_deficit_hours": 92,
+    "loss_of_load_hours": 701,
+    "lpsp": 0.04930982910785393,
+    "maximum_hourly_deficit_kwh": 306.04317369673095,
+    "renewable_generation_kwh": 2601203.571379043,
+    "served_energy_kwh": 1431700.526718061,
+    "served_fraction": 0.950690170892146,
+    "unmet_energy_kwh": 74258.58651703797
+  },
+  "optimizer_method": "phase10_staged_generalized",
+  "phase17_runtime_seconds": 116.00143340008799,
+  "reliability_target": 0.95,
+  "scenario_id": "scenario-bed644a2f27a25e6",
+  "scenario_input_hash": "bed644a2f27a25e6c1e1cae123f55dcd55b225afaea6dc0e8fc99be8119b0daf",
+  "scenario_name": "Sai-Otes \u2014 Phase 17 standardized Planner V2 scenario \u2014 95%",
+  "scenario_timezone": "+05:00",
+  "schema_version": "phase16.v1",
+  "site_id": "sai_otes",
+  "site_metadata_hash": "0617df677bae238be097c93df420ab7297df7b4c549f7058960754bac2bbc06a",
+  "site_snapshot": {
+    "country": "Kazakhstan",
+    "latitude": 44.32771,
+    "longitude": 53.53314,
+    "name": "Sai-Otes",
+    "preset": "registered",
+    "region": "Mangystau Region",
+    "registry_origin": "BUILT_IN",
+    "site_classification": "PLANNING_SITE",
+    "site_id": "sai_otes",
+    "site_metadata_hash": "0617df677bae238be097c93df420ab7297df7b4c549f7058960754bac2bbc06a",
+    "timezone": "Asia/Aqtau",
+    "timezone_offset": "+05:00"
+  },
+  "software_version": "1.0.0",
+  "stage_timings_seconds": {
+    "demand_review": 2.051594900083728,
+    "dispatch_detail": 0.06259119999594986,
+    "optimization": 112.2384740000125,
+    "total_before_export": 115.57156790001318,
+    "weather_and_generation": 0.9565500000026077
+  },
+  "theoretical_design_combinations": 1360800,
+  "weather_cache_key": "432bdc38a82ffe93c692f858b8e44adb1aab5d227525c5e836603dc9ae232971",
+  "weather_cache_status": "HIT",
+  "weather_end_utc": "2026-01-01T00:00:00Z",
+  "weather_model": "ERA5",
+  "weather_sha256": "1a7e6706dedf5b219f5d5009b6d081bcaf2609484ce184154c9f417e5c7f2751",
+  "weather_source": "Open-Meteo Historical Weather API",
+  "weather_start_utc": "2025-01-01T00:00:00Z"
+}

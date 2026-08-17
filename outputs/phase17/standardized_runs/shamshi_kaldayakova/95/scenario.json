@@ -1,0 +1,69 @@
+{
+  "demand": {
+    "annual_kwh": 500000.0,
+    "confidence": "Synthetic planning estimate",
+    "method_notes": "Phase 14 deterministic 500 MWh/year community-facility-like demonstration; not observed demand.",
+    "mode": "estimated_annual",
+    "monthly_kwh": null,
+    "profile_shape": "community_facility_like",
+    "source_name": "SteppeGrid Phase 14 demonstration",
+    "source_type": "SYNTHETIC_ESTIMATE",
+    "source_url": null,
+    "source_year": 2026,
+    "upload_filename": null,
+    "upload_sha256": null
+  },
+  "demand_id": "shamshi_demo_500mwh_community",
+  "economics_version": "PLANNER_SCALE_AWARE_ECONOMICS_V2",
+  "equipment_catalog_version": "PLANNER_V2",
+  "name": "Shamshi Kaldayakova \u2014 Phase 17 standardized Planner V2 scenario \u2014 95%",
+  "reference_year": 2025,
+  "registered_demand_sha256": "5b998ba8ab9eeda1e796791f16098e9f359e0e1dd7e1bcc5bcb64b64f3ec7864",
+  "reliability_target": 0.95,
+  "site": {
+    "country": "Kazakhstan",
+    "latitude": 50.578333,
+    "longitude": 57.544722,
+    "name": "Shamshi Kaldayakova",
+    "preset": "registered",
+    "region": "Aktobe Region",
+    "registry_origin": "BUILT_IN",
+    "site_classification": "FIELD_CASE",
+    "site_id": "shamshi_kaldayakova",
+    "site_metadata_hash": "2d231c3390722572cdd1d5214467ebbaa156ae8566e6132486d2a9da3dff1650",
+    "timezone": "Asia/Aqtobe",
+    "timezone_offset": "+05:00"
+  },
+  "technologies": {
+    "battery_keys": [
+      "tesla_megapack_2h",
+      "saft_intensium_max_20_he",
+      "sungrow_powerstack_st255_2h",
+      "sungrow_powerstack_st510_4h"
+    ],
+    "filter_mode": "custom",
+    "pv_keys": [
+      "trina_tsm_450_neg9r28__sma_core1_stp50_41",
+      "trina_tsm_450_neg9r28__fronius_tauro_eco_100",
+      "trina_tsm_450_neg9r28__sma_sunny_tripower_x_25",
+      "rec_alpha_pure_rx_470__sma_core1_stp50_41",
+      "rec_alpha_pure_rx_470__fronius_tauro_eco_100",
+      "rec_alpha_pure_rx_470__sma_sunny_tripower_x_25",
+      "trina_tsm_460_neg9r28__sma_core1_stp50_41",
+      "trina_tsm_460_neg9r28__fronius_tauro_eco_100",
+      "trina_tsm_460_neg9r28__sma_sunny_tripower_x_25"
+    ],
+    "scale_classes": [
+      "small_community",
+      "community",
+      "commercial",
+      "utility"
+    ],
+    "wind_keys": [
+      "northern_power_nps_100c_21",
+      "leitwind_ltw42_250"
+    ]
+  },
+  "weather_model": "ERA5",
+  "weather_provider": "Open-Meteo Historical Weather API"
+}

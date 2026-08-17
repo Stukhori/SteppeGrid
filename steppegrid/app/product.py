@@ -36,6 +36,7 @@ def saved_results() -> tuple[dict, ...]:
         if site_id:
             row["site_id"] = site_id
             row["_path"] = str(result_path.relative_to(root)).replace("\\", "/")
+            row["_phase17_standardized"] = "outputs/phase17/standardized_runs/" in row["_path"]
             results.append(row)
     return tuple(results)
 
@@ -47,7 +48,7 @@ def latest_result(site_id: str, target: float) -> dict | None:
     # Prefer the current registered-demand result, then the newest saved artifact.
     site = SiteRegistry().get_site(site_id)
     demand = site.demand_datasets[0].annual_energy_kwh if site.demand_datasets else None
-    matches.sort(key=lambda r: (abs(float(r.get("annual_demand_kwh", 0)) - demand) if demand else 0, r["_path"]))
+    matches.sort(key=lambda r: (not r.get("_phase17_standardized", False), abs(float(r.get("annual_demand_kwh", 0)) - demand) if demand else 0, r["_path"]))
     return matches[0]
 
 

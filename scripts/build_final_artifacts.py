@@ -25,9 +25,10 @@ def main():
     registry=SiteRegistry(); sites=registry.list_sites(); overview=site_rows(registry)
     write_csv("village_overview.csv",[{k:v for k,v in row.items() if k not in {"site_id","lat","lon","featured_site"}} for row in overview])
     api=PlanningService(); designs=[api.design(.95),api.design(.99)]
-    write_csv("system_results_95.csv",[designs[0]]); write_csv("system_results_99.csv",[designs[1]])
-    write_csv("economics.csv",[{"site":"Rodina","target":r["target"],"capex_usd":r["initial_capex_usd"],"npc_usd":r["net_present_cost_usd"],"eac_usd":r["equivalent_annual_cost_usd"],"cost_per_served_kwh_usd":r["cost_per_served_kwh_usd"]} for r in designs])
-    write_csv("reliability.csv",[{"site":"Rodina","target":r["target"],"served_fraction":r["worst_served_fraction"],"unmet_energy_kwh":r["unmet_energy_kwh"],"loss_of_load_hours":r["loss_of_load_hours"],"longest_deficit_hours":r["longest_deficit_hours"]} for r in designs])
+    phase17=list(csv.DictReader((ROOT/"outputs/phase17/optimization_results.csv").open(encoding="utf-8")))
+    write_csv("system_results_95.csv",[r for r in phase17 if float(r["target"])==.95]); write_csv("system_results_99.csv",[r for r in phase17 if float(r["target"])==.99])
+    write_csv("economics.csv",[{k:r[k] for k in ("site","target","capex_usd","npc_usd","eac_usd","cost_per_served_kwh_usd")} for r in phase17])
+    write_csv("reliability.csv",[{k:r[k] for k in ("site","target","served_fraction","unmet_energy_kwh","loss_of_load_hours","longest_deficit_hours")} for r in phase17])
     normalized=[]
     for site in sites:
         result=latest_result(site.site_id,.95)

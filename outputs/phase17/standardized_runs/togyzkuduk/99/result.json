@@ -1,0 +1,121 @@
+{
+  "annual_demand_kwh": 889156.7104739147,
+  "assumptions": [
+    "Reliability is annual served-energy fraction, not a probability of service.",
+    "Demand confidence labels are qualitative provenance classes, not confidence intervals.",
+    "ERA5-derived two-height shear exponent for this planning weather period; not a site-measured shear exponent",
+    "PV uses fixed tilt equal to absolute site latitude and an equator-facing azimuth.",
+    "Equipment catalog: PLANNER_V2.",
+    "Economics method: PLANNER_SCALE_AWARE_ECONOMICS_V2; reference base years are explicit per technology.",
+    "Result is a planning-model result, not a field-validated optimum or procurement quote."
+  ],
+  "catalog_option_counts": {
+    "battery": 4,
+    "pv": 9,
+    "wind": 2
+  },
+  "demand_confidence": "Proxy estimate",
+  "demand_id": "proxy_rural_community_v1",
+  "demand_method": "KZ_RURAL_PROXY_V1: approximately 1,110 residents multiplied by 801.042081508 kWh/person/year, distributed with the deterministic community_facility_like profile.",
+  "demand_sha256": "ff776126c9696fb361a8068ccfdef1cb0488b96275dc152620e8ea73962d2eb2",
+  "demand_source_type": "PROXY_DERIVED",
+  "design": {
+    "battery_count": 5,
+    "battery_key": "sungrow_powerstack_st255_2h",
+    "battery_usable_capacity_kwh": 1285.0,
+    "pv_ac_capacity_kw": 600.0,
+    "pv_count": 6,
+    "pv_dc_capacity_kw": 597.84,
+    "pv_key": "rec_alpha_pure_rx_470__fronius_tauro_eco_100",
+    "wind_capacity_kw": 500.0,
+    "wind_count": 2,
+    "wind_key": "leitwind_ltw42_250"
+  },
+  "dispatch_cache_hits": 6258,
+  "dispatch_simulations": 4256,
+  "economics": {
+    "cost_per_served_kwh_usd": 0.30441278427628093,
+    "economic_classes": {
+      "battery": "generic_lithium_ion_storage_reference",
+      "pv": "commercial_pv",
+      "wind": "large_distributed_wind"
+    },
+    "economic_sources": {
+      "battery": "https://www.nrel.gov/docs/fy23osti/85332.pdf",
+      "pv": "https://atb.nrel.gov/electricity/2024/commercial_pv",
+      "wind": "https://www.nrel.gov/docs/fy24osti/88335.pdf"
+    },
+    "equivalent_annual_cost_usd": 268155.0417990979,
+    "initial_capex_usd": 3444071.6,
+    "net_present_cost_usd": 4669423.347008524,
+    "reference_capex_basis": {
+      "battery": "482.0 USD/kWh",
+      "pv": "1990.0 USD/kWdc",
+      "wind": "3270.0 USD/kW"
+    },
+    "reference_cost_base_years": {
+      "battery": 2022,
+      "pv": 2022,
+      "wind": 2022
+    }
+  },
+  "economics_version": "PLANNER_SCALE_AWARE_ECONOMICS_V2",
+  "elapsed_seconds": 99.14776790002361,
+  "equipment_catalog_version": "PLANNER_V2",
+  "evaluated_portfolios": 771,
+  "feasible": true,
+  "metrics": {
+    "annual_load_kwh": 889156.7104739147,
+    "battery_throughput_kwh": 131363.90396404854,
+    "curtailment_fraction": 0.6359512322738763,
+    "curtailment_kwh": 1553137.6508079236,
+    "longest_deficit_hours": 38,
+    "loss_of_load_hours": 127,
+    "lpsp": 0.00929405500491477,
+    "maximum_hourly_deficit_kwh": 180.69570361881455,
+    "renewable_generation_kwh": 2442227.598576388,
+    "served_energy_kwh": 880892.8390987811,
+    "served_fraction": 0.9907059449950852,
+    "unmet_energy_kwh": 8263.871375133642
+  },
+  "optimizer_method": "phase10_staged_generalized",
+  "phase17_runtime_seconds": 103.89969820005354,
+  "reliability_target": 0.99,
+  "scenario_id": "scenario-4a07f73edfeca377",
+  "scenario_input_hash": "4a07f73edfeca37705f77d39d95613034c296f7913b65b78311a1792d5d1b4da",
+  "scenario_name": "Togyzkuduk \u2014 Phase 17 standardized Planner V2 scenario \u2014 99%",
+  "scenario_timezone": "+05:00",
+  "schema_version": "phase16.v1",
+  "site_id": "togyzkuduk",
+  "site_metadata_hash": "6a294deb8f579fb0c4c7bd100419b9885c36d1375f585dd1f8149307bee3761b",
+  "site_snapshot": {
+    "country": "Kazakhstan",
+    "latitude": 49.88107,
+    "longitude": 73.57845,
+    "name": "Togyzkuduk",
+    "preset": "registered",
+    "region": "Karaganda Region",
+    "registry_origin": "BUILT_IN",
+    "site_classification": "PLANNING_SITE",
+    "site_id": "togyzkuduk",
+    "site_metadata_hash": "6a294deb8f579fb0c4c7bd100419b9885c36d1375f585dd1f8149307bee3761b",
+    "timezone": "Asia/Almaty",
+    "timezone_offset": "+05:00"
+  },
+  "software_version": "1.0.0",
+  "stage_timings_seconds": {
+    "demand_review": 2.4080094000091776,
+    "dispatch_detail": 0.058857399970293045,
+    "optimization": 99.14776790002361,
+    "total_before_export": 103.15572589996736,
+    "weather_and_generation": 1.2730818000854924
+  },
+  "theoretical_design_combinations": 346626,
+  "weather_cache_key": "af398898f57e978b6dfa01a93597b72ebf8b7a44666c363e23eb86d8fa72b893",
+  "weather_cache_status": "HIT",
+  "weather_end_utc": "2026-01-01T00:00:00Z",
+  "weather_model": "ERA5",
+  "weather_sha256": "70cf1cb5e5ab8752d8a80b43c0409f5f6cf54df03b7b44e5621b1ffc281df134",
+  "weather_source": "Open-Meteo Historical Weather API",
+  "weather_start_utc": "2025-01-01T00:00:00Z"
+}
