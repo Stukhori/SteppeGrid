@@ -173,6 +173,56 @@
       "message": "Frozen Phase 17 standardized comparison is available"
     },
     {
+      "check": "phase17_site_resource_metrics.csv",
+      "status": "PASS",
+      "message": "Phase 17 artifact: site_resource_metrics.csv"
+    },
+    {
+      "check": "phase17_standardized_scenarios.csv",
+      "status": "PASS",
+      "message": "Phase 17 artifact: standardized_scenarios.csv"
+    },
+    {
+      "check": "phase17_optimization_results.csv",
+      "status": "PASS",
+      "message": "Phase 17 artifact: optimization_results.csv"
+    },
+    {
+      "check": "phase17_normalized_metrics.csv",
+      "status": "PASS",
+      "message": "Phase 17 artifact: normalized_metrics.csv"
+    },
+    {
+      "check": "phase17_reliability_escalation.csv",
+      "status": "PASS",
+      "message": "Phase 17 artifact: reliability_escalation.csv"
+    },
+    {
+      "check": "phase17_site_comparison.csv",
+      "status": "PASS",
+      "message": "Phase 17 artifact: site_comparison.csv"
+    },
+    {
+      "check": "phase17_phase17_summary.json",
+      "status": "PASS",
+      "message": "Phase 17 artifact: phase17_summary.json"
+    },
+    {
+      "check": "phase17_steppegrid_cross_village_report.md",
+      "status": "PASS",
+      "message": "Phase 17 artifact: steppegrid_cross_village_report.md"
+    },
+    {
+      "check": "phase17_95_results",
+      "status": "PASS",
+      "message": "Seven standardized 95% results"
+    },
+    {
+      "check": "phase17_99_results",
+      "status": "PASS",
+      "message": "Seven standardized 99% results"
+    },
+    {
       "check": "artifact_README.md",
       "status": "PASS",
       "message": "README.md"
@@ -205,15 +255,15 @@
     {
       "check": "final_figures",
       "status": "PASS",
-      "message": "Found 9 figures"
+      "message": "Found 10 final figures"
     },
     {
       "check": "final_tables",
       "status": "PASS",
-      "message": "Found 6 tables"
+      "message": "Found required final tables: ['key_findings.csv', 'normalized_comparison.csv', 'reliability_escalation.csv', 'results_95.csv', 'results_99.csv', 'site_summary.csv']"
     }
   ],
-  "passes": 42,
+  "passes": 52,
   "warnings": 0,
   "blockers": 0,
   "site_count": 7,

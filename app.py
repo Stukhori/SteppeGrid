@@ -21,7 +21,7 @@ from steppegrid.app.formatting import RECONSTRUCTION_NOTICE, SCENARIO_NOTICE, en
 from steppegrid.app.services import PlanningService
 from steppegrid.app.planner import render_planner
 from steppegrid.app.sites import render_compare_sites, render_sites
-from steppegrid.app.product import FEATURED_SITE_ID, latest_result, site_rows, weather_summary
+from steppegrid.app.product import FEATURED_SITE_ID, latest_result, phase17_findings, site_rows, weather_summary
 from steppegrid.app.state import NAVIGATION, PROFILE_LABELS, SHAMSHI_STATUS, TARGET_LABELS
 from steppegrid.app.theme import COLORS, apply_theme
 from steppegrid.planning.service import ScenarioPlanningService
@@ -128,6 +128,13 @@ def overview(api: PlanningService) -> None:
             callout("99% planning result", f"{power(hd['wind_capacity_kw'])} wind · {power(hd['pv_ac_capacity_kw'])} solar AC · {energy(hd['battery_usable_capacity_kwh'])} storage · {percent(hm['served_fraction'], 2)} annual energy served · {money(he['net_present_cost_usd'])} NPC")
     section_header("Seven Kazakhstan sites", "Select Sites for maps and village details, or Compare Sites for normalized saved results.")
     st.dataframe(pd.DataFrame(site_rows(registry))[["Site","Region","Annual demand (GWh/year)","95% result","99% result"]], hide_index=True, width="stretch")
+    findings = phase17_findings()
+    section_header("Cross-village findings", "Standardized findings within the five-site common-demand-method cohort.")
+    a,b,c,d = st.columns(4)
+    with a: metric("Highest solar yield", findings["highest_solar"])
+    with b: metric("Highest wind resource", findings["highest_wind"])
+    with c: metric("Lowest normalized 95% NPC", findings["lowest_normalized_npc"])
+    with d: metric("Largest 95%→99% NPC increase", findings["largest_escalation"])
 
 
 def demand_weather(api: PlanningService) -> None:

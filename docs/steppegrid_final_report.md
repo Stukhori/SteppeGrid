@@ -56,6 +56,10 @@ The unchanged benchmark selects 2.04 MW wind, 8.30 MWac PV, and 15.42 MWh usable
 
 The interface consumes fourteen frozen standardized Planner V2 scenarios and normalizes capacity and cost by registered annual demand. The primary five-site proxy cohort is analyzed separately from Rodina and Shamshi. Kegen has the highest proxy-cohort PV specific yield; Togyzkuduk has the highest representative wind capacity factor; Sai-Otes has the largest proxy-cohort 95%→99% NPC escalation.
 
+## Reliability-Cost Escalation
+
+Within the primary cohort, moving from 95% to 99% annual energy served increases NPC by 13.35% at Kegen, 22.12% at Katon-Karagay, 37.84% at Togyzkuduk, 60.30% at Shayan, and 77.36% at Sai-Otes. The response is not a uniform scale factor: Shayan introduces wind at 99%, while Sai-Otes increases storage by 177.78%.
+
 ## My Village — Shamshi Kaldayakova
 
 Shamshi Kaldayakova (Aktobe Region) is the featured blue `MY VILLAGE` case. Its current registered demand is 0.50 GWh/year. Cached weather contains 8,760 modeled hours. The standardized 95% system uses 200 kW wind, 347.8 kWdc / 350 kWac solar, and 1.028 MWh usable storage. It serves 479.13 MWh, or 95.83% of annual demand, curtails 281.84 MWh (36.61% of raw generation), records 549 loss-of-load hours and a 139-hour longest deficit, and has $1.84M CAPEX, $2.64M NPC, $0.15M/year EAC, and $0.316 per served kWh. The 99% system uses 500 kW wind, 298.1 kWdc / 300 kWac solar, and 1.542 MWh storage; it serves 99.12% with $4.22M NPC. Saved dispatch CSVs provide the authoritative hourly examples.
@@ -63,6 +67,10 @@ Shamshi Kaldayakova (Aktobe Region) is the featured blue `MY VILLAGE` case. Its 
 ## Final Results
 
 The release integrates the seven-site registry, a featured Shamshi case, the paired Rodina result, saved planner scenarios, normalized comparison controls, and downloadable user-run outputs. Public summaries use decision-scale precision.
+
+## Main Findings
+
+Kegen combines the proxy cohort's highest PV yield with the lowest normalized NPC and curtailment. Togyzkuduk has the highest representative wind capacity factor and lowest normalized storage requirement. Katon-Karagay has the highest normalized NPC and storage intensity. Sai-Otes experiences the greatest reliability-cost escalation. These conclusions describe the selected settlements under one 2025 weather year and the declared standardized assumptions; they are not national rankings.
 
 ## Reproducibility
 

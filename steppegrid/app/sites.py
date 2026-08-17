@@ -2,6 +2,7 @@
 from __future__ import annotations
 import pandas as pd
 import streamlit as st
+import altair as alt
 from steppegrid.app.components import metric, page_header, section_header
 from steppegrid.app.product import FEATURED_SITE_ID, FEATURED_SITE_LABEL, latest_result, site_rows, weather_summary
 from steppegrid.app.formatting import energy, money, percent, power
@@ -73,6 +74,14 @@ def render_compare_sites(registry: SiteRegistry) -> None:
         values={"System Cost":econ.get("net_present_cost_usd",0)/demand,"Wind":design.get("wind_capacity_kw",0)/(demand/1000),"Solar":design.get("pv_ac_capacity_kw",0)/(demand/1000),"Storage":design.get("battery_usable_capacity_kwh",0)/(demand/1000),"Reliability":100*perf.get("served_fraction",0),"Curtailment":100*perf.get("curtailment_fraction",0)}
         rows.append({"Site":site.name,"Value":values[category],"Identity":FEATURED_SITE_LABEL if site.site_id==FEATURED_SITE_ID else "Site"})
     if rows:
-        frame=pd.DataFrame(rows); st.bar_chart(frame.set_index("Site")["Value"],color="#2878D8"); st.dataframe(frame,hide_index=True,width="stretch")
+        frame=pd.DataFrame(rows)
+        chart=alt.Chart(frame).mark_bar().encode(x=alt.X("Site:N",sort=None),y=alt.Y("Value:Q",title=category),color=alt.Color("Identity:N",scale=alt.Scale(domain=["Site",FEATURED_SITE_LABEL],range=["#1F6B5B","#2878D8"]),legend=alt.Legend(title="Identity")),tooltip=["Site","Value","Identity"])
+        st.altair_chart(chart,width="stretch"); st.dataframe(frame,hide_index=True,width="stretch")
+        section_header("Pair comparison", "Select two saved site results for a direct metric comparison.")
+        left,right=st.columns(2); names=frame["Site"].tolist()
+        with left: first=st.selectbox("First site",names,index=0,key="compare_first")
+        with right: second=st.selectbox("Second site",names,index=min(1,len(names)-1),key="compare_second")
+        pair=frame.loc[frame["Site"].isin([first,second])]
+        st.dataframe(pair,hide_index=True,width="stretch")
     else: st.info("No saved cross-village results are available for this target.")
     st.caption("Normalized metrics account for village demand. Reliability is annual energy served, not uptime.")

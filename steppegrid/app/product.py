@@ -84,3 +84,20 @@ def weather_summary(site) -> dict[str, float | int]:
         "mean_wind_100m_m_s": float(frame[wind_col].mean()) if wind_col else float("nan"),
         "annual_solar_kwh_m2": float(frame[solar_col].sum() / 1000) if solar_col else float("nan"),
     }
+
+
+@lru_cache(maxsize=1)
+def phase17_findings() -> dict[str, str]:
+    resources = pd.read_csv(project_root() / "outputs/phase17/site_resource_metrics.csv")
+    normalized = pd.read_csv(project_root() / "outputs/phase17/normalized_metrics.csv")
+    escalation = pd.read_csv(project_root() / "outputs/phase17/reliability_escalation.csv")
+    proxy_resources = resources.loc[resources["cohort"] == "primary_proxy"]
+    proxy_95 = normalized.loc[(normalized["cohort"] == "primary_proxy") & (normalized["target"] == .95)]
+    proxy_ids = set(proxy_95["site_id"])
+    proxy_escalation = escalation.loc[escalation["site_id"].isin(proxy_ids)]
+    return {
+        "highest_solar": proxy_resources.loc[proxy_resources["pv_specific_yield_kwh_per_kwp"].idxmax(), "site"],
+        "highest_wind": proxy_resources.loc[proxy_resources["wind_capacity_factor"].idxmax(), "site"],
+        "lowest_normalized_npc": proxy_95.loc[proxy_95["NPC_per_annual_kWh_demand"].idxmin(), "site"],
+        "largest_escalation": proxy_escalation.loc[proxy_escalation["delta_NPC_percent"].idxmax(), "site"],
+    }

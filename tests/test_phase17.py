@@ -27,9 +27,14 @@ def test_normalization_formulas():
         annual=float(r["annual_demand_kwh"]); gwh=annual/1e6
         assert float(r["wind_MW_per_GWh"])==pytest.approx(float(r["wind_capacity_kw"])/1000/gwh)
         assert float(r["pv_MWac_per_GWh"])==pytest.approx(float(r["pv_ac_capacity_kw"])/1000/gwh)
+        assert float(r["pv_MWdc_per_GWh"])==pytest.approx(float(r["pv_dc_capacity_kw"])/1000/gwh)
         assert float(r["battery_MWh_per_GWh"])==pytest.approx(float(r["battery_usable_capacity_kwh"])/1000/gwh)
+        assert float(r["battery_MW_per_GWh"])==pytest.approx(float(r["battery_power_kw"])/1000/gwh)
         assert float(r["NPC_per_annual_kWh_demand"])==pytest.approx(float(r["npc_usd"])/annual)
         assert float(r["curtailment_fraction"])==pytest.approx(float(r["curtailment_kwh"])/float(r["raw_generation_kwh"]))
+        assert float(r["raw_generation_load_ratio"])==pytest.approx(float(r["raw_generation_kwh"])/annual)
+        assert float(r["wind_share_raw_generation"])+float(r["pv_share_raw_generation"])==pytest.approx(1)
+        assert abs(float(r["energy_conservation_residual_kwh"]))<1e-6
 def test_zero_denominator_escalation_is_semantic():
     for r in rows("reliability_escalation.csv"):
         if r["delta_wind_capacity_percent"]=="": assert r["wind_entered_at_99"] in {"True","False"}
