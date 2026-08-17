@@ -38,7 +38,10 @@ from steppegrid.weather.open_meteo import (
 )
 from steppegrid.sites.models import (
     DemandDatasetRef,
+    DemandProxyMethod,
     PlanningReadiness,
+    PopulatedSiteAuditEntry,
+    PopulatedSitesAudit,
     ProvenanceSourceType,
     SiteAuditCheck,
     SiteClassification,
@@ -135,6 +138,15 @@ class SiteRegistry:
 
     def list_sites(self) -> tuple[VillageSite, ...]:
         return tuple(site for _, site in self._load_pairs())
+
+    def get_demand_methodology(self, methodology_id: str) -> DemandProxyMethod:
+        path = self.root / "methodologies" / f"{methodology_id}.json"
+        try:
+            return DemandProxyMethod.model_validate_json(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as error:
+            raise SiteRegistryError(
+                f"invalid or missing demand methodology {methodology_id}: {error}"
+            ) from error
 
     def get_site(self, site_id: str) -> VillageSite:
         for _, site in self._load_pairs():
@@ -488,9 +500,10 @@ class SiteRegistry:
         year: int = 2025,
         refresh: bool = False,
         provider: OpenMeteoHistoricalWeatherProvider | None = None,
+        allow_built_in_update: bool = False,
     ) -> WeatherDatasetRef:
         site = self.get_site(site_id)
-        if site.origin is SiteOrigin.BUILT_IN:
+        if site.origin is SiteOrigin.BUILT_IN and not allow_built_in_update:
             raise SiteRegistryError("built-in weather references are read-only")
         start = datetime(year, 1, 1, tzinfo=timezone.utc)
         end = datetime(year + 1, 1, 1, tzinfo=timezone.utc)
@@ -517,7 +530,13 @@ class SiteRegistry:
             ),),
         )
         others = tuple(item for item in site.weather_datasets if item.weather_id != reference.weather_id)
-        self._write_user_site(site.model_copy(update={"weather_datasets": (*others, reference)}))
+        updated = VillageSite.model_validate(site.model_copy(
+            update={"weather_datasets": (*others, reference)}
+        ).model_dump())
+        if site.origin is SiteOrigin.BUILT_IN:
+            _atomic_json(self._path_for(updated), updated.model_dump(mode="json"))
+        else:
+            self._write_user_site(updated)
         return reference
 
     def _site_blockers(self, site: VillageSite) -> list[str]:
@@ -536,6 +555,19 @@ class SiteRegistry:
                 if (weather.latitude, weather.longitude) != (site.latitude, site.longitude):
                     blockers.append(f"weather coordinate mismatch: {weather.weather_id}")
         for demand in site.demand_datasets:
+            if demand.proxy_calculation is not None:
+                try:
+                    method = self.get_demand_methodology(
+                        demand.proxy_calculation.methodology_id
+                    )
+                except SiteRegistryError as error:
+                    blockers.append(str(error))
+                else:
+                    if abs(
+                        method.planning_kwh_per_capita
+                        - demand.proxy_calculation.planning_kwh_per_capita
+                    ) > 1e-6:
+                        blockers.append(f"proxy methodology mismatch: {demand.demand_id}")
             if demand.path:
                 path = resolve_registry_path(self.root, demand.path)
                 if path is None or not path.is_file():
@@ -588,6 +620,71 @@ class SiteRegistry:
         )
         if write_output:
             _atomic_json(Path("outputs/site_registry/site_audit.json"), audit.model_dump(mode="json"))
+        return audit
+
+    def populated_sites_audit(
+        self,
+        *,
+        methodology_id: str = "kz_rural_proxy_v1",
+        write_output: bool = False,
+    ) -> PopulatedSitesAudit:
+        method = self.get_demand_methodology(methodology_id)
+        entries: list[PopulatedSiteAuditEntry] = []
+        blockers = 0
+        for site in self.list_sites():
+            matching = [
+                demand for demand in site.demand_datasets
+                if demand.proxy_calculation is not None
+                and demand.proxy_calculation.methodology_id == methodology_id
+            ]
+            if not matching:
+                continue
+            demand = matching[0]
+            population_source = next(
+                (source for source in site.provenance if source.field == "population"),
+                None,
+            )
+            if site.population is None or population_source is None:
+                blockers += 1
+                continue
+            weather = next(
+                (item for item in site.weather_datasets if item.year == 2025),
+                None,
+            )
+            readiness = self.get_planning_readiness(site.site_id)
+            if readiness is not PlanningReadiness.READY_FOR_PLANNING:
+                blockers += 1
+            entries.append(PopulatedSiteAuditEntry(
+                site_id=site.site_id,
+                name=site.name,
+                region=site.region,
+                latitude=site.latitude,
+                longitude=site.longitude,
+                population=site.population,
+                population_year=site.population_year,
+                population_is_approximate=site.population_is_approximate,
+                population_source=population_source,
+                demand_id=demand.demand_id,
+                demand_methodology_id=methodology_id,
+                annual_demand_kwh=demand.annual_energy_kwh,
+                demand_classification=demand.classification,
+                weather_status=self.get_weather_status(site.site_id),
+                planning_readiness=readiness,
+                source_metadata=(*site.provenance, *demand.provenance),
+                site_metadata_hash=site.metadata_hash,
+                demand_sha256=demand.demand_sha256,
+                weather_sha256=weather.sha256 if weather else None,
+            ))
+        audit = PopulatedSitesAudit(
+            demand_methodology=method,
+            sites=tuple(entries),
+            blockers=blockers,
+        )
+        if write_output:
+            _atomic_json(
+                Path("outputs/site_registry/populated_sites_audit.json"),
+                audit.model_dump(mode="json"),
+            )
         return audit
 
     def scenario_history(self, site_id: str) -> list[dict[str, object]]:

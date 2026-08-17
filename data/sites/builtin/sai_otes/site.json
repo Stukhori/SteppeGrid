@@ -1,0 +1,144 @@
+{
+  "classification": "PLANNING_SITE",
+  "country": "Kazakhstan",
+  "demand_datasets": [
+    {
+      "annual_energy_kwh": 1505959.113235099,
+      "classification": "PROXY_DERIVED",
+      "confidence": "Proxy estimate",
+      "created_at_utc": "2026-08-17T18:00:00Z",
+      "demand_id": "proxy_rural_community_v1",
+      "demand_sha256": "55da305f26a5e6c8347f334c5f2e84b2bed230e29b8cedb2cce747435f8331b5",
+      "mode": "estimated_annual",
+      "monthly_kwh": null,
+      "name": "KZ rural community proxy v1",
+      "path": null,
+      "profile_method": "KZ_RURAL_PROXY_V1: approximately 1,880 residents multiplied by 801.042081508 kWh/person/year, distributed with the deterministic community_facility_like profile.",
+      "profile_shape": "community_facility_like",
+      "provenance": [
+        {
+          "field": "demand",
+          "notes": "Proxy-derived planning trace; not measured village demand. Includes the explicit 1.25 SteppeGrid community-service multiplier.",
+          "retrieved_date": "2026-08-17",
+          "source_name": "KZ_RURAL_PROXY_V1",
+          "source_type": "DERIVED",
+          "source_url": "https://stat.gov.kz/en/industries/business-statistics/stat-energy/publications/67706/",
+          "source_year": 2022
+        }
+      ],
+      "proxy_calculation": {
+        "annual_energy_unrounded_kwh": 1505959.113235099,
+        "methodology_id": "kz_rural_proxy_v1",
+        "planning_kwh_per_capita": 801.0420815080313,
+        "population_basis": 1880
+      },
+      "reference_year": 2025,
+      "site_id": "sai_otes",
+      "source_file_sha256": null,
+      "temporal_resolution": "hourly"
+    }
+  ],
+  "district": "Mangystau District",
+  "elevation_m": null,
+  "household_count": null,
+  "household_count_year": null,
+  "latitude": 44.32771,
+  "longitude": 53.53314,
+  "name": "Sai-Otes",
+  "native_name": "\u0421\u0430\u0439-\u04e8\u0442\u0435\u0441",
+  "notes": "Real Kazakhstan settlement. Demand is a national rural proxy with an explicit planning uplift, not measured local consumption.",
+  "origin": "BUILT_IN",
+  "population": 1880,
+  "population_is_approximate": true,
+  "population_year": null,
+  "provenance": [
+    {
+      "field": "coordinates",
+      "notes": "Public geospatial locality coordinate; appropriate for ERA5 grid sampling, not a surveyed site boundary.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "Mapcarta locality record derived from OpenStreetMap and GeoNames",
+      "source_type": "DERIVED",
+      "source_url": "https://mapcarta.com/13562482",
+      "source_year": null
+    },
+    {
+      "field": "name",
+      "notes": "Confirms Sai-Otes as a village in Mangystau District.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "Mangystau regional government \u2014 Sai-Otes village road project",
+      "source_type": "AUTHORITATIVE_SOURCE",
+      "source_url": "https://www.gov.kz/memleket/entities/mangystau-uvp/press/news/details/122703",
+      "source_year": 2020
+    },
+    {
+      "field": "region",
+      "notes": null,
+      "retrieved_date": "2026-08-17",
+      "source_name": "Mangystau regional government \u2014 Sai-Otes village road project",
+      "source_type": "AUTHORITATIVE_SOURCE",
+      "source_url": "https://www.gov.kz/memleket/entities/mangystau-uvp/press/news/details/122703",
+      "source_year": 2020
+    },
+    {
+      "field": "timezone",
+      "notes": "Asia/Aqtau resolves to UTC+05:00 for the 2025 planning year.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "IANA Time Zone Database via Python zoneinfo",
+      "source_type": "DERIVED",
+      "source_url": "https://www.iana.org/time-zones",
+      "source_year": 2025
+    },
+    {
+      "field": "population",
+      "notes": "Public geographic locality dataset reports about 1,880 residents without a stated reference year; treated as approximate.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "Mapcarta locality record derived from OpenStreetMap and GeoNames",
+      "source_type": "DERIVED",
+      "source_url": "https://mapcarta.com/13562482",
+      "source_year": null
+    }
+  ],
+  "region": "Mangystau Region",
+  "schema_version": "phase16.site.v1",
+  "settlement_type": "village",
+  "site_id": "sai_otes",
+  "timezone": "Asia/Aqtau",
+  "timezone_offset": "+05:00",
+  "weather_datasets": [
+    {
+      "cache_key": "432bdc38a82ffe93c692f858b8e44adb1aab5d227525c5e836603dc9ae232971",
+      "end_utc": "2026-01-01T00:00:00Z",
+      "latitude": 44.32771,
+      "longitude": 53.53314,
+      "metadata_path": "data/weather/cache/open_meteo/era5/432bdc38a82ffe93c692f858b8e44adb1aab5d227525c5e836603dc9ae232971/metadata.json",
+      "model": "ERA5",
+      "path": "data/weather/cache/open_meteo/era5/432bdc38a82ffe93c692f858b8e44adb1aab5d227525c5e836603dc9ae232971/weather.csv",
+      "provenance": [
+        {
+          "field": "weather",
+          "notes": "ERA5 gridded reanalysis; not a site measurement.",
+          "retrieved_date": null,
+          "source_name": "Open-Meteo Historical Weather API",
+          "source_type": "DERIVED",
+          "source_url": "https://open-meteo.com/en/docs/historical-weather-api",
+          "source_year": 2025
+        }
+      ],
+      "sha256": "6411271ad44a191ed164fcecb09e121235132e83a2ea95b64b417536040905ce",
+      "source": "Open-Meteo Historical Weather API",
+      "start_utc": "2025-01-01T00:00:00Z",
+      "status": "CACHED",
+      "timezone": "UTC",
+      "variables": [
+        "temperature_2m",
+        "wind_speed_10m",
+        "shortwave_radiation",
+        "wind_speed_100m",
+        "direct_normal_irradiance",
+        "diffuse_radiation"
+      ],
+      "weather_id": "era5_2025",
+      "year": 2025
+    }
+  ]
+}

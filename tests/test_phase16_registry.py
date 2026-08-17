@@ -122,7 +122,7 @@ def test_builtin_rodina_and_shamshi_registry_metadata_is_faithful():
     assert shamshi.demand_datasets[0].classification is DemandSourceType.SYNTHETIC_ESTIMATE
     assert registry.get_planning_readiness(shamshi.site_id) is PlanningReadiness.READY_FOR_PLANNING
     audit = registry.validate_registry()
-    assert (audit.registered_sites, audit.valid_sites, audit.blockers, audit.warnings) == (2, 2, 0, 1)
+    assert (audit.registered_sites, audit.valid_sites, audit.blockers, audit.warnings) == (7, 7, 0, 1)
 
 
 def test_multiple_versioned_demand_datasets_coexist_and_hash_differ(tmp_path):

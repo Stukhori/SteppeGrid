@@ -2,8 +2,12 @@
 
 from steppegrid.sites.models import (
     DemandDatasetRef,
+    DemandProxyMethod,
     PlanningReadiness,
+    PopulatedSiteAuditEntry,
+    PopulatedSitesAudit,
     ProvenanceSourceType,
+    ProxyDemandCalculation,
     SiteClassification,
     SiteOrigin,
     SiteRegistryAudit,
@@ -16,8 +20,9 @@ from steppegrid.sites.models import (
 from steppegrid.sites.registry import SiteRegistry, SiteRegistryError
 
 __all__ = [
-    "DemandDatasetRef", "PlanningReadiness", "ProvenanceSourceType",
-    "SiteClassification", "SiteOrigin", "SiteRegistry", "SiteRegistryAudit",
-    "SiteRegistryError", "SourceReference", "VillageSite", "WeatherDatasetRef",
-    "WeatherStatus", "suggest_site_id",
+    "DemandDatasetRef", "DemandProxyMethod", "PlanningReadiness",
+    "PopulatedSiteAuditEntry", "PopulatedSitesAudit", "ProvenanceSourceType",
+    "ProxyDemandCalculation", "SiteClassification", "SiteOrigin", "SiteRegistry",
+    "SiteRegistryAudit", "SiteRegistryError", "SourceReference", "VillageSite",
+    "WeatherDatasetRef", "WeatherStatus", "suggest_site_id",
 ]

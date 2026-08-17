@@ -13,7 +13,7 @@ The application now has three modes: `Explore Benchmark` preserves frozen Rodina
 5. Choose 95% or 99% annual served energy and an explicit Planner V2 equipment filter.
 6. Review provenance/weather coverage, then press **Run Planner**.
 
-Estimated, proxy-derived, reconstructed, synthetic, and user-provided demand can all drive the same physical optimization, but their evidence class remains visible in the UI and exports. The frozen Rodina benchmark always uses `RODINA_FROZEN_V1`; new planning scenarios default to `PLANNER_V2` and versioned scale-aware economics. Registered sites retain separate weather, multiple versioned demand datasets, provenance, and scenario history. A planning scenario is not a field-validated optimum. See the [Phase 14 planner guide](docs/phase14_scenario_planner.md), [Phase 15 catalog guide](docs/phase15_scale_aware_catalog.md), and [Phase 16 site guide](docs/phase16_multi_village_sites.md).
+Estimated, proxy-derived, reconstructed, synthetic, and user-provided demand can all drive the same physical optimization, but their evidence class remains visible in the UI and exports. The production registry includes Rodina, Shamshi Kaldayakova, Katon-Karagay, Kegen, Shayan, Sai-Otes, and Togyzkuduk. The five added planning sites use the documented `KZ_RURAL_PROXY_V1` national rural-demand proxy and validated 2025 ERA5 caches; they are real settlements, while their demand remains an estimate rather than measured village consumption. The frozen Rodina benchmark always uses `RODINA_FROZEN_V1`; new planning scenarios default to `PLANNER_V2` and versioned scale-aware economics. Registered sites retain separate weather, multiple versioned demand datasets, provenance, and scenario history. A planning scenario is not a field-validated optimum. See the [Phase 14 planner guide](docs/phase14_scenario_planner.md), [Phase 15 catalog guide](docs/phase15_scale_aware_catalog.md), and [Phase 16 site guide](docs/phase16_multi_village_sites.md).
 
 ## Current research status
 
@@ -25,6 +25,7 @@ benchmark explorer, Phase 14 adds isolated scenarios, Phase 15 adds a versioned 
 ```powershell
 .\.venv\Scripts\python.exe scripts\run_phase12.py --mode verify
 .\.venv\Scripts\python.exe scripts\run_phase12.py --mode reproduce
+.\.venv\Scripts\python.exe scripts\prepare_populated_sites.py
 ```
 
 Final artifacts live in `outputs/benchmarks/rodina/phase12/`; reproduction details are in

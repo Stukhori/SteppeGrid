@@ -1,0 +1,43 @@
+{
+  "schema_version": "phase16.demand-proxy-method.v1",
+  "methodology_id": "kz_rural_proxy_v1",
+  "name": "Kazakhstan rural household electricity per-capita proxy with community-service planning uplift",
+  "base_year": 2022,
+  "rural_household_electricity_gwh": 4827.4,
+  "rural_population": 7533000,
+  "household_kwh_per_capita": 640.8336652064251,
+  "community_service_multiplier": 1.25,
+  "planning_kwh_per_capita": 801.0420815080313,
+  "classification": "PROXY_DERIVED",
+  "profile_shape": "community_facility_like",
+  "interpretation": "The national household component is derived from 2022 rural-household electricity consumption divided by the official rural-population estimate. The 1.25 community-service multiplier is a SteppeGrid researcher-defined planning assumption for a modest public/service allowance. It is not a measured village electricity statistic or confidence interval.",
+  "provenance": [
+    {
+      "field": "national_rural_household_electricity",
+      "source_name": "Kazakhstan Bureau of National Statistics — Fuel and energy consumption in households (2022)",
+      "source_type": "AUTHORITATIVE_SOURCE",
+      "source_url": "https://stat.gov.kz/en/industries/business-statistics/stat-energy/publications/67706/",
+      "source_year": 2022,
+      "retrieved_date": "2026-08-17",
+      "notes": "Reports 4,827.4 GWh annual electricity consumption by rural households."
+    },
+    {
+      "field": "national_rural_population",
+      "source_name": "Kazakhstan Bureau of National Statistics — demographic situation, January–July 2022",
+      "source_type": "AUTHORITATIVE_SOURCE",
+      "source_url": "https://www.gov.kz/memleket/entities/stat/press/news/details/425089",
+      "source_year": 2022,
+      "retrieved_date": "2026-08-17",
+      "notes": "Reports 7.533 million rural residents as of 1 August 2022."
+    },
+    {
+      "field": "community_service_multiplier",
+      "source_name": "SteppeGrid KZ_RURAL_PROXY_V1 planning assumption",
+      "source_type": "PROJECT_RECORD",
+      "source_url": null,
+      "source_year": 2026,
+      "retrieved_date": "2026-08-17",
+      "notes": "Researcher-defined 1.25 multiplier; not an observed national or village statistic."
+    }
+  ]
+}

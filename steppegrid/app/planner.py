@@ -54,7 +54,13 @@ def _source_configuration(mode: DemandMode) -> tuple[DemandSourceType, DemandCon
 
 def _build_inputs(registry: SiteRegistry) -> tuple[PlanningScenario | None, object | None, str | None]:
     section_header("1 · Site", "Choose a registered village or use temporary custom coordinates.")
-    sites = registry.list_sites()
+    # Keep the established benchmark as the neutral landing state while exposing
+    # every registered village. This ordering is not a site recommendation.
+    classification_order = {"BENCHMARK": 0, "FIELD_CASE": 1, "PLANNING_SITE": 2}
+    sites = sorted(
+        registry.list_sites(),
+        key=lambda site: (classification_order.get(site.classification.value, 99), site.name.casefold()),
+    )
     options = {
         ("Rodina benchmark site" if site.site_id == "rodina" else site.name): site.site_id
         for site in sites

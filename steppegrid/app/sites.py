@@ -16,20 +16,55 @@ from steppegrid.sites import (
 )
 
 
+def _population_label(site) -> str:
+    if site.population is None:
+        return "Not registered"
+    prefix = "~" if site.population_is_approximate else ""
+    return f"{prefix}{site.population:,}"
+
+
+def _population_source_label(site) -> str:
+    if site.population is None:
+        return "Not available"
+    source = next((item for item in site.provenance if item.field == "population"), None)
+    if source is None:
+        return "Missing provenance"
+    year = str(source.source_year) if source.source_year else "year not stated"
+    return f"{source.source_name} · {year}"
+
+
+def _annual_demand_label(site) -> str:
+    if not site.demand_datasets:
+        return "Not registered"
+    annual_kwh = site.demand_datasets[0].annual_energy_kwh
+    return f"~{annual_kwh / 1_000_000:.2f} GWh/year"
+
+
+def _demand_evidence_label(site) -> str:
+    classes = {item.classification for item in site.demand_datasets}
+    if DemandSourceType.PROXY_DERIVED in classes:
+        return "Proxy-derived demand"
+    if not classes:
+        return "Demand required"
+    return ", ".join(sorted(readable(item.value) for item in classes))
+
+
 def _site_rows(registry: SiteRegistry) -> list[dict[str, object]]:
     rows = []
     for site in registry.list_sites():
-        demand_classes = sorted({item.classification.value for item in site.demand_datasets})
         rows.append({
             "Site": site.name,
             "Site ID": site.site_id,
             "Region": site.region,
             "Coordinates": f"{site.latitude:.6f}, {site.longitude:.6f}",
             "Classification": site.classification.value,
+            "Population": _population_label(site),
+            "Population source": _population_source_label(site),
             "Origin": site.origin.value,
             "Weather": registry.get_weather_status(site.site_id).value,
             "Demand datasets": len(site.demand_datasets),
-            "Demand evidence": ", ".join(demand_classes) or "MISSING",
+            "Annual demand": _annual_demand_label(site),
+            "Demand evidence": _demand_evidence_label(site),
             "Planning": registry.get_planning_readiness(site.site_id).value,
         })
     return rows
@@ -55,11 +90,24 @@ def render_sites(registry: SiteRegistry) -> None:
         site_ids = [site.site_id for site in registry.list_sites()]
         selected_id = st.selectbox("Inspect site", site_ids, format_func=lambda value: registry.get_site(value).name)
         selected = registry.get_site(selected_id)
-        a, b, c, d = st.columns(4)
+        a, b, c, d, e = st.columns(5)
         with a: metric("Classification", selected.classification.value)
-        with b: metric("Weather", registry.get_weather_status(selected_id).value)
-        with c: metric("Demand datasets", str(len(selected.demand_datasets)))
-        with d: metric("Planning readiness", registry.get_planning_readiness(selected_id).value)
+        with b: metric("Population", _population_label(selected))
+        with c: metric("Annual demand", _annual_demand_label(selected))
+        with d: metric("Weather", registry.get_weather_status(selected_id).value)
+        with e: metric("Planning readiness", registry.get_planning_readiness(selected_id).value)
+        st.caption(
+            f"Population provenance: {_population_source_label(selected)} · "
+            f"Demand: {_demand_evidence_label(selected)}"
+        )
+        if selected.demand_datasets:
+            st.dataframe(pd.DataFrame([{
+                "Demand ID": item.demand_id,
+                "Classification": readable(item.classification.value),
+                "Annual energy": f"~{item.annual_energy_kwh / 1_000_000:.2f} GWh/year",
+                "Profile": item.profile_shape,
+                "Method": item.proxy_calculation.methodology_id if item.proxy_calculation else item.profile_method,
+            } for item in selected.demand_datasets]), hide_index=True, width="stretch")
         st.download_button(
             "Export site JSON", registry.export_site(selected_id),
             file_name=f"{selected_id}.site.json", mime="application/json",

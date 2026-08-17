@@ -1,0 +1,144 @@
+{
+  "classification": "PLANNING_SITE",
+  "country": "Kazakhstan",
+  "demand_datasets": [
+    {
+      "annual_energy_kwh": 889156.7104739147,
+      "classification": "PROXY_DERIVED",
+      "confidence": "Proxy estimate",
+      "created_at_utc": "2026-08-17T18:00:00Z",
+      "demand_id": "proxy_rural_community_v1",
+      "demand_sha256": "ff776126c9696fb361a8068ccfdef1cb0488b96275dc152620e8ea73962d2eb2",
+      "mode": "estimated_annual",
+      "monthly_kwh": null,
+      "name": "KZ rural community proxy v1",
+      "path": null,
+      "profile_method": "KZ_RURAL_PROXY_V1: approximately 1,110 residents multiplied by 801.042081508 kWh/person/year, distributed with the deterministic community_facility_like profile.",
+      "profile_shape": "community_facility_like",
+      "provenance": [
+        {
+          "field": "demand",
+          "notes": "Proxy-derived planning trace; not measured village demand. Includes the explicit 1.25 SteppeGrid community-service multiplier.",
+          "retrieved_date": "2026-08-17",
+          "source_name": "KZ_RURAL_PROXY_V1",
+          "source_type": "DERIVED",
+          "source_url": "https://stat.gov.kz/en/industries/business-statistics/stat-energy/publications/67706/",
+          "source_year": 2022
+        }
+      ],
+      "proxy_calculation": {
+        "annual_energy_unrounded_kwh": 889156.7104739147,
+        "methodology_id": "kz_rural_proxy_v1",
+        "planning_kwh_per_capita": 801.0420815080313,
+        "population_basis": 1110
+      },
+      "reference_year": 2025,
+      "site_id": "togyzkuduk",
+      "source_file_sha256": null,
+      "temporal_resolution": "hourly"
+    }
+  ],
+  "district": "Bukhar-Zhyrau District",
+  "elevation_m": null,
+  "household_count": null,
+  "household_count_year": null,
+  "latitude": 49.88107,
+  "longitude": 73.57845,
+  "name": "Togyzkuduk",
+  "native_name": "\u0422\u043e\u0493\u044b\u0437\u049b\u04b1\u0434\u044b\u049b",
+  "notes": "Real Kazakhstan settlement. Demand is a national rural proxy with an explicit planning uplift, not measured local consumption.",
+  "origin": "BUILT_IN",
+  "population": 1110,
+  "population_is_approximate": true,
+  "population_year": 2021,
+  "provenance": [
+    {
+      "field": "coordinates",
+      "notes": "Public geospatial locality coordinate; appropriate for ERA5 grid sampling, not a surveyed site boundary.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "Mapcarta locality record derived from OpenStreetMap",
+      "source_type": "DERIVED",
+      "source_url": "https://mapcarta.com/N1282428111",
+      "source_year": null
+    },
+    {
+      "field": "name",
+      "notes": "Official local-government page confirms the Togyzkuduk village and rural district.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "Togyzkuduk Rural District Akimat",
+      "source_type": "AUTHORITATIVE_SOURCE",
+      "source_url": "https://www.gov.kz/memleket/entities/karaganda-buhar-zhyrau-togyzkudyk?lang=kk",
+      "source_year": 2026
+    },
+    {
+      "field": "region",
+      "notes": null,
+      "retrieved_date": "2026-08-17",
+      "source_name": "Togyzkuduk Rural District Akimat",
+      "source_type": "AUTHORITATIVE_SOURCE",
+      "source_url": "https://www.gov.kz/memleket/entities/karaganda-buhar-zhyrau-togyzkudyk?lang=kk",
+      "source_year": 2026
+    },
+    {
+      "field": "timezone",
+      "notes": "Asia/Almaty resolves to UTC+05:00 for the 2025 planning year.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "IANA Time Zone Database via Python zoneinfo",
+      "source_type": "DERIVED",
+      "source_url": "https://www.iana.org/time-zones",
+      "source_year": 2025
+    },
+    {
+      "field": "population",
+      "notes": "The census table reports 1,104 residents; the registry uses the explicitly approximate rounded planning basis of 1,110.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "Kazakhstan Bureau of National Statistics \u2014 2021 National Census, Population Volume I",
+      "source_type": "AUTHORITATIVE_SOURCE",
+      "source_url": "https://www.gov.kz/uploads/2024/3/27/a9a05ca94f12229c24f828112b2fcf01_original.4886247.pdf",
+      "source_year": 2021
+    }
+  ],
+  "region": "Karaganda Region",
+  "schema_version": "phase16.site.v1",
+  "settlement_type": "village",
+  "site_id": "togyzkuduk",
+  "timezone": "Asia/Almaty",
+  "timezone_offset": "+05:00",
+  "weather_datasets": [
+    {
+      "cache_key": "af398898f57e978b6dfa01a93597b72ebf8b7a44666c363e23eb86d8fa72b893",
+      "end_utc": "2026-01-01T00:00:00Z",
+      "latitude": 49.88107,
+      "longitude": 73.57845,
+      "metadata_path": "data/weather/cache/open_meteo/era5/af398898f57e978b6dfa01a93597b72ebf8b7a44666c363e23eb86d8fa72b893/metadata.json",
+      "model": "ERA5",
+      "path": "data/weather/cache/open_meteo/era5/af398898f57e978b6dfa01a93597b72ebf8b7a44666c363e23eb86d8fa72b893/weather.csv",
+      "provenance": [
+        {
+          "field": "weather",
+          "notes": "ERA5 gridded reanalysis; not a site measurement.",
+          "retrieved_date": null,
+          "source_name": "Open-Meteo Historical Weather API",
+          "source_type": "DERIVED",
+          "source_url": "https://open-meteo.com/en/docs/historical-weather-api",
+          "source_year": 2025
+        }
+      ],
+      "sha256": "056bc5c1c8d669afc5a69dfdbde21a14c39900a8b67a4a9e9d5ffc0852db0148",
+      "source": "Open-Meteo Historical Weather API",
+      "start_utc": "2025-01-01T00:00:00Z",
+      "status": "CACHED",
+      "timezone": "UTC",
+      "variables": [
+        "temperature_2m",
+        "wind_speed_10m",
+        "shortwave_radiation",
+        "wind_speed_100m",
+        "direct_normal_irradiance",
+        "diffuse_radiation"
+      ],
+      "weather_id": "era5_2025",
+      "year": 2025
+    }
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "classification": "PLANNING_SITE",
+  "country": "Kazakhstan",
+  "demand_datasets": [
+    {
+      "annual_energy_kwh": 8170629.231381919,
+      "classification": "PROXY_DERIVED",
+      "confidence": "Proxy estimate",
+      "created_at_utc": "2026-08-17T18:00:00Z",
+      "demand_id": "proxy_rural_community_v1",
+      "demand_sha256": "4bb0889de63259f8ec5e60f337b1c93984b5c2caa9ed92eca3171d2847b95abd",
+      "mode": "estimated_annual",
+      "monthly_kwh": null,
+      "name": "KZ rural community proxy v1",
+      "path": null,
+      "profile_method": "KZ_RURAL_PROXY_V1: approximately 10,200 residents multiplied by 801.042081508 kWh/person/year, distributed with the deterministic community_facility_like profile.",
+      "profile_shape": "community_facility_like",
+      "provenance": [
+        {
+          "field": "demand",
+          "notes": "Proxy-derived planning trace; not measured village demand. Includes the explicit 1.25 SteppeGrid community-service multiplier.",
+          "retrieved_date": "2026-08-17",
+          "source_name": "KZ_RURAL_PROXY_V1",
+          "source_type": "DERIVED",
+          "source_url": "https://stat.gov.kz/en/industries/business-statistics/stat-energy/publications/67706/",
+          "source_year": 2022
+        }
+      ],
+      "proxy_calculation": {
+        "annual_energy_unrounded_kwh": 8170629.231381919,
+        "methodology_id": "kz_rural_proxy_v1",
+        "planning_kwh_per_capita": 801.0420815080313,
+        "population_basis": 10200
+      },
+      "reference_year": 2025,
+      "site_id": "shayan",
+      "source_file_sha256": null,
+      "temporal_resolution": "hourly"
+    }
+  ],
+  "district": "Baidibek District",
+  "elevation_m": null,
+  "household_count": null,
+  "household_count_year": null,
+  "latitude": 43.03231,
+  "longitude": 69.38075,
+  "name": "Shayan",
+  "native_name": "\u0428\u0430\u044f\u043d",
+  "notes": "Real Kazakhstan settlement. Demand is a national rural proxy with an explicit planning uplift, not measured local consumption.",
+  "origin": "BUILT_IN",
+  "population": 10200,
+  "population_is_approximate": true,
+  "population_year": null,
+  "provenance": [
+    {
+      "field": "coordinates",
+      "notes": "Public geospatial locality coordinate; appropriate for ERA5 grid sampling, not a surveyed site boundary.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "Mapcarta locality record derived from OpenStreetMap, GeoNames, and Wikidata",
+      "source_type": "DERIVED",
+      "source_url": "https://mapcarta.com/15395420",
+      "source_year": null
+    },
+    {
+      "field": "name",
+      "notes": "Identifies Shayan as a village and locality in Kazakhstan.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "Mapcarta locality record derived from OpenStreetMap, GeoNames, and Wikidata",
+      "source_type": "DERIVED",
+      "source_url": "https://mapcarta.com/15395420",
+      "source_year": null
+    },
+    {
+      "field": "region",
+      "notes": "Places the locality in Turkistan Region and Baidibek District.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "Mapcarta locality record derived from OpenStreetMap, GeoNames, and Wikidata",
+      "source_type": "DERIVED",
+      "source_url": "https://mapcarta.com/15395420",
+      "source_year": null
+    },
+    {
+      "field": "timezone",
+      "notes": "Asia/Almaty resolves to UTC+05:00 for the 2025 planning year.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "IANA Time Zone Database via Python zoneinfo",
+      "source_type": "DERIVED",
+      "source_url": "https://www.iana.org/time-zones",
+      "source_year": 2025
+    },
+    {
+      "field": "population",
+      "notes": "Public geographic locality dataset reports about 10,200 residents without a stated reference year; treated as approximate.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "Mapcarta locality record derived from OpenStreetMap, GeoNames, and Wikidata",
+      "source_type": "DERIVED",
+      "source_url": "https://mapcarta.com/15395420",
+      "source_year": null
+    }
+  ],
+  "region": "Turkistan Region",
+  "schema_version": "phase16.site.v1",
+  "settlement_type": "village",
+  "site_id": "shayan",
+  "timezone": "Asia/Almaty",
+  "timezone_offset": "+05:00",
+  "weather_datasets": [
+    {
+      "cache_key": "414e2511def9fdef865ad6483329ec06ef06a0e24a7052283563348825acd789",
+      "end_utc": "2026-01-01T00:00:00Z",
+      "latitude": 43.03231,
+      "longitude": 69.38075,
+      "metadata_path": "data/weather/cache/open_meteo/era5/414e2511def9fdef865ad6483329ec06ef06a0e24a7052283563348825acd789/metadata.json",
+      "model": "ERA5",
+      "path": "data/weather/cache/open_meteo/era5/414e2511def9fdef865ad6483329ec06ef06a0e24a7052283563348825acd789/weather.csv",
+      "provenance": [
+        {
+          "field": "weather",
+          "notes": "ERA5 gridded reanalysis; not a site measurement.",
+          "retrieved_date": null,
+          "source_name": "Open-Meteo Historical Weather API",
+          "source_type": "DERIVED",
+          "source_url": "https://open-meteo.com/en/docs/historical-weather-api",
+          "source_year": 2025
+        }
+      ],
+      "sha256": "3a31c5397146d04bde3f4e094e6cf3818785a95d5aa7b6c7497ca81f995f8e06",
+      "source": "Open-Meteo Historical Weather API",
+      "start_utc": "2025-01-01T00:00:00Z",
+      "status": "CACHED",
+      "timezone": "UTC",
+      "variables": [
+        "temperature_2m",
+        "wind_speed_10m",
+        "shortwave_radiation",
+        "wind_speed_100m",
+        "direct_normal_irradiance",
+        "diffuse_radiation"
+      ],
+      "weather_id": "era5_2025",
+      "year": 2025
+    }
+  ]
+}

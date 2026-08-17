@@ -115,6 +115,41 @@ def test_phase8_generation_weather_variables_are_normalized(tmp_path):
     assert series.diffuse_radiation_w_m2 == [0.0, 50.0, 80.0]
 
 
+def test_small_negative_era5_diffuse_artifact_is_floored_and_disclosed(tmp_path):
+    payload = _payload_for(START, 3)
+    payload["hourly_units"].update({
+        "wind_speed_100m": "m/s",
+        "direct_normal_irradiance": payload["hourly_units"]["shortwave_radiation"],
+        "diffuse_radiation": payload["hourly_units"]["shortwave_radiation"],
+    })
+    payload["hourly"].update({
+        "wind_speed_100m": [6.0, 6.1, 6.2],
+        "direct_normal_irradiance": [0.0, 300.0, 500.0],
+        "diffuse_radiation": [0.0, -7.0, 80.0],
+    })
+    provider, _ = _provider(tmp_path, payload)
+    dataset = provider.get_hourly_weather(LOCATION, START, END)
+    assert dataset.series.diffuse_radiation_w_m2 == [0.0, 0.0, 80.0]
+    assert any("Floored 1 small negative diffuse_radiation" in note for note in dataset.provenance.processing_notes)
+
+
+def test_material_negative_era5_radiation_still_fails(tmp_path):
+    payload = _payload_for(START, 3)
+    payload["hourly_units"].update({
+        "wind_speed_100m": "m/s",
+        "direct_normal_irradiance": payload["hourly_units"]["shortwave_radiation"],
+        "diffuse_radiation": payload["hourly_units"]["shortwave_radiation"],
+    })
+    payload["hourly"].update({
+        "wind_speed_100m": [6.0, 6.1, 6.2],
+        "direct_normal_irradiance": [0.0, 300.0, 500.0],
+        "diffuse_radiation": [0.0, -10.1, 80.0],
+    })
+    provider, _ = _provider(tmp_path, payload)
+    with pytest.raises(OpenMeteoError, match="invalid Phase 8 generation weather"):
+        provider.get_hourly_weather(LOCATION, START, END)
+
+
 def test_second_identical_request_is_cache_hit_without_network(tmp_path):
     provider, transport = _provider(tmp_path, FIXTURE_PATH.read_bytes())
     first = provider.get_hourly_weather(LOCATION, START, END)

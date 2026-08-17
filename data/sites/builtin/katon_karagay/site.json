@@ -1,0 +1,144 @@
+{
+  "classification": "PLANNING_SITE",
+  "country": "Kazakhstan",
+  "demand_datasets": [
+    {
+      "annual_energy_kwh": 2963855.701579716,
+      "classification": "PROXY_DERIVED",
+      "confidence": "Proxy estimate",
+      "created_at_utc": "2026-08-17T18:00:00Z",
+      "demand_id": "proxy_rural_community_v1",
+      "demand_sha256": "3628207a6361c70a07dc13044603a426aa0f2cbd50e9d985ac76505df6540472",
+      "mode": "estimated_annual",
+      "monthly_kwh": null,
+      "name": "KZ rural community proxy v1",
+      "path": null,
+      "profile_method": "KZ_RURAL_PROXY_V1: 3,700 residents multiplied by 801.042081508 kWh/person/year, distributed with the deterministic community_facility_like profile.",
+      "profile_shape": "community_facility_like",
+      "provenance": [
+        {
+          "field": "demand",
+          "notes": "Proxy-derived planning trace; not measured village demand. Includes the explicit 1.25 SteppeGrid community-service multiplier.",
+          "retrieved_date": "2026-08-17",
+          "source_name": "KZ_RURAL_PROXY_V1",
+          "source_type": "DERIVED",
+          "source_url": "https://stat.gov.kz/en/industries/business-statistics/stat-energy/publications/67706/",
+          "source_year": 2022
+        }
+      ],
+      "proxy_calculation": {
+        "annual_energy_unrounded_kwh": 2963855.701579716,
+        "methodology_id": "kz_rural_proxy_v1",
+        "planning_kwh_per_capita": 801.0420815080313,
+        "population_basis": 3700
+      },
+      "reference_year": 2025,
+      "site_id": "katon_karagay",
+      "source_file_sha256": null,
+      "temporal_resolution": "hourly"
+    }
+  ],
+  "district": "Katon-Karagay District",
+  "elevation_m": null,
+  "household_count": null,
+  "household_count_year": null,
+  "latitude": 49.17466,
+  "longitude": 85.59937,
+  "name": "Katon-Karagay",
+  "native_name": "\u041a\u0430\u0442\u043e\u043d\u049b\u0430\u0440\u0430\u0493\u0430\u0439",
+  "notes": "Real Kazakhstan settlement. Demand is a national rural proxy with an explicit planning uplift, not measured local consumption.",
+  "origin": "BUILT_IN",
+  "population": 3700,
+  "population_is_approximate": true,
+  "population_year": 2024,
+  "provenance": [
+    {
+      "field": "coordinates",
+      "notes": "Public geospatial locality coordinate; appropriate for ERA5 grid sampling, not a surveyed site boundary.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "Mapcarta locality record derived from OpenStreetMap",
+      "source_type": "DERIVED",
+      "source_url": "https://mapcarta.com/W42037926",
+      "source_year": null
+    },
+    {
+      "field": "name",
+      "notes": "Confirms Katon-Karagay village as the district administrative center.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "Katon-Karagay District Akimat \u2014 district information",
+      "source_type": "AUTHORITATIVE_SOURCE",
+      "source_url": "https://www.gov.kz/memleket/entities/vko-katon-karagay/press/article/details/174396",
+      "source_year": 2024
+    },
+    {
+      "field": "region",
+      "notes": null,
+      "retrieved_date": "2026-08-17",
+      "source_name": "Katon-Karagay District Akimat \u2014 district information",
+      "source_type": "AUTHORITATIVE_SOURCE",
+      "source_url": "https://www.gov.kz/memleket/entities/vko-katon-karagay/press/article/details/174396",
+      "source_year": 2024
+    },
+    {
+      "field": "timezone",
+      "notes": "Asia/Almaty resolves to UTC+05:00 for the 2025 planning year.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "IANA Time Zone Database via Python zoneinfo",
+      "source_type": "DERIVED",
+      "source_url": "https://www.iana.org/time-zones",
+      "source_year": 2025
+    },
+    {
+      "field": "population",
+      "notes": "Official page states approximately 3.7 thousand residents; stored as an approximate 3,700-person planning basis.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "Katon-Karagay District Akimat \u2014 district information",
+      "source_type": "AUTHORITATIVE_SOURCE",
+      "source_url": "https://www.gov.kz/memleket/entities/vko-katon-karagay/press/article/details/174396",
+      "source_year": 2024
+    }
+  ],
+  "region": "East Kazakhstan Region",
+  "schema_version": "phase16.site.v1",
+  "settlement_type": "village",
+  "site_id": "katon_karagay",
+  "timezone": "Asia/Almaty",
+  "timezone_offset": "+05:00",
+  "weather_datasets": [
+    {
+      "cache_key": "03657516dfa2ed5947b55eb966f609766adc24a836bd8b4ef3e3df2a82600901",
+      "end_utc": "2026-01-01T00:00:00Z",
+      "latitude": 49.17466,
+      "longitude": 85.59937,
+      "metadata_path": "data/weather/cache/open_meteo/era5/03657516dfa2ed5947b55eb966f609766adc24a836bd8b4ef3e3df2a82600901/metadata.json",
+      "model": "ERA5",
+      "path": "data/weather/cache/open_meteo/era5/03657516dfa2ed5947b55eb966f609766adc24a836bd8b4ef3e3df2a82600901/weather.csv",
+      "provenance": [
+        {
+          "field": "weather",
+          "notes": "ERA5 gridded reanalysis; not a site measurement.",
+          "retrieved_date": null,
+          "source_name": "Open-Meteo Historical Weather API",
+          "source_type": "DERIVED",
+          "source_url": "https://open-meteo.com/en/docs/historical-weather-api",
+          "source_year": 2025
+        }
+      ],
+      "sha256": "7a831a1c61653f37637cf4bb2ff8e858dd682d0997b35d958a83344dced22d44",
+      "source": "Open-Meteo Historical Weather API",
+      "start_utc": "2025-01-01T00:00:00Z",
+      "status": "CACHED",
+      "timezone": "UTC",
+      "variables": [
+        "temperature_2m",
+        "wind_speed_10m",
+        "shortwave_radiation",
+        "wind_speed_100m",
+        "direct_normal_irradiance",
+        "diffuse_radiation"
+      ],
+      "weather_id": "era5_2025",
+      "year": 2025
+    }
+  ]
+}

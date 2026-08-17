@@ -1,0 +1,144 @@
+{
+  "classification": "PLANNING_SITE",
+  "country": "Kazakhstan",
+  "demand_datasets": [
+    {
+      "annual_energy_kwh": 8004813.520509757,
+      "classification": "PROXY_DERIVED",
+      "confidence": "Proxy estimate",
+      "created_at_utc": "2026-08-17T18:00:00Z",
+      "demand_id": "proxy_rural_community_v1",
+      "demand_sha256": "6010f4527438fee80bfdaf47fefa2bed73d6c4c14dd6026bd0cd53b1f036eb43",
+      "mode": "estimated_annual",
+      "monthly_kwh": null,
+      "name": "KZ rural community proxy v1",
+      "path": null,
+      "profile_method": "KZ_RURAL_PROXY_V1: 9,993 residents multiplied by 801.042081508 kWh/person/year, distributed with the deterministic community_facility_like profile.",
+      "profile_shape": "community_facility_like",
+      "provenance": [
+        {
+          "field": "demand",
+          "notes": "Proxy-derived planning trace; not measured village demand. Includes the explicit 1.25 SteppeGrid community-service multiplier.",
+          "retrieved_date": "2026-08-17",
+          "source_name": "KZ_RURAL_PROXY_V1",
+          "source_type": "DERIVED",
+          "source_url": "https://stat.gov.kz/en/industries/business-statistics/stat-energy/publications/67706/",
+          "source_year": 2022
+        }
+      ],
+      "proxy_calculation": {
+        "annual_energy_unrounded_kwh": 8004813.520509757,
+        "methodology_id": "kz_rural_proxy_v1",
+        "planning_kwh_per_capita": 801.0420815080313,
+        "population_basis": 9993
+      },
+      "reference_year": 2025,
+      "site_id": "kegen",
+      "source_file_sha256": null,
+      "temporal_resolution": "hourly"
+    }
+  ],
+  "district": "Kegen District",
+  "elevation_m": null,
+  "household_count": null,
+  "household_count_year": null,
+  "latitude": 43.014513,
+  "longitude": 79.226383,
+  "name": "Kegen",
+  "native_name": "\u041a\u0435\u0433\u0435\u043d",
+  "notes": "Real Kazakhstan settlement. Demand is a national rural proxy with an explicit planning uplift, not measured local consumption.",
+  "origin": "BUILT_IN",
+  "population": 9993,
+  "population_is_approximate": true,
+  "population_year": null,
+  "provenance": [
+    {
+      "field": "coordinates",
+      "notes": "Public GeoNames-derived locality coordinate; appropriate for ERA5 grid sampling, not a surveyed site boundary.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "GeoNames locality record 1522818 via Places-in-the-World",
+      "source_type": "DERIVED",
+      "source_url": "https://places-in-the-world.com/kazakhstan/kegen/1522818",
+      "source_year": null
+    },
+    {
+      "field": "name",
+      "notes": "Confirms Kegen village as the district center.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "Akimat of Kegen District",
+      "source_type": "AUTHORITATIVE_SOURCE",
+      "source_url": "https://www.gov.kz/memleket/entities/almobl-kegen?lang=en",
+      "source_year": 2026
+    },
+    {
+      "field": "region",
+      "notes": null,
+      "retrieved_date": "2026-08-17",
+      "source_name": "Akimat of Kegen District",
+      "source_type": "AUTHORITATIVE_SOURCE",
+      "source_url": "https://www.gov.kz/memleket/entities/almobl-kegen?lang=en",
+      "source_year": 2026
+    },
+    {
+      "field": "timezone",
+      "notes": "Asia/Almaty resolves to UTC+05:00 for the 2025 planning year.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "IANA Time Zone Database via Python zoneinfo",
+      "source_type": "DERIVED",
+      "source_url": "https://www.iana.org/time-zones",
+      "source_year": 2025
+    },
+    {
+      "field": "population",
+      "notes": "Public geographic dataset reports 9,993 residents without a stated population reference year; treated as approximate.",
+      "retrieved_date": "2026-08-17",
+      "source_name": "GeoNames locality record 1522818 via Places-in-the-World",
+      "source_type": "DERIVED",
+      "source_url": "https://places-in-the-world.com/kazakhstan/kegen/1522818",
+      "source_year": null
+    }
+  ],
+  "region": "Almaty Region",
+  "schema_version": "phase16.site.v1",
+  "settlement_type": "village",
+  "site_id": "kegen",
+  "timezone": "Asia/Almaty",
+  "timezone_offset": "+05:00",
+  "weather_datasets": [
+    {
+      "cache_key": "cf92cfcecd863d59987ca8dae15900ff6f5fb270bad35f62baa3ddce2bf4b763",
+      "end_utc": "2026-01-01T00:00:00Z",
+      "latitude": 43.014513,
+      "longitude": 79.226383,
+      "metadata_path": "data/weather/cache/open_meteo/era5/cf92cfcecd863d59987ca8dae15900ff6f5fb270bad35f62baa3ddce2bf4b763/metadata.json",
+      "model": "ERA5",
+      "path": "data/weather/cache/open_meteo/era5/cf92cfcecd863d59987ca8dae15900ff6f5fb270bad35f62baa3ddce2bf4b763/weather.csv",
+      "provenance": [
+        {
+          "field": "weather",
+          "notes": "ERA5 gridded reanalysis; not a site measurement.",
+          "retrieved_date": null,
+          "source_name": "Open-Meteo Historical Weather API",
+          "source_type": "DERIVED",
+          "source_url": "https://open-meteo.com/en/docs/historical-weather-api",
+          "source_year": 2025
+        }
+      ],
+      "sha256": "e126e0202a02d3321a7fe36b04de965ab97ae0bc8ed2f6327026bb2b508fb1e9",
+      "source": "Open-Meteo Historical Weather API",
+      "start_utc": "2025-01-01T00:00:00Z",
+      "status": "CACHED",
+      "timezone": "UTC",
+      "variables": [
+        "temperature_2m",
+        "wind_speed_10m",
+        "shortwave_radiation",
+        "wind_speed_100m",
+        "direct_normal_irradiance",
+        "diffuse_radiation"
+      ],
+      "weather_id": "era5_2025",
+      "year": 2025
+    }
+  ]
+}

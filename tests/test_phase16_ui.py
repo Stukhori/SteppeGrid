@@ -22,5 +22,8 @@ def test_builtin_site_has_no_delete_action_but_custom_temporary_planning_remains
     next(button for button in app.button if button.label == "Plan").click().run(timeout=90)
     site = next(box for box in app.selectbox if box.label == "Site preset")
     assert "Custom coordinates" in site.options
-    assert "Shamshi Kaldayakova" in site.options
+    for expected in (
+        "Shamshi Kaldayakova", "Katon-Karagay", "Kegen", "Shayan", "Sai-Otes", "Togyzkuduk"
+    ):
+        assert expected in site.options
     assert not app.exception

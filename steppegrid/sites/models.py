@@ -68,6 +68,48 @@ class SourceReference(DomainModel):
     notes: str | None = Field(default=None, max_length=3000)
 
 
+class DemandProxyMethod(DomainModel):
+    schema_version: str = "phase16.demand-proxy-method.v1"
+    methodology_id: str = Field(pattern=DATASET_ID_PATTERN)
+    name: str = Field(min_length=1, max_length=300)
+    base_year: int = Field(ge=1940, le=9998)
+    rural_household_electricity_gwh: float = Field(gt=0)
+    rural_population: int = Field(gt=0)
+    household_kwh_per_capita: float = Field(gt=0)
+    community_service_multiplier: float = Field(gt=0)
+    planning_kwh_per_capita: float = Field(gt=0)
+    classification: DemandSourceType = DemandSourceType.PROXY_DERIVED
+    profile_shape: str = "community_facility_like"
+    interpretation: str = Field(min_length=1, max_length=3000)
+    provenance: tuple[SourceReference, ...]
+
+    @model_validator(mode="after")
+    def validate_calculation(self) -> DemandProxyMethod:
+        expected_household = self.rural_household_electricity_gwh * 1_000_000 / self.rural_population
+        expected_planning = expected_household * self.community_service_multiplier
+        if abs(self.household_kwh_per_capita - expected_household) > 1e-4:
+            raise ValueError("household per-capita value does not match the national inputs")
+        if abs(self.planning_kwh_per_capita - expected_planning) > 1e-4:
+            raise ValueError("planning per-capita value does not match the uplift calculation")
+        if self.classification is not DemandSourceType.PROXY_DERIVED:
+            raise ValueError("proxy methodology classification must be PROXY_DERIVED")
+        return self
+
+
+class ProxyDemandCalculation(DomainModel):
+    methodology_id: str = Field(pattern=DATASET_ID_PATTERN)
+    population_basis: int = Field(gt=0)
+    planning_kwh_per_capita: float = Field(gt=0)
+    annual_energy_unrounded_kwh: float = Field(gt=0)
+
+    @model_validator(mode="after")
+    def validate_annual_energy(self) -> ProxyDemandCalculation:
+        expected = self.population_basis * self.planning_kwh_per_capita
+        if abs(self.annual_energy_unrounded_kwh - expected) > 1e-6:
+            raise ValueError("proxy annual energy does not match population times per-capita demand")
+        return self
+
+
 class WeatherDatasetRef(DomainModel):
     weather_id: str = Field(pattern=DATASET_ID_PATTERN)
     source: str = Field(min_length=1)
@@ -111,6 +153,7 @@ class DemandDatasetRef(DomainModel):
     path: str | None = None
     source_file_sha256: str | None = Field(default=None, pattern=SHA256_PATTERN)
     demand_sha256: str = Field(pattern=SHA256_PATTERN)
+    proxy_calculation: ProxyDemandCalculation | None = None
     provenance: tuple[SourceReference, ...]
     created_at_utc: datetime | None = None
 
@@ -122,6 +165,11 @@ class DemandDatasetRef(DomainModel):
             raise ValueError("monthly demand datasets require 12 totals")
         if self.mode is DemandMode.HOURLY_UPLOAD and not self.path:
             raise ValueError("hourly demand datasets require a path")
+        if self.proxy_calculation is not None:
+            if self.classification is not DemandSourceType.PROXY_DERIVED:
+                raise ValueError("proxy calculation requires PROXY_DERIVED classification")
+            if abs(self.annual_energy_kwh - self.proxy_calculation.annual_energy_unrounded_kwh) > 1e-6:
+                raise ValueError("dataset annual energy does not match its proxy calculation")
         return self
 
 
@@ -129,6 +177,7 @@ class VillageSite(DomainModel):
     schema_version: str = "phase16.site.v1"
     site_id: str = Field(pattern=SITE_ID_PATTERN)
     name: str = Field(min_length=1, max_length=160)
+    native_name: str | None = Field(default=None, max_length=160)
     settlement_type: str = Field(min_length=1, max_length=80)
     country: str = Field(min_length=1, max_length=120)
     region: str = Field(min_length=1, max_length=160)
@@ -141,6 +190,7 @@ class VillageSite(DomainModel):
     origin: SiteOrigin
     population: int | None = Field(default=None, gt=0)
     population_year: int | None = Field(default=None, ge=1900, le=9999)
+    population_is_approximate: bool = False
     household_count: int | None = Field(default=None, gt=0)
     household_count_year: int | None = Field(default=None, ge=1900, le=9999)
     elevation_m: float | None = None
@@ -197,6 +247,35 @@ class SiteRegistryAudit(DomainModel):
     blockers: int
     warnings: int
     checks: tuple[SiteAuditCheck, ...]
+
+
+class PopulatedSiteAuditEntry(DomainModel):
+    site_id: str
+    name: str
+    region: str
+    latitude: float
+    longitude: float
+    population: int
+    population_year: int | None
+    population_is_approximate: bool
+    population_source: SourceReference
+    demand_id: str
+    demand_methodology_id: str
+    annual_demand_kwh: float
+    demand_classification: DemandSourceType
+    weather_status: WeatherStatus
+    planning_readiness: PlanningReadiness
+    source_metadata: tuple[SourceReference, ...]
+    site_metadata_hash: str
+    demand_sha256: str
+    weather_sha256: str | None
+
+
+class PopulatedSitesAudit(DomainModel):
+    schema_version: str = "phase16.populated-sites-audit.v1"
+    demand_methodology: DemandProxyMethod
+    sites: tuple[PopulatedSiteAuditEntry, ...]
+    blockers: int
 
 
 def suggest_site_id(name: str) -> str:

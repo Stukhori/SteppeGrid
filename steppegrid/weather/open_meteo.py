@@ -30,6 +30,7 @@ MODEL_NAME = "ERA5"
 MODEL_PARAMETER = "era5"
 HOURLY_VARIABLES = ("temperature_2m", "wind_speed_10m", "shortwave_radiation")
 GENERATION_VARIABLES = ("wind_speed_100m", "direct_normal_irradiance", "diffuse_radiation")
+MINOR_NEGATIVE_RADIATION_FLOOR_W_M2 = -10.0
 REQUESTED_VARIABLES = (*HOURLY_VARIABLES, *GENERATION_VARIABLES)
 RADIATION_INTERVAL_CONVENTION = "preceding_hour_mean"
 RADIATION_INTERVAL_DURATION_MINUTES = 60
@@ -262,6 +263,10 @@ class OpenMeteoHistoricalWeatherProvider:
                     raise OpenMeteoError(f"unexpected unit for {variable}")
 
         rows: dict[datetime, tuple[float, ...]] = {}
+        radiation_floor_counts = {
+            "direct_normal_irradiance": 0,
+            "diffuse_radiation": 0,
+        }
         for index, timestamp in enumerate(timestamps):
             values: list[float] = []
             for variable in HOURLY_VARIABLES:
@@ -285,10 +290,27 @@ class OpenMeteoHistoricalWeatherProvider:
                 )
             rows[timestamp] = (wind, irradiance, temperature)
             if has_generation_variables:
-                extra = tuple(float(hourly[variable][index]) for variable in GENERATION_VARIABLES)
-                if any(not math.isfinite(value) or value < 0 for value in extra):
-                    raise OpenMeteoError(f"invalid Phase 8 generation weather at {timestamp.isoformat()}")
-                rows[timestamp] += extra
+                extra: list[float] = []
+                for variable in GENERATION_VARIABLES:
+                    raw_value = hourly[variable][index]
+                    if not isinstance(raw_value, (int, float)) or not math.isfinite(raw_value):
+                        raise OpenMeteoError(
+                            f"invalid Phase 8 generation weather at {timestamp.isoformat()}"
+                        )
+                    value = float(raw_value)
+                    if value < 0:
+                        if (
+                            variable in radiation_floor_counts
+                            and value >= MINOR_NEGATIVE_RADIATION_FLOOR_W_M2
+                        ):
+                            radiation_floor_counts[variable] += 1
+                            value = 0.0
+                        else:
+                            raise OpenMeteoError(
+                                f"invalid Phase 8 generation weather at {timestamp.isoformat()}"
+                            )
+                    extra.append(value)
+                rows[timestamp] += tuple(extra)
 
         expected_timestamps = [
             start + timedelta(hours=index)
@@ -369,11 +391,15 @@ class OpenMeteoHistoricalWeatherProvider:
             },
             processing_notes=[
                 "Selected the requested half-open UTC interval from inclusive API date output.",
-                "Renamed source variables; no numeric unit conversion, interpolation, or imputation.",
+                "Renamed source variables; no unit conversion or interpolation.",
                 "Shortwave radiation is the mean over the preceding hour.",
                 "The record timestamp is the end of that radiation averaging interval; POA geometry should use its midpoint without changing record alignment.",
                 "ERA5 100 m wind is used as the generation reference when present.",
                 "Data are ERA5 reanalysis associated with a grid cell, not a local station measurement.",
+            ] + [
+                f"Floored {count} small negative {variable} ERA5 value(s) to 0 W/m2; "
+                f"accepted floor is {MINOR_NEGATIVE_RADIATION_FLOOR_W_M2:g} W/m2."
+                for variable, count in radiation_floor_counts.items() if count
             ],
             coordinate_distance_km=_great_circle_distance_km(
                 location.latitude, location.longitude, returned_latitude, returned_longitude
