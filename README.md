@@ -4,9 +4,10 @@ SteppeGrid is an open-source research software project for studying renewable-en
 
 ## Current research status
 
-Phases 1–12 of the Rodina benchmark are complete. The final validation layer records provenance,
+Phases 1–13 of the Rodina benchmark are complete. The final validation layer records provenance,
 checks the aligned 8,760-hour reconstruction, reproduces the selected 95%/99% designs without a new
-optimizer search, and consolidates publication-style tables and figures.
+optimizer search, and consolidates publication-style tables and figures. Phase 13 adds a read-only
+interactive planning application over those frozen results.
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\run_phase12.py --mode verify
@@ -18,6 +19,19 @@ Final artifacts live in `outputs/benchmarks/rodina/phase12/`; reproduction detai
 reconstructed rather than measured, and annual served-energy fraction is not uptime. A future
 Shamshi field case remains contingent on obtaining real electricity-demand data; no Shamshi
 optimization is currently reported.
+
+Launch the interactive MVP:
+
+```powershell
+python -m pip install -e ".[app]"
+streamlit run app.py
+```
+
+The app compares the frozen 95% and 99% designs and explores demand, weather, generation, hourly
+dispatch, reliability, economics, sensitivity, assumptions, and provenance. It never runs an
+optimizer. See [the Phase 13 application guide](docs/phase13_application.md).
+
+Shamshi optimization will be enabled only after real demand data are available.
 
 No included inputs are claimed to represent a Kazakh village, a commercial turbine, or HelixGen. The bundled scenario and turbine curve are synthetic demonstration data.
 
