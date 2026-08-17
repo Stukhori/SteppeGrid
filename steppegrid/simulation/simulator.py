@@ -71,6 +71,8 @@ def simulate(inputs: SimulationInput) -> SimulationResult:
                 battery_soc_start_kwh=soc_start_kwh,
                 battery_soc_end_kwh=battery.soc_kwh,
                 battery_loss_kwh=charge.loss_kwh + discharge.loss_kwh,
+                battery_discharge_from_initial_inventory_kwh=discharge.from_initial_inventory_kwh,
+                battery_discharge_from_simulation_charge_kwh=discharge.from_simulation_charge_kwh,
                 grid_available=grid_available,
                 grid_import_kwh=grid_import_kwh,
                 curtailed_energy_kwh=curtailed_kwh,

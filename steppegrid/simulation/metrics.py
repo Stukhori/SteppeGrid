@@ -6,9 +6,8 @@ from steppegrid.simulation.models import AggregateMetrics, HourlyResult
 def aggregate(hourly: list[HourlyResult]) -> AggregateMetrics:
     total_demand = sum(row.demand_kwh for row in hourly)
     unserved = sum(row.unserved_energy_kwh for row in hourly)
-    renewable_to_load = sum(
-        row.renewable_direct_to_load_kwh + row.battery_discharge_kwh for row in hourly
-    )
+    renewable_to_load = sum(row.renewable_direct_to_load_kwh +
+        row.battery_discharge_from_simulation_charge_kwh for row in hourly)
     outage_rows = [row for row in hourly if not row.grid_available]
     outage_demand = sum(row.demand_kwh for row in outage_rows)
     outage_unserved = sum(row.unserved_energy_kwh for row in outage_rows)
@@ -25,6 +24,10 @@ def aggregate(hourly: list[HourlyResult]) -> AggregateMetrics:
         battery_charge_kwh=sum(row.battery_charge_kwh for row in hourly),
         battery_discharge_kwh=sum(row.battery_discharge_kwh for row in hourly),
         battery_loss_kwh=sum(row.battery_loss_kwh for row in hourly),
+        initial_stored_energy_kwh=hourly[0].battery_soc_start_kwh if hourly else 0.0,
+        battery_discharge_from_initial_inventory_kwh=sum(row.battery_discharge_from_initial_inventory_kwh for row in hourly),
+        battery_discharge_from_simulation_charge_kwh=sum(row.battery_discharge_from_simulation_charge_kwh for row in hourly),
+        ending_stored_energy_kwh=hourly[-1].battery_soc_end_kwh if hourly else 0.0,
         curtailed_energy_kwh=sum(row.curtailed_energy_kwh for row in hourly),
         unserved_energy_kwh=unserved,
         renewable_fraction=min(1.0, renewable_to_load / total_demand) if total_demand else 0.0,

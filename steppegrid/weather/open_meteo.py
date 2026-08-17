@@ -29,6 +29,10 @@ PROVIDER_NAME = "Open-Meteo Historical Weather API"
 MODEL_NAME = "ERA5"
 MODEL_PARAMETER = "era5"
 HOURLY_VARIABLES = ("temperature_2m", "wind_speed_10m", "shortwave_radiation")
+GENERATION_VARIABLES = ("wind_speed_100m", "direct_normal_irradiance", "diffuse_radiation")
+REQUESTED_VARIABLES = (*HOURLY_VARIABLES, *GENERATION_VARIABLES)
+RADIATION_INTERVAL_CONVENTION = "preceding_hour_mean"
+RADIATION_INTERVAL_DURATION_MINUTES = 60
 TRANSIENT_HTTP_STATUS = {429, 500, 502, 503, 504}
 EARTH_MEAN_RADIUS_KM = 6371.0088
 
@@ -91,7 +95,7 @@ class OpenMeteoHistoricalWeatherProvider:
             "longitude": location.longitude,
             "start_date": start.date().isoformat(),
             "end_date": inclusive_end.date().isoformat(),
-            "hourly": ",".join(HOURLY_VARIABLES),
+            "hourly": ",".join(REQUESTED_VARIABLES),
             "models": MODEL_PARAMETER,
             "wind_speed_unit": "ms",
             "temperature_unit": "celsius",
@@ -116,7 +120,7 @@ class OpenMeteoHistoricalWeatherProvider:
             "longitude": location.longitude,
             "start": start.isoformat(),
             "end": end.isoformat(),
-            "requested_variables": list(HOURLY_VARIABLES),
+            "requested_variables": list(REQUESTED_VARIABLES),
             "wind_speed_unit": "ms",
             "temperature_unit": "celsius",
             "timezone": "UTC",
@@ -244,7 +248,20 @@ class OpenMeteoHistoricalWeatherProvider:
         if timestamps != sorted(timestamps):
             raise OpenMeteoError("Open-Meteo timestamps are not chronological")
 
-        rows: dict[datetime, tuple[float, float, float]] = {}
+        has_generation_variables = all(variable in hourly for variable in GENERATION_VARIABLES)
+        if any(variable in hourly for variable in GENERATION_VARIABLES) and not has_generation_variables:
+            raise OpenMeteoError("Open-Meteo response contains only some Phase 8 generation variables")
+        if has_generation_variables:
+            for variable in GENERATION_VARIABLES:
+                if not isinstance(hourly[variable], list) or len(hourly[variable]) != len(timestamps):
+                    raise OpenMeteoError(f"invalid hourly generation variable: {variable}")
+            if units.get("wind_speed_100m") != units.get("wind_speed_10m"):
+                raise OpenMeteoError("unexpected unit for wind_speed_100m")
+            for variable in ("direct_normal_irradiance", "diffuse_radiation"):
+                if units.get(variable) != units.get("shortwave_radiation"):
+                    raise OpenMeteoError(f"unexpected unit for {variable}")
+
+        rows: dict[datetime, tuple[float, ...]] = {}
         for index, timestamp in enumerate(timestamps):
             values: list[float] = []
             for variable in HOURLY_VARIABLES:
@@ -267,6 +284,11 @@ class OpenMeteoHistoricalWeatherProvider:
                     f"at {timestamp.isoformat()}"
                 )
             rows[timestamp] = (wind, irradiance, temperature)
+            if has_generation_variables:
+                extra = tuple(float(hourly[variable][index]) for variable in GENERATION_VARIABLES)
+                if any(not math.isfinite(value) or value < 0 for value in extra):
+                    raise OpenMeteoError(f"invalid Phase 8 generation weather at {timestamp.isoformat()}")
+                rows[timestamp] += extra
 
         expected_timestamps = [
             start + timedelta(hours=index)
@@ -310,6 +332,9 @@ class OpenMeteoHistoricalWeatherProvider:
             wind_speed_m_s=[row[0] for row in selected],
             solar_irradiance_w_m2=[row[1] for row in selected],
             temperature_c=[row[2] for row in selected],
+            wind_speed_100m_m_s=[row[3] for row in selected] if has_generation_variables else None,
+            direct_normal_irradiance_w_m2=[row[4] for row in selected] if has_generation_variables else None,
+            diffuse_radiation_w_m2=[row[5] for row in selected] if has_generation_variables else None,
         )
         provenance = DataProvenance(
             source=PROVIDER_NAME,
@@ -329,17 +354,25 @@ class OpenMeteoHistoricalWeatherProvider:
             timezone="UTC",
             temporal_resolution="hourly",
             spatial_resolution="0.25 degrees (approximately 25 km; ERA5 dataset level)",
-            variables_requested=list(HOURLY_VARIABLES),
-            original_units={variable: expected_units[variable] for variable in HOURLY_VARIABLES},
+            variables_requested=list(REQUESTED_VARIABLES if has_generation_variables else HOURLY_VARIABLES),
+            original_units={
+                variable: units[variable]
+                for variable in (REQUESTED_VARIABLES if has_generation_variables else HOURLY_VARIABLES)
+            },
             normalized_units={
                 "wind_speed_m_s": "m/s",
                 "solar_irradiance_w_m2": "W/m2",
                 "temperature_c": "degC",
+                "wind_speed_100m_m_s": "m/s",
+                "direct_normal_irradiance_w_m2": "W/m2",
+                "diffuse_radiation_w_m2": "W/m2",
             },
             processing_notes=[
                 "Selected the requested half-open UTC interval from inclusive API date output.",
                 "Renamed source variables; no numeric unit conversion, interpolation, or imputation.",
                 "Shortwave radiation is the mean over the preceding hour.",
+                "The record timestamp is the end of that radiation averaging interval; POA geometry should use its midpoint without changing record alignment.",
+                "ERA5 100 m wind is used as the generation reference when present.",
                 "Data are ERA5 reanalysis associated with a grid cell, not a local station measurement.",
             ],
             coordinate_distance_km=_great_circle_distance_km(

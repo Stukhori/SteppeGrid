@@ -177,6 +177,9 @@ class WeatherSeries(DomainModel):
     wind_speed_m_s: list[float]
     solar_irradiance_w_m2: list[float]
     temperature_c: list[float] | None = None
+    wind_speed_100m_m_s: list[float] | None = None
+    direct_normal_irradiance_w_m2: list[float] | None = None
+    diffuse_radiation_w_m2: list[float] | None = None
 
     @model_validator(mode="after")
     def validate_series(self) -> WeatherSeries:
@@ -185,10 +188,17 @@ class WeatherSeries(DomainModel):
             raise ValueError("solar irradiance and timestamps must have equal lengths")
         if self.temperature_c is not None and len(self.temperature_c) != len(self.timestamps):
             raise ValueError("temperature and timestamps must have equal lengths")
+        for name in ("wind_speed_100m_m_s", "direct_normal_irradiance_w_m2", "diffuse_radiation_w_m2"):
+            values = getattr(self, name)
+            if values is not None and len(values) != len(self.timestamps):
+                raise ValueError(f"{name} and timestamps must have equal lengths")
         if any(value < 0 for value in self.wind_speed_m_s):
             raise ValueError("wind speeds must be non-negative")
         if any(value < 0 for value in self.solar_irradiance_w_m2):
             raise ValueError("solar irradiance must be non-negative")
+        for values in (self.wind_speed_100m_m_s, self.direct_normal_irradiance_w_m2, self.diffuse_radiation_w_m2):
+            if values is not None and any(value < 0 for value in values):
+                raise ValueError("optional weather values must be non-negative")
         return self
 
 
@@ -311,6 +321,8 @@ class HourlyResult(DomainModel):
     battery_soc_start_kwh: float
     battery_soc_end_kwh: float
     battery_loss_kwh: float
+    battery_discharge_from_initial_inventory_kwh: float = 0.0
+    battery_discharge_from_simulation_charge_kwh: float = 0.0
     grid_available: bool
     grid_import_kwh: float
     curtailed_energy_kwh: float
@@ -326,6 +338,10 @@ class AggregateMetrics(DomainModel):
     battery_charge_kwh: float
     battery_discharge_kwh: float
     battery_loss_kwh: float
+    initial_stored_energy_kwh: float = 0.0
+    battery_discharge_from_initial_inventory_kwh: float = 0.0
+    battery_discharge_from_simulation_charge_kwh: float = 0.0
+    ending_stored_energy_kwh: float = 0.0
     curtailed_energy_kwh: float
     unserved_energy_kwh: float
     renewable_fraction: float

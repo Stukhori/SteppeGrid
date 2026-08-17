@@ -91,6 +91,28 @@ def test_happy_path_normalizes_and_caches_exact_raw_response(tmp_path):
     assert paths.metadata.is_file()
     assert "models=era5" in transport.urls[0]
     assert "wind_speed_unit=ms" in transport.urls[0]
+    assert "wind_speed_100m" in transport.urls[0]
+    assert "direct_normal_irradiance" in transport.urls[0]
+    assert "diffuse_radiation" in transport.urls[0]
+
+
+def test_phase8_generation_weather_variables_are_normalized(tmp_path):
+    payload = _payload_for(START, 3)
+    payload["hourly_units"].update({
+        "wind_speed_100m": "m/s",
+        "direct_normal_irradiance": payload["hourly_units"]["shortwave_radiation"],
+        "diffuse_radiation": payload["hourly_units"]["shortwave_radiation"],
+    })
+    payload["hourly"].update({
+        "wind_speed_100m": [6.0, 6.1, 6.2],
+        "direct_normal_irradiance": [0.0, 300.0, 500.0],
+        "diffuse_radiation": [0.0, 50.0, 80.0],
+    })
+    provider, _ = _provider(tmp_path, payload)
+    series = provider.get_hourly_weather(LOCATION, START, END).series
+    assert series.wind_speed_100m_m_s == [6.0, 6.1, 6.2]
+    assert series.direct_normal_irradiance_w_m2 == [0.0, 300.0, 500.0]
+    assert series.diffuse_radiation_w_m2 == [0.0, 50.0, 80.0]
 
 
 def test_second_identical_request_is_cache_hit_without_network(tmp_path):

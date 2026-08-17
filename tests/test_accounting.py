@@ -55,6 +55,12 @@ def test_documented_metric_definitions(scenario_factory):
     result = simulate(inputs)
     assert result.metrics.battery_discharge_kwh == pytest.approx(0.5)
     assert result.metrics.battery_loss_kwh == pytest.approx(0.5)
-    assert result.metrics.renewable_fraction == pytest.approx(0.25)
+    # Phase 8: discharge from gifted initial inventory is not renewable generation.
+    assert result.metrics.renewable_fraction == pytest.approx(0.0)
+    assert result.metrics.renewable_generation_kwh == 0
+    assert result.metrics.battery_discharge_from_initial_inventory_kwh == pytest.approx(0.5)
+    assert result.metrics.battery_discharge_from_simulation_charge_kwh == 0
+    assert result.metrics.initial_stored_energy_kwh == 1
+    assert result.metrics.ending_stored_energy_kwh == 0
     assert result.metrics.outage_served_energy_kwh == pytest.approx(0.5)
     assert result.metrics.outage_unserved_energy_kwh == pytest.approx(1.5)

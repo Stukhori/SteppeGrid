@@ -2,6 +2,23 @@
 
 SteppeGrid is an open-source research software project for studying renewable-energy resilience in rural Kazakhstan. It provides a deterministic hourly model of load, solar PV, empirical wind-turbine output, battery storage, grid availability, curtailment, and unserved energy. Location-aware scenarios can use strict hourly CSV weather, deterministic synthetic weather, or cached ERA5 historical reanalysis from Open-Meteo.
 
+## Current research status
+
+Phases 1–12 of the Rodina benchmark are complete. The final validation layer records provenance,
+checks the aligned 8,760-hour reconstruction, reproduces the selected 95%/99% designs without a new
+optimizer search, and consolidates publication-style tables and figures.
+
+```powershell
+.\.venv\Scripts\python.exe scripts\run_phase12.py --mode verify
+.\.venv\Scripts\python.exe scripts\run_phase12.py --mode reproduce
+```
+
+Final artifacts live in `outputs/benchmarks/rodina/phase12/`; reproduction details are in
+[the Rodina reproduction guide](docs/reproducing_rodina_results.md). Rodina hourly demand is
+reconstructed rather than measured, and annual served-energy fraction is not uptime. A future
+Shamshi field case remains contingent on obtaining real electricity-demand data; no Shamshi
+optimization is currently reported.
+
 No included inputs are claimed to represent a Kazakh village, a commercial turbine, or HelixGen. The bundled scenario and turbine curve are synthetic demonstration data.
 
 ## Current architecture
