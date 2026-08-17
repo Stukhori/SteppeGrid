@@ -11,7 +11,14 @@ PAGES = (
     "Methodology & Provenance",
 )
 
-TARGET_LABELS = {"95% design": 0.95, "99% design": 0.99}
+NAVIGATION = {
+    "Study": ("Overview", "Demand & Weather", "Renewable Generation"),
+    "Planning": ("System Design", "Reliability", "Economics"),
+    "Analysis": ("Sensitivity",),
+    "Research": ("Methodology & Provenance",),
+}
+
+TARGET_LABELS = {"95% annual served-energy target": 0.95, "99% annual served-energy target": 0.99}
 PROFILE_LABELS = {
     "Residential-like": "residential_like",
     "Flat within month": "flat_within_month",

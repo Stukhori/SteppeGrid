@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from steppegrid.app.data import FrozenDataRepository
+from steppegrid.app.data import AppDataError, FrozenDataRepository
 from steppegrid.benchmarks.phase10 import precompute
 from steppegrid.equipment.catalog import BATTERIES
 from steppegrid.optimization.core import RenewablePortfolio, dispatch, scale_trace
@@ -103,6 +103,22 @@ class PlanningService:
             grouped.setdefault(row["scenario"], []).append(row)
         return [min(rows, key=lambda row: row["served_fraction"]) for rows in grouped.values()]
 
+    def nominal_dispatch_summary(self, target: float) -> dict:
+        """Return the frozen nominal binding-profile annual flows for a final design."""
+        rows = [row for row in self.repository.rows("fixed_sensitivity")
+                if row["scenario"] == "nominal" and float(row["target"]) == target]
+        if not rows:
+            raise AppDataError(f"No nominal Phase 11 replay exists for target {target}")
+        selected = min(rows, key=lambda row: float(row["served_fraction"]))
+        result = dict(selected)
+        for key in (
+            "annual_raw_renewable_generation_kwh", "wind_generation_kwh", "pv_generation_kwh",
+            "served_energy_kwh", "served_fraction", "unmet_energy_kwh", "curtailed_energy_kwh",
+            "battery_charge_kwh", "battery_discharge_kwh", "ending_soc_kwh",
+        ):
+            result[key] = float(result[key])
+        return result
+
     def margin_rows(self) -> list[dict]:
         rows = []
         for raw in self.repository.rows("margins"):
@@ -134,9 +150,18 @@ class PlanningService:
             "single_profile_comparison_provenance": summary.get("single_profile_comparison_provenance"),
         }
 
-    @staticmethod
     @lru_cache(maxsize=1)
-    def _model_inputs():
+    def _model_inputs(self):
+        project = Path(__file__).resolve().parents[2]
+        cached = self.provenance()["weather"].get("cached_inputs", [])
+        missing = [entry["path"] for entry in cached
+                   if not (project / Path(entry["path"].replace("\\", "/"))).is_file()]
+        if missing:
+            raise AppDataError(
+                "The frozen local ERA5 cache is unavailable. Restore the provenance-listed files "
+                "before opening hourly views. The app will not fetch live weather automatically. "
+                "Missing: " + ", ".join(missing)
+            )
         weather, phase9, loads, load_meta, wind, pv, _ = precompute()
         return weather, phase9, loads, load_meta, wind, pv
 
@@ -227,3 +252,29 @@ class PlanningService:
         frame = pd.DataFrame(records)
         frame["timestamp"] = pd.to_datetime(frame["timestamp"]).dt.tz_convert("Asia/Almaty")
         return frame
+
+    @lru_cache(maxsize=6)
+    def deficit_events(self, target: float, profile: str) -> pd.DataFrame:
+        """Summarize contiguous deficit runs from an existing deterministic dispatch replay."""
+        frame = self.dispatch_frame(target, profile)
+        events = []
+        start = None
+        energy_total = maximum = 0.0
+        duration = 0
+        previous_timestamp = None
+        for row in frame.itertuples(index=False):
+            if row.unmet_energy_kwh > 1e-6:
+                if start is None:
+                    start = row.timestamp; energy_total = maximum = 0.0; duration = 0
+                duration += 1
+                energy_total += row.unmet_energy_kwh
+                maximum = max(maximum, row.unmet_energy_kwh)
+                previous_timestamp = row.timestamp
+            elif start is not None:
+                events.append({"start": start, "end": previous_timestamp, "duration_hours": duration,
+                               "unmet_energy_kwh": energy_total, "maximum_hourly_deficit_kwh": maximum})
+                start = None
+        if start is not None:
+            events.append({"start": start, "end": previous_timestamp, "duration_hours": duration,
+                           "unmet_energy_kwh": energy_total, "maximum_hourly_deficit_kwh": maximum})
+        return pd.DataFrame(events, columns=["start", "end", "duration_hours", "unmet_energy_kwh", "maximum_hourly_deficit_kwh"])

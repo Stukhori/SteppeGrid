@@ -27,9 +27,10 @@ python -m pip install -e ".[app]"
 streamlit run app.py
 ```
 
-The app compares the frozen 95% and 99% designs and explores demand, weather, generation, hourly
-dispatch, reliability, economics, sensitivity, assumptions, and provenance. It never runs an
-optimizer. See [the Phase 13 application guide](docs/phase13_application.md).
+The polished analytical app compares the frozen 95% and 99% designs and explores demand, weather,
+generation, hourly dispatch, reliability, economics, sensitivity, assumptions, and provenance. It
+never runs an optimizer. See [the Phase 13 application guide](docs/phase13_application.md) and
+[the Phase 13.5 UI/UX guide](docs/phase13_5_ui_ux.md).
 
 Shamshi optimization will be enabled only after real demand data are available.
 

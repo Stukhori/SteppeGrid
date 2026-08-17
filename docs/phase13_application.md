@@ -74,3 +74,7 @@ optimization is reported.
 Remaining scope limits include one weather year, reconstructed rather than measured demand, no
 wake/layout/degradation/grid-physics extensions, and planning-reference costs rather than bids.
 Phase 13 introduces no new scientific methodology.
+
+Phase 13.5 subsequently centralized the visual theme, component library, interactive Altair charts,
+grouped navigation, deficit-event presentation, and responsive behavior without changing this data
+flow or the frozen results. See [the Phase 13.5 UI/UX guide](phase13_5_ui_ux.md).
