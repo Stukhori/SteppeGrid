@@ -4,10 +4,6 @@
 
 SteppeGrid v1.0 is an interactive Streamlit platform for exploring hourly weather, electricity demand, wind–solar–battery design, reliability, and planning economics across seven Kazakhstan settlements.
 
-## Live Application
-
-The repository is deployment-ready for Streamlit Community Cloud. A public URL has not yet been connected.
-
 ## What SteppeGrid Does
 
 Weather + Demand → Wind / Solar → Battery Dispatch → Reliability → Optimization → Economics
