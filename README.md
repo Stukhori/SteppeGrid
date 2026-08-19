@@ -51,10 +51,16 @@ Choose a registered or custom site, use registered demand or provide annual/mont
 
 ## Run Locally
 
+Prerequisites: Python 3.12 or newer and [uv](https://docs.astral.sh/uv/).
+
 ```bash
-uv sync --extra app --extra dev --extra visualization
+git clone https://github.com/Stukhori/SteppeGrid.git
+cd SteppeGrid
+uv sync --frozen --extra app --extra dev --extra visualization
 uv run streamlit run app.py
 ```
+
+Open `http://localhost:8501` if Streamlit does not open a browser automatically.
 
 ## Reproduce Results
 
