@@ -73,16 +73,15 @@ def site_rows(registry: SiteRegistry) -> list[dict[str, object]]:
 
 
 def weather_summary(site) -> dict[str, float | int]:
-    if not site.weather_datasets or not site.weather_datasets[0].path:
+    resources = pd.read_csv(project_root() / "outputs/phase17/site_resource_metrics.csv")
+    matches = resources.loc[resources["site_id"] == site.site_id]
+    if matches.empty:
         return {}
-    path = project_root() / site.weather_datasets[0].path
-    frame = pd.read_csv(path)
-    wind_col = next((c for c in frame if c in {"wind_speed_100m", "wind_speed_100m_m_s", "wind_speed_m_s"}), None)
-    solar_col = next((c for c in frame if c in {"shortwave_radiation", "shortwave_radiation_w_m2", "ghi_w_m2", "solar_irradiance_w_m2"}), None)
+    row = matches.iloc[0]
     return {
-        "hours": len(frame),
-        "mean_wind_100m_m_s": float(frame[wind_col].mean()) if wind_col else float("nan"),
-        "annual_solar_kwh_m2": float(frame[solar_col].sum() / 1000) if solar_col else float("nan"),
+        "hours": int(row["weather_hours"]),
+        "wind_capacity_factor": float(row["wind_capacity_factor"]),
+        "pv_specific_yield_kwh_per_kwp": float(row["pv_specific_yield_kwh_per_kwp"]),
     }
 
 

@@ -110,8 +110,8 @@ def overview(api: PlanningService) -> None:
     st.markdown('<div class="sg-site-detail sg-featured-site"><span class="sg-featured-badge">MY VILLAGE</span><h2>Shamshi Kaldayakova</h2><p>Aktobe Region</p></div>', unsafe_allow_html=True)
     a,b,c,d = st.columns(4)
     with a: metric("Annual demand", energy(demand))
-    with b: metric("Mean modeled wind", f"{resource['mean_wind_100m_m_s']:.2f} m/s")
-    with c: metric("Modeled solar resource", f"{resource['annual_solar_kwh_m2']:,.0f} kWh/m²")
+    with b: metric("Modeled wind capacity factor", percent(resource["wind_capacity_factor"], 2))
+    with c: metric("Modeled PV yield", f"{resource['pv_specific_yield_kwh_per_kwp']:,.0f} kWh/kWp")
     with d: metric("Planning targets", "95% and 99% available")
     if result:
         design, performance, economics_data = result["design"], result["metrics"], result["economics"]

@@ -1,0 +1,75 @@
+{
+  "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+  "model": "ERA5",
+  "provenance": {
+    "cache_key": "5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd",
+    "cache_status": "MISS",
+    "coordinate_distance_km": 6.511485199771877,
+    "end_time": "2025-12-31T19:00:00Z",
+    "latitude": 51.302445,
+    "longitude": 70.541645,
+    "metadata_path": "data/weather/cache/open_meteo/era5/5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd/metadata.json",
+    "normalized_data_path": "data/weather/cache/open_meteo/era5/5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd/weather.csv",
+    "normalized_units": {
+      "diffuse_radiation_w_m2": "W/m2",
+      "direct_normal_irradiance_w_m2": "W/m2",
+      "solar_irradiance_w_m2": "W/m2",
+      "temperature_c": "degC",
+      "wind_speed_100m_m_s": "m/s",
+      "wind_speed_m_s": "m/s"
+    },
+    "original_units": {
+      "diffuse_radiation": "W/m²",
+      "direct_normal_irradiance": "W/m²",
+      "shortwave_radiation": "W/m²",
+      "temperature_2m": "°C",
+      "wind_speed_100m": "m/s",
+      "wind_speed_10m": "m/s"
+    },
+    "processing_notes": [
+      "Selected the requested half-open UTC interval from inclusive API date output.",
+      "Renamed source variables; no numeric unit conversion, interpolation, or imputation.",
+      "Shortwave radiation is the mean over the preceding hour.",
+      "The record timestamp is the end of that radiation averaging interval; POA geometry should use its midpoint without changing record alignment.",
+      "ERA5 100 m wind is used as the generation reference when present.",
+      "Data are ERA5 reanalysis associated with a grid cell, not a local station measurement."
+    ],
+    "provider": "Open-Meteo Historical Weather API",
+    "raw_response_path": "data/weather/cache/open_meteo/era5/5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd/raw.json",
+    "requested_end_date": "2025-12-31",
+    "requested_latitude": 51.302445,
+    "requested_longitude": 70.541645,
+    "requested_start_date": "2024-12-31",
+    "retrieved_at": "2026-08-16T08:03:36.144382Z",
+    "returned_latitude": 51.25,
+    "returned_longitude": 70.5,
+    "source": "Open-Meteo Historical Weather API",
+    "source_documentation": "https://open-meteo.com/en/docs/historical-weather-api",
+    "spatial_resolution": "0.25 degrees (approximately 25 km; ERA5 dataset level)",
+    "start_time": "2024-12-31T19:00:00Z",
+    "temporal_resolution": "hourly",
+    "timezone": "UTC",
+    "underlying_model": "ERA5",
+    "variables_requested": [
+      "temperature_2m",
+      "wind_speed_10m",
+      "shortwave_radiation",
+      "wind_speed_100m",
+      "direct_normal_irradiance",
+      "diffuse_radiation"
+    ]
+  },
+  "provider": "Open-Meteo Historical Weather API",
+  "request_parameters": {
+    "end_date": "2025-12-31",
+    "hourly": "temperature_2m,wind_speed_10m,shortwave_radiation,wind_speed_100m,direct_normal_irradiance,diffuse_radiation",
+    "latitude": 51.302445,
+    "longitude": 70.541645,
+    "models": "era5",
+    "start_date": "2024-12-31",
+    "temperature_unit": "celsius",
+    "timezone": "UTC",
+    "wind_speed_unit": "ms"
+  },
+  "request_url": "https://archive-api.open-meteo.com/v1/archive?latitude=51.302445&longitude=70.541645&start_date=2024-12-31&end_date=2025-12-31&hourly=temperature_2m%2Cwind_speed_10m%2Cshortwave_radiation%2Cwind_speed_100m%2Cdirect_normal_irradiance%2Cdiffuse_radiation&models=era5&wind_speed_unit=ms&temperature_unit=celsius&timezone=UTC"
+}

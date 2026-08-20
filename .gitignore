@@ -29,4 +29,14 @@ outputs/benchmarks/rodina/phase12/*
 !outputs/benchmarks/rodina/phase12/assumptions_registry.csv
 !outputs/benchmarks/rodina/phase12/provenance_manifest.json
 !outputs/benchmarks/rodina/phase12/validation_audit.json
-data/weather/cache/
+# Retain only the frozen Rodina ERA5 cache required by deployed hourly views.
+data/weather/cache/*
+!data/weather/cache/open_meteo/
+data/weather/cache/open_meteo/*
+!data/weather/cache/open_meteo/era5/
+data/weather/cache/open_meteo/era5/*
+!data/weather/cache/open_meteo/era5/5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd/
+data/weather/cache/open_meteo/era5/5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd/*
+!data/weather/cache/open_meteo/era5/5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd/metadata.json
+!data/weather/cache/open_meteo/era5/5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd/raw.json
+!data/weather/cache/open_meteo/era5/5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd/weather.csv
