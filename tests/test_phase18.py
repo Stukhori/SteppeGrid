@@ -1,4 +1,5 @@
 from pathlib import Path
+from steppegrid.app.data import FrozenDataRepository
 from steppegrid.app.product import FEATURED_SITE_ID, latest_result, site_rows
 from steppegrid.app.theme import COLORS, GLOBAL_CSS
 from steppegrid.sites import SiteRegistry
@@ -33,3 +34,8 @@ def test_final_release_packages_are_complete():
     tables={p.name for p in (ROOT/"outputs/final/tables").glob("*.csv")}
     assert {"site_summary.csv","results_95.csv","results_99.csv","normalized_comparison.csv","reliability_escalation.csv","key_findings.csv"}<=tables
     assert len(list((ROOT/"outputs/final/figures").glob("*.png")))==10
+
+def test_deployed_app_packages_required_benchmark_artifacts():
+    repository=FrozenDataRepository()
+    repository.validate()
+    assert all(repository.path(key).is_file() for key in repository.REQUIRED)

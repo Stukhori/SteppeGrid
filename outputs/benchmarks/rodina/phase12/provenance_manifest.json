@@ -1,0 +1,427 @@
+{
+  "generated_at_utc": "2026-08-17T20:01:15.605652+00:00",
+  "site": {
+    "name": "Rodina",
+    "region": "Akmola Region",
+    "country": "Kazakhstan",
+    "latitude": 51.302445,
+    "longitude": 70.541645,
+    "timezone": "UTC+05:00",
+    "reference_year": 2025
+  },
+  "weather": {
+    "provider": "Open-Meteo historical API cache",
+    "dataset": "ERA5",
+    "records": 8760,
+    "coverage_utc": {
+      "start": "2024-12-31T19:00:00+00:00",
+      "end": "2025-12-31T18:00:00+00:00"
+    },
+    "variables": [
+      "temperature_2m",
+      "wind_speed_10m",
+      "shortwave_radiation",
+      "wind_speed_100m",
+      "direct_normal_irradiance",
+      "diffuse_radiation"
+    ],
+    "cache_key": "5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd",
+    "cached_inputs": [
+      {
+        "path": "data\\weather\\cache\\open_meteo\\era5\\5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd\\metadata.json",
+        "sha256": "b1c9a741e7a90392b09950d9a03440df1e664a4856937946c561b3ca7a31de1b",
+        "bytes": 3606
+      },
+      {
+        "path": "data\\weather\\cache\\open_meteo\\era5\\5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd\\raw.json",
+        "sha256": "6f19d8515dd2abad331f3b72238b6d3f1924377d035e34a33c9dedb6246d2b1c",
+        "bytes": 426303
+      },
+      {
+        "path": "data\\weather\\cache\\open_meteo\\era5\\5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd\\weather.csv",
+        "sha256": "dea975f31577ef2674e95c97a2d89c9aaaa1cdc03f65607dbfd965004a6ef396",
+        "bytes": 356304
+      }
+    ]
+  },
+  "demand": {
+    "status": "literature-derived hourly reconstruction; not measured hourly demand",
+    "printed_annual_kwh": 7720000,
+    "monthly_rows_reconstructed_annual_kwh": 8020000.0,
+    "optimization_value": "monthly_rows_reconstructed_annual_kwh",
+    "profiles": [
+      "flat_within_month",
+      "residential_like",
+      "community_facility_like"
+    ],
+    "trace_sha256": {
+      "flat_within_month": "76d0b9cc81b0b26c80d5579c5ab6bd23d02004422072351d0fff851baed2f23a",
+      "residential_like": "363c9beadff3e4de239958620f0ce6fbd3f192059054a35a071e6d58f6f89e7d",
+      "community_facility_like": "50389d7fae489586259c7a892c061ec8a6860aab3abb778b1414f03ef6bf993b"
+    }
+  },
+  "wind": {
+    "reference_height_m": 100,
+    "nominal_shear_alpha": 0.2317610498,
+    "turbines": {
+      "skystream_3_7": {
+        "manufacturer": "Wind Resource, LLC",
+        "model": "Skystream 3.7",
+        "rated_kw": 2.1,
+        "hub_height_m": 10.7,
+        "high_wind_policy": "hold_last_certified_value",
+        "provenance": [
+          {
+            "manufacturer": "Wind Resource, LLC",
+            "product_model": "Skystream 3.7",
+            "source_title": "ICC-SWCC Summary Report SWCC-10-20",
+            "source_url": "https://smallwindcertification.org/wp-content/uploads/2023/04/Summary-Report-10-20-20230412.pdf",
+            "source_type": "certification_report",
+            "source_organization": "Small Wind Certification Council",
+            "parameters_supported": [
+              "rated_power_kw",
+              "rotor_diameter_m",
+              "power_curve"
+            ],
+            "accessed_on": "2026-08-16",
+            "category": null,
+            "source_year": null,
+            "notes": "Negative measured parasitic values below generation onset are retained in the report but bounded to zero in this catalog's generation curve."
+          },
+          {
+            "manufacturer": "Southwest Windpower, Inc.",
+            "product_model": "Skystream 3.7",
+            "source_title": "Skystream 3.7 Owner's Manual",
+            "source_url": "https://shop.solardirect.com/pdf/wind-power/skystream-manual.pdf",
+            "source_type": "manufacturer_manual",
+            "source_organization": "Southwest Windpower, Inc.",
+            "parameters_supported": [
+              "cut_in_wind_speed_m_s",
+              "rotor_diameter_m"
+            ],
+            "accessed_on": "2026-08-16",
+            "category": null,
+            "source_year": null,
+            "notes": "Manufacturer-authored archival manual; it states 3.5 m/s cut-in and electronic stall regulation, but does not establish a cut-out threshold or explicitly state continuous operation."
+          }
+        ]
+      },
+      "sd6": {
+        "manufacturer": "SD Wind Energy, Ltd.",
+        "model": "SD6",
+        "rated_kw": 5.2,
+        "hub_height_m": 9.0,
+        "high_wind_policy": "hold_last_certified_value",
+        "provenance": [
+          {
+            "manufacturer": "SD Wind Energy, Ltd.",
+            "product_model": "SD6",
+            "source_title": "ICC-SWCC Summary Report SWCC-11-04",
+            "source_url": "https://smallwindcertification.org/wp-content/uploads/2021/04/SWCC-11-04-Summary-Report-2020.pdf",
+            "source_type": "certification_report",
+            "source_organization": "Small Wind Certification Council",
+            "parameters_supported": [
+              "rated_power_kw",
+              "supported_hub_heights_m",
+              "power_curve"
+            ],
+            "accessed_on": "2026-08-16",
+            "category": null,
+            "source_year": null,
+            "notes": null
+          },
+          {
+            "manufacturer": "SD Wind Energy, Ltd.",
+            "product_model": "SD6",
+            "source_title": "SD6 Product Leaflet",
+            "source_url": "https://sd-windenergy.com/files/4017/1155/4933/SD6__Product_Leaflet.pdf",
+            "source_type": "manufacturer_datasheet",
+            "source_organization": "SD Wind Energy, Ltd.",
+            "parameters_supported": [
+              "cut_in_wind_speed_m_s",
+              "cut_out_behavior",
+              "supported_hub_heights_m",
+              "rotor_diameter_m"
+            ],
+            "accessed_on": "2026-08-16",
+            "category": null,
+            "source_year": null,
+            "notes": "Manufacturer states 'Cut Out Speed: None - Continuous Operation'."
+          }
+        ]
+      },
+      "bergey_excel_15": {
+        "manufacturer": "Bergey Windpower Company",
+        "model": "Excel 15",
+        "rated_kw": 15.6,
+        "hub_height_m": 30.0,
+        "high_wind_policy": "hold_last_certified_value",
+        "provenance": [
+          {
+            "manufacturer": "Bergey Windpower Company",
+            "product_model": "Excel 15",
+            "source_title": "ICC-SWCC Summary Report SWCC-16-05",
+            "source_url": "https://smallwindcertification.org/wp-content/uploads/2022/04/SWCC-16-05-Summary-Report-20220406.pdf",
+            "source_type": "certification_report",
+            "source_organization": "Small Wind Certification Council",
+            "parameters_supported": [
+              "rated_power_kw",
+              "rotor_diameter_m",
+              "supported_hub_heights_m",
+              "power_curve"
+            ],
+            "accessed_on": "2026-08-16",
+            "category": null,
+            "source_year": null,
+            "notes": null
+          },
+          {
+            "manufacturer": "Bergey Windpower Company",
+            "product_model": "Excel 15",
+            "source_title": "Excel 15 Product Specifications",
+            "source_url": "https://www.bergey.com/products/grid-tied-turbines/excel-15/",
+            "source_type": "manufacturer_product_page",
+            "source_organization": "Bergey Windpower Company",
+            "parameters_supported": [
+              "cut_in_wind_speed_m_s",
+              "cut_out_behavior",
+              "rotor_diameter_m"
+            ],
+            "accessed_on": "2026-08-16",
+            "category": null,
+            "source_year": null,
+            "notes": "Manufacturer states 'Cut-Out Wind Speed: None'."
+          }
+        ]
+      }
+    }
+  },
+  "pv": {
+    "modules": [
+      "trina_tsm_450_neg9r28",
+      "rec_alpha_pure_rx_470",
+      "trina_tsm_460_neg9r28"
+    ],
+    "inverters": [
+      "sma_core1_stp50_41",
+      "fronius_tauro_eco_100"
+    ],
+    "tilt_deg": 51.302445,
+    "azimuth_deg": 180.0,
+    "irradiance_treatment": "pvlib isotropic POA from ERA5 GHI/DNI/DHI"
+  },
+  "storage": {
+    "models": [
+      "tesla_megapack_2h",
+      "saft_intensium_max_20_he"
+    ],
+    "initial_soc_semantics": "zero useful inventory; physical minimum SOC unavailable",
+    "dispatch": "deterministic renewable to load, battery, then curtailment"
+  },
+  "optimization": {
+    "targets": [
+      0.95,
+      0.99
+    ],
+    "target_definition": "annual served-energy fraction, not uptime",
+    "decision_variables": [
+      "turbine model/count",
+      "PV block model/count",
+      "battery model/count"
+    ],
+    "economics": "final Phase 10 scale-aware 2022-real-USD lifecycle economics",
+    "selected_designs": {
+      "0.95": "w=bergey_excel_15:131|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:83|b=tesla_megapack_2h:4",
+      "0.99": "w=bergey_excel_15:319|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:202|b=tesla_megapack_2h:6"
+    }
+  },
+  "sensitivity": {
+    "scenario_type": "researcher-defined deterministic perturbations; not confidence intervals",
+    "scenarios": [
+      {
+        "name": "nominal",
+        "category": "baseline",
+        "varied_assumption": "none",
+        "demand_multiplier": 1.0,
+        "wind_shear_alpha": 0.2317610498,
+        "pv_generation_multiplier": 1.0,
+        "wind_capex_multiplier": 1.0,
+        "pv_capex_multiplier": 1.0,
+        "battery_capex_multiplier": 1.0
+      },
+      {
+        "name": "demand_low",
+        "category": "one_factor",
+        "varied_assumption": "demand_multiplier",
+        "demand_multiplier": 0.9,
+        "wind_shear_alpha": 0.2317610498,
+        "pv_generation_multiplier": 1.0,
+        "wind_capex_multiplier": 1.0,
+        "pv_capex_multiplier": 1.0,
+        "battery_capex_multiplier": 1.0
+      },
+      {
+        "name": "demand_high",
+        "category": "one_factor",
+        "varied_assumption": "demand_multiplier",
+        "demand_multiplier": 1.1,
+        "wind_shear_alpha": 0.2317610498,
+        "pv_generation_multiplier": 1.0,
+        "wind_capex_multiplier": 1.0,
+        "pv_capex_multiplier": 1.0,
+        "battery_capex_multiplier": 1.0
+      },
+      {
+        "name": "wind_shear_low",
+        "category": "one_factor",
+        "varied_assumption": "wind_shear_alpha",
+        "demand_multiplier": 1.0,
+        "wind_shear_alpha": 0.18540883984,
+        "pv_generation_multiplier": 1.0,
+        "wind_capex_multiplier": 1.0,
+        "pv_capex_multiplier": 1.0,
+        "battery_capex_multiplier": 1.0
+      },
+      {
+        "name": "wind_shear_high",
+        "category": "one_factor",
+        "varied_assumption": "wind_shear_alpha",
+        "demand_multiplier": 1.0,
+        "wind_shear_alpha": 0.27811325976,
+        "pv_generation_multiplier": 1.0,
+        "wind_capex_multiplier": 1.0,
+        "pv_capex_multiplier": 1.0,
+        "battery_capex_multiplier": 1.0
+      },
+      {
+        "name": "pv_low",
+        "category": "one_factor",
+        "varied_assumption": "pv_generation_multiplier",
+        "demand_multiplier": 1.0,
+        "wind_shear_alpha": 0.2317610498,
+        "pv_generation_multiplier": 0.9,
+        "wind_capex_multiplier": 1.0,
+        "pv_capex_multiplier": 1.0,
+        "battery_capex_multiplier": 1.0
+      },
+      {
+        "name": "pv_high",
+        "category": "one_factor",
+        "varied_assumption": "pv_generation_multiplier",
+        "demand_multiplier": 1.0,
+        "wind_shear_alpha": 0.2317610498,
+        "pv_generation_multiplier": 1.1,
+        "wind_capex_multiplier": 1.0,
+        "pv_capex_multiplier": 1.0,
+        "battery_capex_multiplier": 1.0
+      },
+      {
+        "name": "wind_capex_low",
+        "category": "one_factor",
+        "varied_assumption": "wind_capex_multiplier",
+        "demand_multiplier": 1.0,
+        "wind_shear_alpha": 0.2317610498,
+        "pv_generation_multiplier": 1.0,
+        "wind_capex_multiplier": 0.8,
+        "pv_capex_multiplier": 1.0,
+        "battery_capex_multiplier": 1.0
+      },
+      {
+        "name": "wind_capex_high",
+        "category": "one_factor",
+        "varied_assumption": "wind_capex_multiplier",
+        "demand_multiplier": 1.0,
+        "wind_shear_alpha": 0.2317610498,
+        "pv_generation_multiplier": 1.0,
+        "wind_capex_multiplier": 1.2,
+        "pv_capex_multiplier": 1.0,
+        "battery_capex_multiplier": 1.0
+      },
+      {
+        "name": "pv_capex_low",
+        "category": "one_factor",
+        "varied_assumption": "pv_capex_multiplier",
+        "demand_multiplier": 1.0,
+        "wind_shear_alpha": 0.2317610498,
+        "pv_generation_multiplier": 1.0,
+        "wind_capex_multiplier": 1.0,
+        "pv_capex_multiplier": 0.8,
+        "battery_capex_multiplier": 1.0
+      },
+      {
+        "name": "pv_capex_high",
+        "category": "one_factor",
+        "varied_assumption": "pv_capex_multiplier",
+        "demand_multiplier": 1.0,
+        "wind_shear_alpha": 0.2317610498,
+        "pv_generation_multiplier": 1.0,
+        "wind_capex_multiplier": 1.0,
+        "pv_capex_multiplier": 1.2,
+        "battery_capex_multiplier": 1.0
+      },
+      {
+        "name": "battery_capex_low",
+        "category": "one_factor",
+        "varied_assumption": "battery_capex_multiplier",
+        "demand_multiplier": 1.0,
+        "wind_shear_alpha": 0.2317610498,
+        "pv_generation_multiplier": 1.0,
+        "wind_capex_multiplier": 1.0,
+        "pv_capex_multiplier": 1.0,
+        "battery_capex_multiplier": 0.8
+      },
+      {
+        "name": "battery_capex_high",
+        "category": "one_factor",
+        "varied_assumption": "battery_capex_multiplier",
+        "demand_multiplier": 1.0,
+        "wind_shear_alpha": 0.2317610498,
+        "pv_generation_multiplier": 1.0,
+        "wind_capex_multiplier": 1.0,
+        "pv_capex_multiplier": 1.0,
+        "battery_capex_multiplier": 1.2
+      },
+      {
+        "name": "resource_stress",
+        "category": "combined",
+        "varied_assumption": "physical_combination",
+        "demand_multiplier": 1.1,
+        "wind_shear_alpha": 0.27811325976,
+        "pv_generation_multiplier": 0.9,
+        "wind_capex_multiplier": 1.0,
+        "pv_capex_multiplier": 1.0,
+        "battery_capex_multiplier": 1.0
+      },
+      {
+        "name": "resource_favorable",
+        "category": "combined",
+        "varied_assumption": "physical_combination",
+        "demand_multiplier": 0.9,
+        "wind_shear_alpha": 0.18540883984,
+        "pv_generation_multiplier": 1.1,
+        "wind_capex_multiplier": 1.0,
+        "pv_capex_multiplier": 1.0,
+        "battery_capex_multiplier": 1.0
+      }
+    ],
+    "adaptation_method": "saved_phase10_candidate_reselection",
+    "full_reoptimization_performed": false
+  },
+  "software": {
+    "python": "3.12.13",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "packages": {
+      "pydantic": "2.13.4",
+      "PyYAML": "6.0.3",
+      "pvlib": "0.13.1",
+      "matplotlib": "3.11.1",
+      "pytest": "8.4.2"
+    },
+    "git": {
+      "available": true,
+      "commit": "31c0ebe4e9b66e35d6d2aed0f19ee0a7bb047607",
+      "dirty": true
+    },
+    "repository_test_count_at_phase12": 167
+  }
+}

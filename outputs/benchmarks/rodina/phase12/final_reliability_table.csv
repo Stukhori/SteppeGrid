@@ -1,0 +1,7 @@
+target,load_profile,served_fraction,served_energy_kwh,unmet_energy_kwh,loss_of_load_hours,longest_deficit_hours,interpretation
+0.95,community_facility_like,0.9578061526247129,7681605.344050198,338394.6559498023,570,113,annual energy service; not uptime
+0.95,flat_within_month,0.9535309806214247,7647318.464583826,372681.53541617334,528,48,annual energy service; not uptime
+0.95,residential_like,0.9503758670754928,7622014.453945452,397985.5460545479,532,41,annual energy service; not uptime
+0.99,community_facility_like,0.9913165774861846,7950358.9514392,69641.04856079958,124,34,annual energy service; not uptime
+0.99,flat_within_month,0.9900552319348385,7940242.960117404,79757.03988259571,105,17,annual energy service; not uptime
+0.99,residential_like,0.9900266228605829,7940013.515341874,79986.48465812563,109,16,annual energy service; not uptime

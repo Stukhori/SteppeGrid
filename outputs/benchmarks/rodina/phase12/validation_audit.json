@@ -1,0 +1,233 @@
+{
+  "mode": "verify",
+  "generated_at_utc": "2026-08-17T20:01:15.806777+00:00",
+  "blockers": 0,
+  "warnings": 1,
+  "checks": [
+    {
+      "category": "time_series",
+      "check": "8760_aligned_hours",
+      "status": "PASS",
+      "message": "Weather and all load shapes contain 8,760 hours",
+      "evidence": {
+        "records": 8760,
+        "duplicates": 0,
+        "timezone": "UTC weather / UTC+05:00 load",
+        "reference_year": 2025,
+        "latitude": 51.302445,
+        "longitude": 70.541645,
+        "variables": [
+          "temperature_2m",
+          "wind_speed_10m",
+          "shortwave_radiation",
+          "wind_speed_100m",
+          "direct_normal_irradiance",
+          "diffuse_radiation"
+        ],
+        "cache_key": "5fa2f063d892d6d27f0b86187459fee55898e9736ff8d7c14deb2dd6b7b190dd"
+      }
+    },
+    {
+      "category": "time_series",
+      "check": "unique_consecutive_weather",
+      "status": "PASS",
+      "message": "Weather timestamps are unique and consecutive",
+      "evidence": {
+        "duplicates": 0
+      }
+    },
+    {
+      "category": "time_series",
+      "check": "finite_nonnegative_load",
+      "status": "PASS",
+      "message": "All load values are finite and nonnegative",
+      "evidence": {}
+    },
+    {
+      "category": "demand",
+      "check": "annual_total",
+      "status": "PASS",
+      "message": "All profiles preserve the reconstructed 8.02 GWh total",
+      "evidence": {
+        "flat_within_month": 8020000.0,
+        "residential_like": 8020000.0,
+        "community_facility_like": 8020000.0
+      }
+    },
+    {
+      "category": "demand",
+      "check": "printed_discrepancy_preserved",
+      "status": "PASS",
+      "message": "Printed 7.72 GWh remains separate and hourly load is labeled reconstructed",
+      "evidence": {
+        "records_per_shape": 8760,
+        "timezone": "+05:00",
+        "annual_kwh": 8020000.0,
+        "monthly_kwh": [
+          680000.0,
+          610000.0,
+          640000.0,
+          590000.0,
+          650000.0,
+          710000.0,
+          720000.0,
+          700000.0,
+          650000.0,
+          690000.0,
+          670000.0,
+          710000.0
+        ],
+        "printed_annual_kwh": 7720000,
+        "hourly_values_measured": false,
+        "shapes": [
+          "flat_within_month",
+          "residential_like",
+          "community_facility_like"
+        ]
+      }
+    },
+    {
+      "category": "phase9",
+      "check": "wind_output_present_skystream_3_7",
+      "status": "PASS",
+      "message": "Frozen wind result is present",
+      "evidence": {}
+    },
+    {
+      "category": "phase9",
+      "check": "wind_output_present_sd6",
+      "status": "PASS",
+      "message": "Frozen wind result is present",
+      "evidence": {}
+    },
+    {
+      "category": "phase9",
+      "check": "wind_output_present_bergey_excel_15",
+      "status": "PASS",
+      "message": "Frozen wind result is present",
+      "evidence": {}
+    },
+    {
+      "category": "phase9",
+      "check": "pv_output_present",
+      "status": "PASS",
+      "message": "Frozen PV results are present",
+      "evidence": {}
+    },
+    {
+      "category": "phase10",
+      "check": "selected_design_0.95",
+      "status": "PASS",
+      "message": "Phase 11 nominal replay exactly matches final Phase 10",
+      "evidence": {}
+    },
+    {
+      "category": "phase10",
+      "check": "selected_design_0.99",
+      "status": "PASS",
+      "message": "Phase 11 nominal replay exactly matches final Phase 10",
+      "evidence": {}
+    },
+    {
+      "category": "phase11",
+      "check": "demand_direction_0.95",
+      "status": "PASS",
+      "message": "Demand direction is physically sensible",
+      "evidence": {}
+    },
+    {
+      "category": "phase11",
+      "check": "pv_direction_0.95",
+      "status": "PASS",
+      "message": "PV direction is physically sensible",
+      "evidence": {}
+    },
+    {
+      "category": "phase11",
+      "check": "shear_direction_0.95",
+      "status": "PASS",
+      "message": "Higher alpha is adverse for hubs below 100 m",
+      "evidence": {}
+    },
+    {
+      "category": "phase11",
+      "check": "demand_direction_0.99",
+      "status": "PASS",
+      "message": "Demand direction is physically sensible",
+      "evidence": {}
+    },
+    {
+      "category": "phase11",
+      "check": "pv_direction_0.99",
+      "status": "PASS",
+      "message": "PV direction is physically sensible",
+      "evidence": {}
+    },
+    {
+      "category": "phase11",
+      "check": "shear_direction_0.99",
+      "status": "PASS",
+      "message": "Higher alpha is adverse for hubs below 100 m",
+      "evidence": {}
+    },
+    {
+      "category": "phase11",
+      "check": "combined_direction",
+      "status": "PASS",
+      "message": "Combined stress/favorable shear directions are correct",
+      "evidence": {}
+    },
+    {
+      "category": "phase11",
+      "check": "candidate_semantics",
+      "status": "PASS",
+      "message": "Saved-candidate reselection is not labeled global re-optimization",
+      "evidence": {}
+    },
+    {
+      "category": "phase11",
+      "check": "robustness_margins",
+      "status": "PASS",
+      "message": "Summary demand/PV margins match the final Phase 11 margin table",
+      "evidence": {}
+    },
+    {
+      "category": "economics",
+      "check": "fixed_dispatch_invariant",
+      "status": "PASS",
+      "message": "CAPEX perturbations do not alter fixed-design dispatch",
+      "evidence": {}
+    },
+    {
+      "category": "conservation",
+      "check": "phase9_storage",
+      "status": "PASS",
+      "message": "Phase 9 storage conservation residual is within frozen tolerance",
+      "evidence": {
+        "maximum_absolute_residual_kwh": 1.0291114449501038e-07
+      }
+    },
+    {
+      "category": "provenance",
+      "check": "classification_registry",
+      "status": "PASS",
+      "message": "All registry entries use declared classifications",
+      "evidence": {}
+    },
+    {
+      "category": "limitations",
+      "check": "era5_not_measured",
+      "status": "PASS",
+      "message": "ERA5 is gridded reanalysis, not site measurement",
+      "evidence": {}
+    },
+    {
+      "category": "limitations",
+      "check": "known_scope_limitations",
+      "status": "WARNING",
+      "message": "One weather year, reconstructed demand, and omitted wake/layout/degradation/grid physics remain documented scope limitations",
+      "evidence": {}
+    }
+  ],
+  "runtime_seconds": 0.44867089996114373
+}

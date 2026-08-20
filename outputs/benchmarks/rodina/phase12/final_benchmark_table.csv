@@ -1,0 +1,8 @@
+category,item,value,unit,capacity_factor,specific_yield_kwh_per_kwp,clipping_kwh
+dataset,annual reconstructed demand,8020000,kWh,,,
+dataset,hours,8760,hour,,,
+wind,bergey_excel_15,21903.32513223547,kWh/unit-year,0.16028074239137302,,
+wind,sd6,2240.397438908365,kWh/unit-year,0.04918329467220682,,
+wind,skystream_3_7,1003.4364528774648,kWh/unit-year,0.05454644775372172,,
+pv,annual POA,1440.1847609305928,kWh/m2-year,,,
+pv,trina_tsm_450_neg9r28__fronius_tauro_eco_100,139630.3974197702,kWh/block-year,,1397.7016758735754,1.6254128466812148
