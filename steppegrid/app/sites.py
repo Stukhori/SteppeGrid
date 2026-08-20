@@ -48,8 +48,8 @@ def render_sites(registry: SiteRegistry) -> None:
     resource = weather_summary(site)
     section_header("Renewable resource")
     a,b = st.columns(2)
-    with a: metric("Mean modeled wind", f"{resource.get('mean_wind_100m_m_s', float('nan')):.2f} m/s")
-    with b: metric("Annual modeled solar resource", f"{resource.get('annual_solar_kwh_m2', float('nan')):,.0f} kWh/m²")
+    with a: metric("Modeled wind capacity factor", percent(resource.get("wind_capacity_factor", float("nan")), 2))
+    with b: metric("Modeled PV yield", f"{resource.get('pv_specific_yield_kwh_per_kwp', float('nan')):,.0f} kWh/kWp")
     section_header("Selected systems", "Saved planning results are shown directly; unavailable targets are not inferred.")
     for column,target in zip(st.columns(2),(.95,.99),strict=True):
         with column:

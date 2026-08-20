@@ -1,6 +1,7 @@
 from pathlib import Path
 from steppegrid.app.data import FrozenDataRepository
 from steppegrid.app.product import FEATURED_SITE_ID, latest_result, site_rows
+from steppegrid.app.services import PlanningService
 from steppegrid.app.theme import COLORS, GLOBAL_CSS
 from steppegrid.sites import SiteRegistry
 
@@ -39,3 +40,4 @@ def test_deployed_app_packages_required_benchmark_artifacts():
     repository=FrozenDataRepository()
     repository.validate()
     assert all(repository.path(key).is_file() for key in repository.REQUIRED)
+    assert len(PlanningService().demand_weather_frame("residential_like"))==8760
