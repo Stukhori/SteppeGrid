@@ -1,0 +1,20 @@
+input,value,unit,classification,provenance_or_note
+Rodina printed annual load,7720000,kWh,SOURCE_REPORTED,publication Table 1 annual row
+Rodina optimization annual load,8020000,kWh,SOURCE_RECONSTRUCTED,sum of published monthly rows
+Hourly demand profiles,flat; residential-like; community-facility-like,,SOURCE_RECONSTRUCTED,deterministic shapes preserving monthly rows
+2025 meteorology,ERA5 via cached Open-Meteo response,,ERA5_DERIVED,"gridded reanalysis, not site measurement"
+Nominal wind shear alpha,0.2317610498,,ERA5_DERIVED,two-height 10 m/100 m reconstruction
+Turbine curves,Skystream 3.7; SD6; Bergey Excel 15,,MANUFACTURER_OR_CERTIFICATION_DATA,catalog provenance records
+PV equipment,Trina/REC modules; SMA/Fronius inverters,,MANUFACTURER_OR_CERTIFICATION_DATA,manufacturer datasheets
+Battery equipment,Tesla Megapack; Saft Intensium,,MANUFACTURER_OR_CERTIFICATION_DATA,manufacturer sources
+PV tilt,51.302445,degrees,MODELING_ASSUMPTION,fixed to Rodina latitude
+PV azimuth,180.0,degrees,MODELING_ASSUMPTION,south-facing
+Battery initial useful inventory,0,kWh,MODELING_ASSUMPTION,minimum SOC is unavailable inventory
+Dispatch,renewable-load-battery-curtailment,,MODELING_ASSUMPTION,deterministic hourly order
+High-wind behavior,hold last certified curve value where declared,,MODELING_ASSUMPTION,not certified extrapolated performance
+Demand sensitivity,-10%; +10%,,RESEARCH_SENSITIVITY_SCENARIO,deterministic research range
+PV-output sensitivity,-10%; +10%,,RESEARCH_SENSITIVITY_SCENARIO,aggregate deterministic multiplier
+Wind-shear sensitivity,-20%; +20% alpha,,RESEARCH_SENSITIVITY_SCENARIO,not measured bounds
+Technology CAPEX sensitivity,-20%; +20%,,RESEARCH_SENSITIVITY_SCENARIO,not a forecast
+Equipment counts,wind; PV blocks; batteries,integer,OPTIMIZED_DECISION_VARIABLE,Phase 10 bounded discrete search
+Selected reliability and cost metrics,Phase 9-11 outputs,,DERIVED_RESULT,"model outputs, not measurements"

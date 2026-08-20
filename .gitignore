@@ -8,5 +8,25 @@ __pycache__/
 *.egg-info/
 build/
 dist/
-outputs/
+# Generated outputs stay ignored except for the frozen benchmark files loaded
+# directly by the deployed application.
+outputs/*
+!outputs/benchmarks/
+outputs/benchmarks/*
+!outputs/benchmarks/rodina/
+outputs/benchmarks/rodina/*
+!outputs/benchmarks/rodina/phase11/
+outputs/benchmarks/rodina/phase11/*
+!outputs/benchmarks/rodina/phase11/robustness_margins.csv
+!outputs/benchmarks/rodina/phase11/fixed_design_sensitivity.csv
+!outputs/benchmarks/rodina/phase11/phase11_summary.json
+!outputs/benchmarks/rodina/phase12/
+outputs/benchmarks/rodina/phase12/*
+!outputs/benchmarks/rodina/phase12/final_optimization_table.csv
+!outputs/benchmarks/rodina/phase12/final_benchmark_table.csv
+!outputs/benchmarks/rodina/phase12/final_reliability_table.csv
+!outputs/benchmarks/rodina/phase12/final_sensitivity_table.csv
+!outputs/benchmarks/rodina/phase12/assumptions_registry.csv
+!outputs/benchmarks/rodina/phase12/provenance_manifest.json
+!outputs/benchmarks/rodina/phase12/validation_audit.json
 data/weather/cache/

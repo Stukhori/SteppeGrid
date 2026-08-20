@@ -1,0 +1,410 @@
+{
+  "purpose": "deterministic research sensitivity analysis; bounds are not confidence intervals or probabilities",
+  "scenarios": [
+    {
+      "name": "nominal",
+      "category": "baseline",
+      "varied_assumption": "none",
+      "demand_multiplier": 1.0,
+      "wind_shear_alpha": 0.2317610498,
+      "pv_generation_multiplier": 1.0,
+      "wind_capex_multiplier": 1.0,
+      "pv_capex_multiplier": 1.0,
+      "battery_capex_multiplier": 1.0
+    },
+    {
+      "name": "demand_low",
+      "category": "one_factor",
+      "varied_assumption": "demand_multiplier",
+      "demand_multiplier": 0.9,
+      "wind_shear_alpha": 0.2317610498,
+      "pv_generation_multiplier": 1.0,
+      "wind_capex_multiplier": 1.0,
+      "pv_capex_multiplier": 1.0,
+      "battery_capex_multiplier": 1.0
+    },
+    {
+      "name": "demand_high",
+      "category": "one_factor",
+      "varied_assumption": "demand_multiplier",
+      "demand_multiplier": 1.1,
+      "wind_shear_alpha": 0.2317610498,
+      "pv_generation_multiplier": 1.0,
+      "wind_capex_multiplier": 1.0,
+      "pv_capex_multiplier": 1.0,
+      "battery_capex_multiplier": 1.0
+    },
+    {
+      "name": "wind_shear_low",
+      "category": "one_factor",
+      "varied_assumption": "wind_shear_alpha",
+      "demand_multiplier": 1.0,
+      "wind_shear_alpha": 0.18540883984,
+      "pv_generation_multiplier": 1.0,
+      "wind_capex_multiplier": 1.0,
+      "pv_capex_multiplier": 1.0,
+      "battery_capex_multiplier": 1.0
+    },
+    {
+      "name": "wind_shear_high",
+      "category": "one_factor",
+      "varied_assumption": "wind_shear_alpha",
+      "demand_multiplier": 1.0,
+      "wind_shear_alpha": 0.27811325976,
+      "pv_generation_multiplier": 1.0,
+      "wind_capex_multiplier": 1.0,
+      "pv_capex_multiplier": 1.0,
+      "battery_capex_multiplier": 1.0
+    },
+    {
+      "name": "pv_low",
+      "category": "one_factor",
+      "varied_assumption": "pv_generation_multiplier",
+      "demand_multiplier": 1.0,
+      "wind_shear_alpha": 0.2317610498,
+      "pv_generation_multiplier": 0.9,
+      "wind_capex_multiplier": 1.0,
+      "pv_capex_multiplier": 1.0,
+      "battery_capex_multiplier": 1.0
+    },
+    {
+      "name": "pv_high",
+      "category": "one_factor",
+      "varied_assumption": "pv_generation_multiplier",
+      "demand_multiplier": 1.0,
+      "wind_shear_alpha": 0.2317610498,
+      "pv_generation_multiplier": 1.1,
+      "wind_capex_multiplier": 1.0,
+      "pv_capex_multiplier": 1.0,
+      "battery_capex_multiplier": 1.0
+    },
+    {
+      "name": "wind_capex_low",
+      "category": "one_factor",
+      "varied_assumption": "wind_capex_multiplier",
+      "demand_multiplier": 1.0,
+      "wind_shear_alpha": 0.2317610498,
+      "pv_generation_multiplier": 1.0,
+      "wind_capex_multiplier": 0.8,
+      "pv_capex_multiplier": 1.0,
+      "battery_capex_multiplier": 1.0
+    },
+    {
+      "name": "wind_capex_high",
+      "category": "one_factor",
+      "varied_assumption": "wind_capex_multiplier",
+      "demand_multiplier": 1.0,
+      "wind_shear_alpha": 0.2317610498,
+      "pv_generation_multiplier": 1.0,
+      "wind_capex_multiplier": 1.2,
+      "pv_capex_multiplier": 1.0,
+      "battery_capex_multiplier": 1.0
+    },
+    {
+      "name": "pv_capex_low",
+      "category": "one_factor",
+      "varied_assumption": "pv_capex_multiplier",
+      "demand_multiplier": 1.0,
+      "wind_shear_alpha": 0.2317610498,
+      "pv_generation_multiplier": 1.0,
+      "wind_capex_multiplier": 1.0,
+      "pv_capex_multiplier": 0.8,
+      "battery_capex_multiplier": 1.0
+    },
+    {
+      "name": "pv_capex_high",
+      "category": "one_factor",
+      "varied_assumption": "pv_capex_multiplier",
+      "demand_multiplier": 1.0,
+      "wind_shear_alpha": 0.2317610498,
+      "pv_generation_multiplier": 1.0,
+      "wind_capex_multiplier": 1.0,
+      "pv_capex_multiplier": 1.2,
+      "battery_capex_multiplier": 1.0
+    },
+    {
+      "name": "battery_capex_low",
+      "category": "one_factor",
+      "varied_assumption": "battery_capex_multiplier",
+      "demand_multiplier": 1.0,
+      "wind_shear_alpha": 0.2317610498,
+      "pv_generation_multiplier": 1.0,
+      "wind_capex_multiplier": 1.0,
+      "pv_capex_multiplier": 1.0,
+      "battery_capex_multiplier": 0.8
+    },
+    {
+      "name": "battery_capex_high",
+      "category": "one_factor",
+      "varied_assumption": "battery_capex_multiplier",
+      "demand_multiplier": 1.0,
+      "wind_shear_alpha": 0.2317610498,
+      "pv_generation_multiplier": 1.0,
+      "wind_capex_multiplier": 1.0,
+      "pv_capex_multiplier": 1.0,
+      "battery_capex_multiplier": 1.2
+    },
+    {
+      "name": "resource_stress",
+      "category": "combined",
+      "varied_assumption": "physical_combination",
+      "demand_multiplier": 1.1,
+      "wind_shear_alpha": 0.27811325976,
+      "pv_generation_multiplier": 0.9,
+      "wind_capex_multiplier": 1.0,
+      "pv_capex_multiplier": 1.0,
+      "battery_capex_multiplier": 1.0
+    },
+    {
+      "name": "resource_favorable",
+      "category": "combined",
+      "varied_assumption": "physical_combination",
+      "demand_multiplier": 0.9,
+      "wind_shear_alpha": 0.18540883984,
+      "pv_generation_multiplier": 1.1,
+      "wind_capex_multiplier": 1.0,
+      "pv_capex_multiplier": 1.0,
+      "battery_capex_multiplier": 1.0
+    }
+  ],
+  "statistics": {
+    "update_scope": "combined_scenarios_only",
+    "fixed_design_scenario_profile_evaluations": 12,
+    "fixed_design_portfolio_scenario_evaluations": 4,
+    "reused_nominal_unit_traces": 9,
+    "new_wind_unit_traces": 6,
+    "economics_only_rerankings": 0,
+    "actual_phase10_full_reoptimizations": 0,
+    "selective_saved_candidate_dispatches": 1002,
+    "trace_precomputation_seconds": 34.249089600052685,
+    "fixed_design_seconds": 0.22840899997390807,
+    "candidate_reselection_seconds": 18.541564199957065,
+    "total_seconds": 53.36344979994465,
+    "figures_written": 0
+  },
+  "robustness_margins": [
+    {
+      "target": 0.95,
+      "design_key": "w=bergey_excel_15:131|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:83|b=tesla_megapack_2h:4",
+      "maximum_demand_multiplier_for_target": 1.0032215840183198,
+      "minimum_pv_multiplier_for_target": 0.9907836886122823,
+      "minimum_wind_shear_for_target": 0.18540883984,
+      "wind_threshold_monotonic": true,
+      "maximum_wind_shear_for_target": 0.2344009523897001,
+      "wind_performance_direction_with_alpha": "decreasing",
+      "wind_tested_low_served_fraction": 0.9571098470497398,
+      "wind_tested_nominal_served_fraction": 0.9503758670754928,
+      "wind_tested_high_served_fraction": 0.942817488247256
+    },
+    {
+      "target": 0.99,
+      "design_key": "w=bergey_excel_15:319|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:202|b=tesla_megapack_2h:6",
+      "maximum_demand_multiplier_for_target": 1.0014770487323403,
+      "minimum_pv_multiplier_for_target": 0.9974821452051401,
+      "minimum_wind_shear_for_target": 0.18540883984,
+      "wind_threshold_monotonic": true,
+      "maximum_wind_shear_for_target": 0.23285661786733525,
+      "wind_performance_direction_with_alpha": "decreasing",
+      "wind_tested_low_served_fraction": 0.9912723207200809,
+      "wind_tested_nominal_served_fraction": 0.9900266228605829,
+      "wind_tested_high_served_fraction": 0.9889886957901931
+    }
+  ],
+  "load_shape_robustness_cost_premium": {
+    "0.95": 0.10331915601614221,
+    "0.99": 0.06906506105547525
+  },
+  "nominal_reproduction": {
+    "0.95": {
+      "phase10_served_fraction": 0.9503758670754928,
+      "phase11_served_fraction": 0.9503758670754928,
+      "phase10_initial_capex_usd": 36516842.0,
+      "phase11_initial_capex_usd": 36516842.0,
+      "phase10_npc_usd": 49377453.830776535,
+      "phase11_npc_usd": 49377453.830776535
+    },
+    "0.99": {
+      "phase10_served_fraction": 0.9900266228605829,
+      "phase11_served_fraction": 0.9900266228605829,
+      "phase10_initial_capex_usd": 81957938.0,
+      "phase11_initial_capex_usd": 81957938.0,
+      "phase10_npc_usd": 105785485.70102578,
+      "phase11_npc_usd": 105785485.70102578
+    }
+  },
+  "adaptation_method": "saved_phase10_candidate_reselection",
+  "full_reoptimization_performed": false,
+  "candidate_reselection_status": [
+    {
+      "scenario": "demand_high",
+      "target": "0.95",
+      "trigger": "fixed nominal design violates target",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (physical replay)",
+      "status": "feasible_saved_candidate",
+      "design_key": "w=bergey_excel_15:319|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:202|b=tesla_megapack_2h:6"
+    },
+    {
+      "scenario": "demand_high",
+      "target": "0.99",
+      "trigger": "fixed nominal design violates target",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (physical replay)",
+      "status": "no_feasible_saved_candidate",
+      "design_key": ""
+    },
+    {
+      "scenario": "wind_shear_high",
+      "target": "0.95",
+      "trigger": "fixed nominal design violates target",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (physical replay)",
+      "status": "feasible_saved_candidate",
+      "design_key": "w=none:0|pv=trina_tsm_460_neg9r28__fronius_tauro_eco_100:201|b=tesla_megapack_2h:6"
+    },
+    {
+      "scenario": "wind_shear_high",
+      "target": "0.99",
+      "trigger": "fixed nominal design violates target",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (physical replay)",
+      "status": "no_feasible_saved_candidate",
+      "design_key": ""
+    },
+    {
+      "scenario": "pv_low",
+      "target": "0.95",
+      "trigger": "fixed nominal design violates target",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (physical replay)",
+      "status": "feasible_saved_candidate",
+      "design_key": "w=bergey_excel_15:319|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:202|b=tesla_megapack_2h:6"
+    },
+    {
+      "scenario": "pv_low",
+      "target": "0.99",
+      "trigger": "fixed nominal design violates target",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (physical replay)",
+      "status": "no_feasible_saved_candidate",
+      "design_key": ""
+    },
+    {
+      "scenario": "wind_capex_low",
+      "target": "0.95",
+      "trigger": "economic perturbation may change ranking",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (economic reranking)",
+      "status": "feasible",
+      "design_key": "w=bergey_excel_15:131|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:83|b=tesla_megapack_2h:4"
+    },
+    {
+      "scenario": "wind_capex_low",
+      "target": "0.99",
+      "trigger": "economic perturbation may change ranking",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (economic reranking)",
+      "status": "feasible",
+      "design_key": "w=bergey_excel_15:319|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:202|b=tesla_megapack_2h:6"
+    },
+    {
+      "scenario": "wind_capex_high",
+      "target": "0.95",
+      "trigger": "economic perturbation may change ranking",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (economic reranking)",
+      "status": "feasible",
+      "design_key": "w=bergey_excel_15:131|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:83|b=tesla_megapack_2h:4"
+    },
+    {
+      "scenario": "wind_capex_high",
+      "target": "0.99",
+      "trigger": "economic perturbation may change ranking",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (economic reranking)",
+      "status": "feasible",
+      "design_key": "w=bergey_excel_15:319|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:202|b=tesla_megapack_2h:6"
+    },
+    {
+      "scenario": "pv_capex_low",
+      "target": "0.95",
+      "trigger": "economic perturbation may change ranking",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (economic reranking)",
+      "status": "feasible",
+      "design_key": "w=bergey_excel_15:131|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:83|b=tesla_megapack_2h:4"
+    },
+    {
+      "scenario": "pv_capex_low",
+      "target": "0.99",
+      "trigger": "economic perturbation may change ranking",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (economic reranking)",
+      "status": "feasible",
+      "design_key": "w=bergey_excel_15:319|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:202|b=tesla_megapack_2h:6"
+    },
+    {
+      "scenario": "pv_capex_high",
+      "target": "0.95",
+      "trigger": "economic perturbation may change ranking",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (economic reranking)",
+      "status": "feasible",
+      "design_key": "w=bergey_excel_15:131|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:83|b=tesla_megapack_2h:4"
+    },
+    {
+      "scenario": "pv_capex_high",
+      "target": "0.99",
+      "trigger": "economic perturbation may change ranking",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (economic reranking)",
+      "status": "feasible",
+      "design_key": "w=bergey_excel_15:319|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:202|b=tesla_megapack_2h:6"
+    },
+    {
+      "scenario": "battery_capex_low",
+      "target": "0.95",
+      "trigger": "economic perturbation may change ranking",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (economic reranking)",
+      "status": "feasible",
+      "design_key": "w=bergey_excel_15:131|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:83|b=tesla_megapack_2h:4"
+    },
+    {
+      "scenario": "battery_capex_low",
+      "target": "0.99",
+      "trigger": "economic perturbation may change ranking",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (economic reranking)",
+      "status": "feasible",
+      "design_key": "w=bergey_excel_15:319|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:202|b=tesla_megapack_2h:6"
+    },
+    {
+      "scenario": "battery_capex_high",
+      "target": "0.95",
+      "trigger": "economic perturbation may change ranking",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (economic reranking)",
+      "status": "feasible",
+      "design_key": "w=bergey_excel_15:131|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:83|b=tesla_megapack_2h:4"
+    },
+    {
+      "scenario": "battery_capex_high",
+      "target": "0.99",
+      "trigger": "economic perturbation may change ranking",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (economic reranking)",
+      "status": "feasible",
+      "design_key": "w=bergey_excel_15:319|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:202|b=tesla_megapack_2h:6"
+    },
+    {
+      "scenario": "resource_stress",
+      "target": 0.95,
+      "trigger": "fixed nominal design violates target",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (physical replay)",
+      "status": "feasible_saved_candidate",
+      "design_key": "w=bergey_excel_15:319|pv=trina_tsm_450_neg9r28__fronius_tauro_eco_100:202|b=tesla_megapack_2h:6"
+    },
+    {
+      "scenario": "resource_stress",
+      "target": 0.99,
+      "trigger": "fixed nominal design violates target",
+      "method": "least-cost feasible design among the saved Phase 10 candidate set (physical replay)",
+      "status": "no_feasible_saved_candidate",
+      "design_key": ""
+    }
+  ],
+  "single_profile_comparison_provenance": {
+    "label": "saved Phase 10 single-profile candidate-set comparison",
+    "source": "outputs/benchmarks/rodina/phase10/scale_aware_energy_optima.json",
+    "single_profile_modes": [
+      "flat_within_month",
+      "residential_like",
+      "community_facility_like"
+    ],
+    "robust_mode": "robust_all_profiles",
+    "comparison_metric": "net_present_cost_usd"
+  }
+}
