@@ -1,6 +1,6 @@
 from pathlib import Path
 from steppegrid.app.data import FrozenDataRepository
-from steppegrid.app.product import FEATURED_SITE_ID, latest_result, site_rows
+from steppegrid.app.product import FEATURED_SITE_ID, _resource_metrics, latest_result, site_rows, weather_summary
 from steppegrid.app.services import PlanningService
 from steppegrid.app.theme import COLORS, GLOBAL_CSS
 from steppegrid.sites import SiteRegistry
@@ -10,6 +10,13 @@ def test_seven_production_sites_and_values_load():
     rows=site_rows(SiteRegistry()); assert len(rows)==7
     assert {r["Site"] for r in rows}=={"Rodina","Shamshi Kaldayakova","Katon-Karagay","Kegen","Shayan","Sai-Otes","Togyzkuduk"}
     assert next(r for r in rows if r["site_id"]==FEATURED_SITE_ID)["Annual demand (GWh/year)"]==.5
+
+def test_resource_summaries_reuse_the_frozen_table():
+    registry=SiteRegistry(); _resource_metrics.cache_clear()
+    assert weather_summary(registry.get_site("rodina"))["hours"]==8760
+    assert weather_summary(registry.get_site(FEATURED_SITE_ID))["hours"]==8760
+    assert _resource_metrics.cache_info().misses==1
+    assert _resource_metrics.cache_info().hits==1
 def test_featured_site_semantics_are_blue_and_textual():
     assert COLORS["featured_site"]=="#2878D8"; assert "--sg-featured-site" in GLOBAL_CSS
     assert "MY VILLAGE" in (ROOT/"app.py").read_text(encoding="utf-8")

@@ -19,6 +19,12 @@ def project_root() -> Path:
 
 
 @lru_cache(maxsize=1)
+def _resource_metrics() -> pd.DataFrame:
+    """Load the immutable cross-village resource table once per app process."""
+    return pd.read_csv(project_root() / "outputs/phase17/site_resource_metrics.csv")
+
+
+@lru_cache(maxsize=1)
 def saved_results() -> tuple[dict, ...]:
     """Load saved results only; normal page views never run optimization."""
     root = project_root()
@@ -73,7 +79,7 @@ def site_rows(registry: SiteRegistry) -> list[dict[str, object]]:
 
 
 def weather_summary(site) -> dict[str, float | int]:
-    resources = pd.read_csv(project_root() / "outputs/phase17/site_resource_metrics.csv")
+    resources = _resource_metrics()
     matches = resources.loc[resources["site_id"] == site.site_id]
     if matches.empty:
         return {}
@@ -87,7 +93,7 @@ def weather_summary(site) -> dict[str, float | int]:
 
 @lru_cache(maxsize=1)
 def phase17_findings() -> dict[str, str]:
-    resources = pd.read_csv(project_root() / "outputs/phase17/site_resource_metrics.csv")
+    resources = _resource_metrics()
     normalized = pd.read_csv(project_root() / "outputs/phase17/normalized_metrics.csv")
     escalation = pd.read_csv(project_root() / "outputs/phase17/reliability_escalation.csv")
     proxy_resources = resources.loc[resources["cohort"] == "primary_proxy"]
