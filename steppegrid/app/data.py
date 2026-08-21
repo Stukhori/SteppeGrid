@@ -39,10 +39,12 @@ class FrozenDataRepository:
         return self.root / self.REQUIRED[key]
 
     def validate(self) -> None:
-        missing = [str(self.path(key)) for key in self.REQUIRED if not self.path(key).is_file()]
+        missing = [self.REQUIRED[key] for key in self.REQUIRED if not self.path(key).is_file()]
         if missing:
             raise AppDataError(
-                "Required benchmark outputs are missing. Run "
+                "Required frozen benchmark data is absent from this checkout. "
+                "Before deployment, run `python scripts/check_deployment_assets.py` and ensure "
+                "the reported files are tracked. For local regeneration, run "
                 "`python scripts/run_phase12.py --mode verify`. Missing: " + ", ".join(missing)
             )
 

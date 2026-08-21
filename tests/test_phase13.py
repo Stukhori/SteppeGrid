@@ -81,8 +81,11 @@ def test_hourly_replay_matches_frozen_design_aggregate():
 
 
 def test_missing_outputs_fail_with_reproduction_guidance(tmp_path: Path):
-    with pytest.raises(AppDataError, match="run_phase12.py --mode verify"):
+    with pytest.raises(AppDataError, match="run_phase12.py --mode verify") as caught:
         FrozenDataRepository(tmp_path).validate()
+    assert "check_deployment_assets.py" in str(caught.value)
+    assert "phase12/final_optimization_table.csv" in str(caught.value)
+    assert str(tmp_path) not in str(caught.value)
 
 
 def test_formatters_keep_units_explicit():

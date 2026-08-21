@@ -158,8 +158,10 @@ class PlanningService:
                    if not (project / Path(entry["path"].replace("\\", "/"))).is_file()]
         if missing:
             raise AppDataError(
-                "The frozen local ERA5 cache is unavailable. Restore the provenance-listed files "
-                "before opening hourly views. The app will not fetch live weather automatically. "
+                "The frozen ERA5 runtime package is incomplete. Before deployment, run "
+                "`python scripts/check_deployment_assets.py`. For local use, restore the "
+                "provenance-listed cache files before opening hourly views. The app never fetches "
+                "live weather during normal navigation. "
                 "Missing: " + ", ".join(missing)
             )
         weather, phase9, loads, load_meta, wind, pv, _ = precompute()
