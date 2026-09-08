@@ -103,7 +103,7 @@ def overview(api: PlanningService) -> None:
     )
     section_header("Planning platform")
     workflow(("Weather + demand", "Wind + solar", "Battery dispatch", "Reliability", "Optimization", "Economics", "Site comparison"))
-    render_site_map(registry)
+    render_site_map(registry, key="overview_site_map")
     shamshi = registry.get_site(FEATURED_SITE_ID)
     demand = shamshi.demand_datasets[0].annual_energy_kwh
     resource = weather_summary(shamshi)

@@ -1,6 +1,7 @@
 from pathlib import Path
 from steppegrid.app.data import FrozenDataRepository
 from steppegrid.app.product import FEATURED_SITE_ID, _resource_metrics, latest_result, site_rows, weather_summary
+from steppegrid.app.sites import _map_rows
 from steppegrid.app.services import PlanningService
 from steppegrid.app.theme import COLORS, GLOBAL_CSS
 from steppegrid.sites import SiteRegistry
@@ -24,7 +25,18 @@ def test_featured_site_semantics_are_blue_and_textual():
 def test_overview_renders_the_interactive_site_map():
     text=(ROOT/"app.py").read_text(encoding="utf-8")
     overview=text[text.index("def overview"):text.index("def demand_weather")]
-    assert "render_site_map(registry)" in overview
+    assert 'render_site_map(registry, key="overview_site_map")' in overview
+
+def test_map_distinguishes_my_village_and_supports_selection():
+    rows=_map_rows(SiteRegistry())
+    featured=next(row for row in rows if row["site_id"]==FEATURED_SITE_ID)
+    others=[row for row in rows if row["site_id"]!=FEATURED_SITE_ID]
+    assert featured["color"]==[40,120,216,220]
+    assert {tuple(row["color"]) for row in others}=={(211,57,57,220)}
+    text=(ROOT/"steppegrid/app/sites.py").read_text(encoding="utf-8")
+    assert 'on_select="rerun"' in text
+    assert 'selection_mode="single-object"' in text
+    assert "zoom=7 if selected else 3.15" in text
 
 def test_public_site_and_compare_views_hide_lineage_fields():
     columns=set(site_rows(SiteRegistry())[0])

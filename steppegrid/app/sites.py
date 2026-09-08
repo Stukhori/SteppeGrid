@@ -3,6 +3,7 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 import altair as alt
+import pydeck as pdk
 from steppegrid.app.components import metric, page_header, section_header
 from steppegrid.app.product import FEATURED_SITE_ID, FEATURED_SITE_LABEL, latest_result, site_rows, weather_summary
 from steppegrid.app.formatting import energy, money, percent, power
@@ -19,12 +20,76 @@ def _site_rows(registry: SiteRegistry):
         rows.append({"Site":site.name,"Site ID":site.site_id,"Region":site.region,"Classification":site.classification.value,"Population":f"~{site.population:,}" if site.population and site.population_is_approximate else (f"{site.population:,}" if site.population else "Not registered"),"Weather":registry.get_weather_status(site.site_id).value,"Planning":registry.get_planning_readiness(site.site_id).value,"Demand evidence":"Proxy-derived demand" if demand and demand.classification.value=="PROXY_DERIVED" else "Registered demand"})
     return rows
 
-def render_site_map(registry: SiteRegistry) -> None:
-    """Render the shared interactive map of registered Kazakhstan sites."""
-    rows = site_rows(registry)
-    section_header("Kazakhstan map", "Explore the seven registered settlements; drag or zoom the map for geographic context.")
-    st.map(pd.DataFrame(rows), latitude="lat", longitude="lon", color="#2878D8", size=24)
-    st.caption("🔵 MY VILLAGE — Shamshi Kaldayakova · Other markers — SteppeGrid sites")
+def _map_rows(registry: SiteRegistry) -> list[dict]:
+    rows = []
+    for site in site_rows(registry):
+        featured = site["site_id"] == FEATURED_SITE_ID
+        rows.append({
+            "site_id": site["site_id"],
+            "name": site["Site"],
+            "region": site["Region"],
+            "latitude": site["lat"],
+            "longitude": site["lon"],
+            "annual_demand": f'{site["Annual demand (GWh/year)"]:,.2f} GWh/year',
+            "weather": site["Weather"],
+            "identity": FEATURED_SITE_LABEL if featured else "SteppeGrid site",
+            "color": [40, 120, 216, 220] if featured else [211, 57, 57, 220],
+        })
+    return rows
+
+def render_site_map(registry: SiteRegistry, *, key: str = "site_map") -> None:
+    """Render the shared selectable map of registered Kazakhstan sites."""
+    rows = _map_rows(registry)
+    selected_key = f"{key}_selected_site"
+    selected_id = st.session_state.get(selected_key)
+    selected = next((row for row in rows if row["site_id"] == selected_id), None)
+    view = pdk.ViewState(
+        latitude=selected["latitude"] if selected else 48.0,
+        longitude=selected["longitude"] if selected else 67.0,
+        zoom=7 if selected else 3.15,
+        pitch=0,
+    )
+    layer = pdk.Layer(
+        "ScatterplotLayer",
+        data=rows,
+        id=f"{key}-sites",
+        get_position="[longitude, latitude]",
+        get_fill_color="color",
+        get_radius=selected and 18_000 or 28_000,
+        radius_min_pixels=8,
+        radius_max_pixels=18,
+        pickable=True,
+        auto_highlight=True,
+        stroked=True,
+        get_line_color=[255, 255, 255, 230],
+        line_width_min_pixels=2,
+    )
+    section_header("Kazakhstan map", "Hover over a site for details. Select a marker to zoom in and open its information card.")
+    event = st.pydeck_chart(
+        pdk.Deck(
+            layers=[layer],
+            initial_view_state=view,
+            map_style=None,
+            tooltip={"html": "<b>{name}</b><br>{region}<br>{identity}<br>Demand: {annual_demand}<br>Weather: {weather}"},
+        ),
+        on_select="rerun",
+        selection_mode="single-object",
+        key=key,
+        height=480,
+    )
+    objects = event.selection.get("objects", {}).get(f"{key}-sites", [])
+    if objects and objects[0]["site_id"] != selected_id:
+        st.session_state[selected_key] = objects[0]["site_id"]
+        st.rerun()
+    if selected:
+        with st.container(border=True):
+            st.markdown(f"#### {selected['name']}")
+            st.write(f"{selected['region']} · {selected['identity']}")
+            a, b = st.columns(2)
+            with a: metric("Annual demand", selected["annual_demand"])
+            with b: metric("Weather data", selected["weather"])
+            st.caption(f"{selected['latitude']:.4f}, {selected['longitude']:.4f}")
+    st.caption("🔵 MY VILLAGE — Shamshi Kaldayakova · 🔴 Other markers — SteppeGrid sites")
 
 def render_sites(registry: SiteRegistry) -> None:
     page_header("Explore Kazakhstan", "Sites", "Seven rural settlements with registered demand and cached hourly weather.", [("7 VILLAGES", "success"), ("8,760 HOURS", "info")])
@@ -36,7 +101,7 @@ def render_sites(registry: SiteRegistry) -> None:
     rows = site_rows(registry)
     section_header("Village overview", "Planning values and saved-result availability at a glance.")
     st.dataframe(pd.DataFrame(rows).drop(columns=["site_id", "lat", "lon", "featured_site"]), hide_index=True, width="stretch")
-    render_site_map(registry)
+    render_site_map(registry, key="sites_page_map")
     ids = [r["site_id"] for r in rows]
     selected_id = st.selectbox("Inspect site", ids, index=ids.index(FEATURED_SITE_ID), format_func=lambda value: registry.get_site(value).name)
     site = registry.get_site(selected_id)
