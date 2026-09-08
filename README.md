@@ -6,7 +6,7 @@ SteppeGrid is an interactive renewable-energy planning platform that combines ho
 
 ![Wind and solar](https://img.shields.io/badge/Wind_%2B_Solar-176B67?style=flat-square) ![Battery storage](https://img.shields.io/badge/Battery_Storage-287F82?style=flat-square) ![Optimization](https://img.shields.io/badge/Optimization-355C7D?style=flat-square) ![Reliability](https://img.shields.io/badge/Reliability-456A79?style=flat-square) ![Kazakhstan](https://img.shields.io/badge/Kazakhstan-2E7D6E?style=flat-square)
 
-**[Interactive Planner](#interactive-planner) · [Final Technical Report](docs/steppegrid_final_report.md) · [Portfolio Summary](docs/steppegrid_portfolio_summary.md) · [Reproducibility](docs/reproduce_steppegrid.md) · [Rodina Benchmark](docs/benchmarks/rodina.md)**
+**[Live Demo](https://steppegrid.streamlit.app/) · [Interactive Planner](#interactive-planner) · [Final Technical Report](docs/steppegrid_final_report.md) · [Portfolio Summary](docs/steppegrid_portfolio_summary.md) · [Reproducibility](docs/reproduce_steppegrid.md) · [Rodina Benchmark](docs/benchmarks/rodina.md)**
 
 ![SteppeGrid workflow from weather and demand through generation, dispatch, reliability, optimization, and economics](outputs/final/figures/02_steppegrid_workflow.png)
 
@@ -55,11 +55,21 @@ The engineering takeaway is direct: under the frozen assumptions, a higher annua
 
 *Frozen publication figures generated from the documented release artifacts.*
 
-<!-- TODO: add a real Streamlit planner screenshot after one is captured from a verified deployment or local run. -->
+### Application
+
+| Interactive Kazakhstan map | Frozen Rodina system design |
+|---|---|
+| ![Interactive SteppeGrid map showing seven registered Kazakhstan sites](docs/assets/screenshots/kazakhstan-sites-map.png) | ![SteppeGrid system-design page showing the frozen Rodina 95 percent design](docs/assets/screenshots/rodina-system-design.png) |
+
+![SteppeGrid interactive planner site and demand workflow](docs/assets/screenshots/interactive-planner.png)
+
+*Screenshots from the public [SteppeGrid Streamlit application](https://steppegrid.streamlit.app/).*
 
 ## Interactive Planner
 
 Choose a registered or custom site, use registered demand or provide annual, monthly, or hourly demand, select a 95% or 99% annual energy-served target, choose technologies, review the inputs, and run the planner. Optimization starts only after **Run Planner** is selected. Session results can be downloaded as JSON or CSV; hosted environments do not guarantee permanent scenario storage.
+
+**[Open the interactive planner](https://steppegrid.streamlit.app/)**
 
 ## System Architecture
 

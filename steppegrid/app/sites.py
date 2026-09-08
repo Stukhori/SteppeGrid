@@ -19,6 +19,13 @@ def _site_rows(registry: SiteRegistry):
         rows.append({"Site":site.name,"Site ID":site.site_id,"Region":site.region,"Classification":site.classification.value,"Population":f"~{site.population:,}" if site.population and site.population_is_approximate else (f"{site.population:,}" if site.population else "Not registered"),"Weather":registry.get_weather_status(site.site_id).value,"Planning":registry.get_planning_readiness(site.site_id).value,"Demand evidence":"Proxy-derived demand" if demand and demand.classification.value=="PROXY_DERIVED" else "Registered demand"})
     return rows
 
+def render_site_map(registry: SiteRegistry) -> None:
+    """Render the shared interactive map of registered Kazakhstan sites."""
+    rows = site_rows(registry)
+    section_header("Kazakhstan map", "Explore the seven registered settlements; drag or zoom the map for geographic context.")
+    st.map(pd.DataFrame(rows), latitude="lat", longitude="lon", color="#2878D8", size=24)
+    st.caption("🔵 MY VILLAGE — Shamshi Kaldayakova · Other markers — SteppeGrid sites")
+
 def render_sites(registry: SiteRegistry) -> None:
     page_header("Explore Kazakhstan", "Sites", "Seven rural settlements with registered demand and cached hourly weather.", [("7 VILLAGES", "success"), ("8,760 HOURS", "info")])
     browse_tab, add_tab = st.tabs(["Browse sites", "Add new site"])
@@ -29,9 +36,7 @@ def render_sites(registry: SiteRegistry) -> None:
     rows = site_rows(registry)
     section_header("Village overview", "Planning values and saved-result availability at a glance.")
     st.dataframe(pd.DataFrame(rows).drop(columns=["site_id", "lat", "lon", "featured_site"]), hide_index=True, width="stretch")
-    section_header("Kazakhstan map", "The blue identity marks My Village; it is not a performance rating.")
-    st.map(pd.DataFrame(rows), latitude="lat", longitude="lon", color="#2878D8", size=24)
-    st.caption("🔵 MY VILLAGE — Shamshi Kaldayakova · Other markers — SteppeGrid sites")
+    render_site_map(registry)
     ids = [r["site_id"] for r in rows]
     selected_id = st.selectbox("Inspect site", ids, index=ids.index(FEATURED_SITE_ID), format_func=lambda value: registry.get_site(value).name)
     site = registry.get_site(selected_id)

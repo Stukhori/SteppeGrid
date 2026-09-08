@@ -20,7 +20,7 @@ from steppegrid.app.data import AppDataError
 from steppegrid.app.formatting import RECONSTRUCTION_NOTICE, SCENARIO_NOTICE, energy, money, percent, power, readable
 from steppegrid.app.services import PlanningService
 from steppegrid.app.planner import render_planner
-from steppegrid.app.sites import render_compare_sites, render_sites
+from steppegrid.app.sites import render_compare_sites, render_site_map, render_sites
 from steppegrid.app.product import FEATURED_SITE_ID, latest_result, phase17_findings, site_rows, weather_summary
 from steppegrid.app.state import NAVIGATION, PROFILE_LABELS, SHAMSHI_STATUS, TARGET_LABELS
 from steppegrid.app.theme import COLORS, apply_theme
@@ -103,6 +103,7 @@ def overview(api: PlanningService) -> None:
     )
     section_header("Planning platform")
     workflow(("Weather + demand", "Wind + solar", "Battery dispatch", "Reliability", "Optimization", "Economics", "Site comparison"))
+    render_site_map(registry)
     shamshi = registry.get_site(FEATURED_SITE_ID)
     demand = shamshi.demand_datasets[0].annual_energy_kwh
     resource = weather_summary(shamshi)

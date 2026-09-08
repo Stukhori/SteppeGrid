@@ -20,6 +20,12 @@ def test_resource_summaries_reuse_the_frozen_table():
 def test_featured_site_semantics_are_blue_and_textual():
     assert COLORS["featured_site"]=="#2878D8"; assert "--sg-featured-site" in GLOBAL_CSS
     assert "MY VILLAGE" in (ROOT/"app.py").read_text(encoding="utf-8")
+
+def test_overview_renders_the_interactive_site_map():
+    text=(ROOT/"app.py").read_text(encoding="utf-8")
+    overview=text[text.index("def overview"):text.index("def demand_weather")]
+    assert "render_site_map(registry)" in overview
+
 def test_public_site_and_compare_views_hide_lineage_fields():
     columns=set(site_rows(SiteRegistry())[0])
     assert "Demand evidence" not in columns; assert "Demand confidence" not in columns
