@@ -65,6 +65,8 @@ The engineering takeaway is direct: under the frozen assumptions, a higher annua
 
 *Screenshots from the public [SteppeGrid Streamlit application](https://steppegrid.streamlit.app/).*
 
+The overview map distinguishes Shamshi Kaldayakova in blue from the other registered sites in red. Hover for site metadata, or select a marker to zoom in and inspect demand, weather-data status, and saved planning-result availability. A keyboard-accessible site selector provides the same detail view without pointer interaction.
+
 ## Interactive Planner
 
 Choose a registered or custom site, use registered demand or provide annual, monthly, or hourly demand, select a 95% or 99% annual energy-served target, choose technologies, review the inputs, and run the planner. Optimization starts only after **Run Planner** is selected. Session results can be downloaded as JSON or CSV; hosted environments do not guarantee permanent scenario storage.

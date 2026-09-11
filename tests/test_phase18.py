@@ -37,6 +37,17 @@ def test_map_distinguishes_my_village_and_supports_selection():
     assert 'on_select="rerun"' in text
     assert 'selection_mode="single-object"' in text
     assert "zoom=7 if selected else 3.15" in text
+    assert "Choose a site without using the map" in text
+    assert "Reset Kazakhstan view" in text
+    assert '"result_95": site["95% result"]' in text
+    assert '"radius": 38_000 if row["site_id"] == selected_id' in text
+
+def test_overview_actions_and_compact_layout_are_present():
+    app_text=(ROOT/"app.py").read_text(encoding="utf-8")
+    theme_text=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
+    assert 'st.button("Plan a microgrid"' in app_text
+    assert 'st.button("Compare saved sites"' in app_text
+    assert "@media(max-width:640px)" in theme_text
 
 def test_public_site_and_compare_views_hide_lineage_fields():
     columns=set(site_rows(SiteRegistry())[0])
