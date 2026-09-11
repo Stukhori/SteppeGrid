@@ -62,19 +62,27 @@ def render_site_map(registry: SiteRegistry, *, key: str = "site_map") -> None:
         zoom=7 if selected else 3.15,
         pitch=0,
     )
+    deck_rows = [
+        {
+            **row,
+            "radius": 38_000 if row["site_id"] == selected_id else 28_000,
+            "line_color": [245, 184, 46, 255] if row["site_id"] == selected_id else [255, 255, 255, 230],
+        }
+        for row in rows
+    ]
     layer = pdk.Layer(
         "ScatterplotLayer",
-        data=rows,
+        data=deck_rows,
         id=f"{key}-sites",
         get_position="[longitude, latitude]",
         get_fill_color="color",
-        get_radius=selected and 18_000 or 28_000,
+        get_radius="radius",
         radius_min_pixels=8,
         radius_max_pixels=18,
         pickable=True,
         auto_highlight=True,
         stroked=True,
-        get_line_color=[255, 255, 255, 230],
+        get_line_color="line_color",
         line_width_min_pixels=2,
     )
     section_header("Kazakhstan map", "Hover over a site for details. Select a marker to zoom in and open its information card.")
