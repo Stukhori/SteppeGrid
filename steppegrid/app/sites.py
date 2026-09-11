@@ -32,6 +32,8 @@ def _map_rows(registry: SiteRegistry) -> list[dict]:
             "longitude": site["lon"],
             "annual_demand": f'{site["Annual demand (GWh/year)"]:,.2f} GWh/year',
             "weather": site["Weather"],
+            "result_95": site["95% result"],
+            "result_99": site["99% result"],
             "identity": FEATURED_SITE_LABEL if featured else "SteppeGrid site",
             "color": [40, 120, 216, 220] if featured else [211, 57, 57, 220],
         })
@@ -70,7 +72,7 @@ def render_site_map(registry: SiteRegistry, *, key: str = "site_map") -> None:
             layers=[layer],
             initial_view_state=view,
             map_style=None,
-            tooltip={"html": "<b>{name}</b><br>{region}<br>{identity}<br>Demand: {annual_demand}<br>Weather: {weather}"},
+            tooltip={"html": "<b>{name}</b><br>{region}<br>{identity}<br>Demand: {annual_demand}<br>Weather: {weather}<br>95% result: {result_95}<br>99% result: {result_99}"},
         ),
         on_select="rerun",
         selection_mode="single-object",
