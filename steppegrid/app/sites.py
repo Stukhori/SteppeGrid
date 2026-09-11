@@ -45,6 +45,17 @@ def render_site_map(registry: SiteRegistry, *, key: str = "site_map") -> None:
     selected_key = f"{key}_selected_site"
     selected_id = st.session_state.get(selected_key)
     selected = next((row for row in rows if row["site_id"] == selected_id), None)
+    keyboard_choice = st.selectbox(
+        "Choose a site without using the map",
+        [None, *[row["site_id"] for row in rows]],
+        index=None,
+        format_func=lambda site_id: "Select a site" if site_id is None else next(row["name"] for row in rows if row["site_id"] == site_id),
+        key=f"{key}_keyboard_choice",
+    )
+    if keyboard_choice and keyboard_choice != selected_id:
+        selected_id = keyboard_choice
+        st.session_state[selected_key] = selected_id
+        selected = next(row for row in rows if row["site_id"] == selected_id)
     view = pdk.ViewState(
         latitude=selected["latitude"] if selected else 48.0,
         longitude=selected["longitude"] if selected else 67.0,
