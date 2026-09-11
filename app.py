@@ -103,6 +103,9 @@ def overview(api: PlanningService) -> None:
     )
     section_header("Planning platform")
     workflow(("Weather + demand", "Wind + solar", "Battery dispatch", "Reliability", "Optimization", "Economics", "Site comparison"))
+    if st.button("Plan a microgrid", type="primary", key="overview_plan_action"):
+        st.session_state.app_mode = "Plan a System"
+        st.rerun()
     render_site_map(registry, key="overview_site_map")
     shamshi = registry.get_site(FEATURED_SITE_ID)
     demand = shamshi.demand_datasets[0].annual_energy_kwh
