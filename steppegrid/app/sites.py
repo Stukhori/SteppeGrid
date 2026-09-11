@@ -112,6 +112,7 @@ def render_site_map(registry: SiteRegistry, *, key: str = "site_map") -> None:
             a, b = st.columns(2)
             with a: metric("Annual demand", selected["annual_demand"])
             with b: metric("Weather data", selected["weather"])
+            st.write(f"Saved planning results: 95% target — {selected['result_95']} · 99% target — {selected['result_99']}")
             st.caption(f"{selected['latitude']:.4f}, {selected['longitude']:.4f}")
     st.caption("🔵 MY VILLAGE — Shamshi Kaldayakova · 🔴 Other markers — SteppeGrid sites")
 
