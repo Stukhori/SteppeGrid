@@ -66,8 +66,11 @@ def test_sidebar_navigation_uses_readable_grid_and_tinted_controls():
     assert "explore_col, plan_col = st.columns(2)" in app_text
     assert "sites_col, compare_col = st.columns(2)" in app_text
     assert "st.columns(4)" not in app_text[app_text.index("with st.sidebar:"):]
-    assert "background:var(--sg-ink)" in theme
     assert "white-space:nowrap" in theme
+    assert "background:#F1F0EA" in theme
+    assert "background:#FFFFFF" in theme
+    assert "color:var(--sg-ink)" in theme
+    assert "background:var(--sg-primary)" in theme
 
 def test_public_site_and_compare_views_hide_lineage_fields():
     columns=set(site_rows(SiteRegistry())[0])
