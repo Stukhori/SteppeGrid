@@ -18,8 +18,8 @@ def test_resource_summaries_reuse_the_frozen_table():
     assert weather_summary(registry.get_site(FEATURED_SITE_ID))["hours"]==8760
     assert _resource_metrics.cache_info().misses==1
     assert _resource_metrics.cache_info().hits==1
-def test_featured_site_semantics_are_blue_and_textual():
-    assert COLORS["featured_site"]=="#2878D8"; assert "--sg-featured-site" in GLOBAL_CSS
+def test_featured_site_semantics_are_amber_and_textual():
+    assert COLORS["featured_site"]=="#D89D2B"; assert "--sg-featured-site" in GLOBAL_CSS
     assert "MY VILLAGE" in (ROOT/"app.py").read_text(encoding="utf-8")
 
 def test_overview_renders_the_interactive_site_map():
@@ -31,8 +31,8 @@ def test_map_distinguishes_my_village_and_supports_selection():
     rows=_map_rows(SiteRegistry())
     featured=next(row for row in rows if row["site_id"]==FEATURED_SITE_ID)
     others=[row for row in rows if row["site_id"]!=FEATURED_SITE_ID]
-    assert featured["color"]==[40,120,216,220]
-    assert {tuple(row["color"]) for row in others}=={(211,57,57,220)}
+    assert featured["color"]==[216,157,43,235]
+    assert {tuple(row["color"]) for row in others}=={(15,107,92,220)}
     text=(ROOT/"steppegrid/app/sites.py").read_text(encoding="utf-8")
     assert 'on_select="rerun"' in text
     assert 'selection_mode="single-object"' in text
@@ -45,8 +45,8 @@ def test_map_distinguishes_my_village_and_supports_selection():
 def test_overview_actions_and_compact_layout_are_present():
     app_text=(ROOT/"app.py").read_text(encoding="utf-8")
     theme_text=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
-    assert 'st.button("Plan a microgrid"' in app_text
-    assert 'st.button("Compare saved sites"' in app_text
+    assert 'st.button("Build a village scenario"' in app_text
+    assert 'st.button("Compare village results"' in app_text
     assert "@media(max-width:640px)" in theme_text
 
 def test_visual_system_includes_hero_focus_and_map_guidance():
@@ -54,11 +54,11 @@ def test_visual_system_includes_hero_focus_and_map_guidance():
     sites=(ROOT/"steppegrid/app/sites.py").read_text(encoding="utf-8")
     theme=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
     assert 'class="sg-hero"' in components
-    assert 'class="sg-hero__turbine"' in components
+    assert 'class="sg-hero__stamp"' in components
     assert 'class="sg-map-legend"' in sites
     assert ":focus-visible" in theme
-    assert ".sg-map-dot--featured{background:#2878D8}" in theme
-    assert ".sg-map-dot--site{background:#D33939}" in theme
+    assert ".sg-map-dot--featured { background:#D89D2B; }" in theme
+    assert ".sg-map-dot--site { background:#0F6B5C; }" in theme
 
 def test_sidebar_navigation_uses_readable_grid_and_tinted_controls():
     app_text=(ROOT/"app.py").read_text(encoding="utf-8")
@@ -66,7 +66,7 @@ def test_sidebar_navigation_uses_readable_grid_and_tinted_controls():
     assert "explore_col, plan_col = st.columns(2)" in app_text
     assert "sites_col, compare_col = st.columns(2)" in app_text
     assert "st.columns(4)" not in app_text[app_text.index("with st.sidebar:"):]
-    assert 'background:linear-gradient(180deg,#F7FBF9 0%,#EEF5F1 100%)' in theme
+    assert "background:var(--sg-ink)" in theme
     assert "white-space:nowrap" in theme
 
 def test_public_site_and_compare_views_hide_lineage_fields():

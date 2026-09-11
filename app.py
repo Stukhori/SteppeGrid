@@ -14,7 +14,7 @@ from steppegrid.app.charts import (
 from steppegrid.app.components import (
     GLOSSARY, audit_status, callout, comparison_table, design_card,
     design_comparison_rows, energy_flow, equipment_card, limitations, metric,
-    page_header, section_header, sidebar_status, site_status, workflow,
+    page_header, section_header, sidebar_brand, sidebar_status, site_status, workflow,
 )
 from steppegrid.app.data import AppDataError
 from steppegrid.app.formatting import RECONSTRUCTION_NOTICE, SCENARIO_NOTICE, energy, money, percent, power, readable
@@ -96,22 +96,22 @@ def overview(api: PlanningService) -> None:
     registry = site_registry()
     sites = registry.list_sites()
     page_header(
-        "STEPPEGRID · v1.0",
-        "Renewable Microgrid Planning for Rural Kazakhstan",
-        "Explore village electricity demand, hourly weather, wind–solar–battery system design, reliability, and economics across Kazakhstan.",
-        [("7 VILLAGES", "success"), ("8,760 HOURS PER SITE", "info"), ("95% AND 99% TARGETS", "info")],
+        "Decision support · Rural Kazakhstan",
+        "Plan a resilient village microgrid",
+        "Explore how local demand and weather shape wind, solar, storage, reliability, and lifetime cost.",
+        [("7 villages", "success"), ("8,760 hourly steps", "info"), ("95% / 99% targets", "warning")],
     )
-    section_header("Planning platform")
-    workflow(("Weather + demand", "Wind + solar", "Battery dispatch", "Reliability", "Optimization", "Economics", "Site comparison"))
+    section_header("Start an analysis", "Choose a planning task, or select a village on the map below.")
     plan_action, compare_action = st.columns(2)
     with plan_action:
-        if st.button("Plan a microgrid", type="primary", key="overview_plan_action", width="stretch"):
+        if st.button("Build a village scenario", type="primary", key="overview_plan_action", width="stretch"):
             st.session_state.app_mode = "Plan a System"
             st.rerun()
     with compare_action:
-        if st.button("Compare saved sites", key="overview_compare_action", width="stretch"):
+        if st.button("Compare village results", key="overview_compare_action", width="stretch"):
             st.session_state.app_mode = "Compare Sites"
             st.rerun()
+    workflow(("Choose a site", "Review hourly inputs", "Size the system", "Compare trade-offs"))
     render_site_map(registry, key="overview_site_map")
     shamshi = registry.get_site(FEATURED_SITE_ID)
     demand = shamshi.demand_datasets[0].annual_energy_kwh
@@ -136,7 +136,7 @@ def overview(api: PlanningService) -> None:
         if higher:
             hd, hm, he = higher["design"], higher["metrics"], higher["economics"]
             callout("99% planning result", f"{power(hd['wind_capacity_kw'])} wind · {power(hd['pv_ac_capacity_kw'])} solar AC · {energy(hd['battery_usable_capacity_kwh'])} storage · {percent(hm['served_fraction'], 2)} annual energy served · {money(he['net_present_cost_usd'])} NPC")
-    section_header("Seven Kazakhstan sites", "Select Sites for maps and village details, or Compare Sites for normalized saved results.")
+    section_header("All seven villages", "Open Sites for detailed records or Compare for normalized results.")
     st.dataframe(pd.DataFrame(site_rows(registry))[["Site","Region","Annual demand (GWh/year)","95% result","99% result"]], hide_index=True, width="stretch")
     findings = phase17_findings()
     section_header("Cross-village findings", "Standardized findings within the five-site common-demand-method cohort.")
@@ -382,7 +382,8 @@ if "active_page" not in st.session_state:
 if "app_mode" not in st.session_state:
     st.session_state.app_mode = "Explore Benchmark"
 with st.sidebar:
-    st.markdown("## ⚡ SteppeGrid")
+    sidebar_brand()
+    st.markdown('<div class="sg-mode-label">Workspace</div>', unsafe_allow_html=True)
     explore_col, plan_col = st.columns(2)
     with explore_col:
         if st.button("Explore", type="primary" if st.session_state.app_mode == "Explore Benchmark" else "tertiary", width="stretch"):

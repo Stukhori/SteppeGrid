@@ -11,6 +11,25 @@ import pandas as pd
 from steppegrid.app.theme import COLORS
 
 
+def _style(chart):
+    """Apply the restrained SteppeGrid chart treatment."""
+    return (
+        chart.configure_view(strokeWidth=0)
+        .configure_axis(
+            gridColor="#E4E7E2",
+            gridOpacity=1,
+            domainColor="#C8D0CB",
+            tickColor="#C8D0CB",
+            labelColor="#53656C",
+            labelFontSize=12,
+            titleColor="#33474F",
+            titleFontSize=12,
+            titleFontWeight=600,
+        )
+        .configure_legend(labelColor="#53656C", labelFontSize=12, symbolType="stroke")
+    )
+
+
 def date_window(frame: pd.DataFrame, start, end) -> pd.DataFrame:
     dates = frame["timestamp"].dt.date
     return frame.loc[(dates >= start) & (dates <= end)].copy()
@@ -27,7 +46,7 @@ def line_chart(frame: pd.DataFrame, series: Mapping[str, tuple[str, str]], y_tit
     columns = list(series)
     labels = {key: value[0] for key, value in series.items()}
     data = frame[["timestamp", *columns]].rename(columns=labels).melt("timestamp", var_name="Series", value_name="Value")
-    return (
+    chart = (
         alt.Chart(data).mark_line(strokeWidth=2).encode(
             x=alt.X("timestamp:T", title=None, axis=alt.Axis(format="%b %d", labelOverlap=True)),
             y=alt.Y("Value:Q", title=y_title, scale=alt.Scale(zero=False)),
@@ -35,13 +54,14 @@ def line_chart(frame: pd.DataFrame, series: Mapping[str, tuple[str, str]], y_tit
             tooltip=[alt.Tooltip("timestamp:T", title="Time"), alt.Tooltip("Series:N"), alt.Tooltip("Value:Q", format=",.2f")],
         ).properties(height=height).interactive(bind_y=False)
     )
+    return _style(chart)
 
 
 def area_chart(frame: pd.DataFrame, series: Mapping[str, tuple[str, str]], y_title: str, *, height: int = 220):
     columns = list(series)
     labels = {key: value[0] for key, value in series.items()}
     data = frame[["timestamp", *columns]].rename(columns=labels).melt("timestamp", var_name="Series", value_name="Value")
-    return (
+    chart = (
         alt.Chart(data).mark_area(opacity=.72).encode(
             x=alt.X("timestamp:T", title=None, axis=alt.Axis(format="%b %d", labelOverlap=True)),
             y=alt.Y("Value:Q", title=y_title),
@@ -49,16 +69,18 @@ def area_chart(frame: pd.DataFrame, series: Mapping[str, tuple[str, str]], y_tit
             tooltip=[alt.Tooltip("timestamp:T", title="Time"), "Series:N", alt.Tooltip("Value:Q", format=",.2f")],
         ).properties(height=height).interactive(bind_y=False)
     )
+    return _style(chart)
 
 
 def bar_chart(frame: pd.DataFrame, category: str, value: str, *, x_title: str | None = None, y_title: str | None = None, color: str = COLORS["primary"], height: int = 280):
-    return (
+    chart = (
         alt.Chart(frame).mark_bar(color=color, cornerRadiusTopLeft=3, cornerRadiusTopRight=3).encode(
             x=alt.X(f"{category}:N", title=x_title, sort=None, axis=alt.Axis(labelAngle=0)),
             y=alt.Y(f"{value}:Q", title=y_title),
             tooltip=[alt.Tooltip(f"{category}:N"), alt.Tooltip(f"{value}:Q", format=",.3f")],
         ).properties(height=height)
     )
+    return _style(chart)
 
 
 def sensitivity_chart(frame: pd.DataFrame, target: float):
@@ -75,7 +97,7 @@ def sensitivity_chart(frame: pd.DataFrame, target: float):
     threshold = pd.DataFrame({"threshold": [target * 100], "label": [f"{target:.0%} threshold"]})
     rule = alt.Chart(threshold).mark_rule(color=COLORS["text"], strokeDash=[6, 4], strokeWidth=2).encode(y="threshold:Q")
     label = alt.Chart(threshold).mark_text(align="right", dx=-5, dy=-7, color=COLORS["text"]).encode(y="threshold:Q", x=alt.value("width"), text="label:N")
-    return (bars + rule + label).properties(height=330)
+    return _style((bars + rule + label).properties(height=330))
 
 
 def wind_comparison(frame: pd.DataFrame, value: str, title: str, color: str = COLORS["wind"]):

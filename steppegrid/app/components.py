@@ -26,15 +26,21 @@ GLOSSARY = {
 def page_header(eyebrow: str, title: str, lead: str, badges: Iterable[tuple[str, str]] = ()) -> None:
     rendered = "".join(f'<span class="sg-badge sg-badge--{escape(tone)}">{escape(label)}</span>' for label, tone in badges)
     badge_row = f'<div class="sg-badges">{rendered}</div>' if rendered else ""
-    turbine = (
-        '<svg class="sg-hero__turbine" viewBox="0 0 96 96" aria-hidden="true">'
-        '<path d="M48 42V88M38 88h20"/><circle cx="48" cy="38" r="5"/>'
-        '<path d="M48 33C43 19 35 10 28 8c-1 10 4 23 16 31M53 39c14-2 25-8 29-15-9-5-23-2-31 10M44 42c-9 11-12 23-9 30 10-3 18-14 18-29"/>'
-        '</svg>'
-    )
     st.markdown(
-        f'<header class="sg-hero"><div class="sg-hero__copy"><div class="sg-eyebrow">{escape(eyebrow)}</div>'
-        f'<h1>{escape(title)}</h1><div class="sg-lead">{escape(lead)}</div>{badge_row}</div>{turbine}</header>',
+        f'<header class="sg-hero"><div class="sg-hero__body"><div class="sg-hero__copy">'
+        f'<div class="sg-eyebrow">{escape(eyebrow)}</div><h1>{escape(title)}</h1>'
+        f'<div class="sg-lead">{escape(lead)}</div></div>'
+        '<div class="sg-hero__stamp"><span>Energy planning</span><strong>SG</strong><span>Kazakhstan</span></div>'
+        f'</div>{badge_row}</header>',
+        unsafe_allow_html=True,
+    )
+
+
+def sidebar_brand() -> None:
+    st.markdown(
+        '<div class="sg-brand"><div class="sg-brand__mark">SG</div>'
+        '<div><div class="sg-brand__name">SteppeGrid</div>'
+        '<span class="sg-brand__sub">Microgrid planner</span></div></div>',
         unsafe_allow_html=True,
     )
 
@@ -63,7 +69,10 @@ def design_card(kind: str, headline: str, capacity: str, detail: str) -> None:
 
 
 def workflow(steps: Iterable[str]) -> None:
-    nodes = "".join(f'<div class="sg-workflow__step">{escape(step)}</div>' for step in steps)
+    nodes = "".join(
+        f'<div class="sg-workflow__step"><b>{index:02d}</b><span>{escape(step)}</span></div>'
+        for index, step in enumerate(steps, start=1)
+    )
     st.markdown(f'<div class="sg-workflow">{nodes}</div>', unsafe_allow_html=True)
 
 

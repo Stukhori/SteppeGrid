@@ -35,7 +35,7 @@ def _map_rows(registry: SiteRegistry) -> list[dict]:
             "result_95": site["95% result"],
             "result_99": site["99% result"],
             "identity": FEATURED_SITE_LABEL if featured else "SteppeGrid site",
-            "color": [40, 120, 216, 220] if featured else [211, 57, 57, 220],
+            "color": [216, 157, 43, 235] if featured else [15, 107, 92, 220],
         })
     return rows
 
@@ -66,7 +66,7 @@ def render_site_map(registry: SiteRegistry, *, key: str = "site_map") -> None:
         {
             **row,
             "radius": 38_000 if row["site_id"] == selected_id else 28_000,
-            "line_color": [245, 184, 46, 255] if row["site_id"] == selected_id else [255, 255, 255, 230],
+            "line_color": [11, 39, 48, 255] if row["site_id"] == selected_id else [255, 255, 255, 230],
         }
         for row in rows
     ]
@@ -85,7 +85,7 @@ def render_site_map(registry: SiteRegistry, *, key: str = "site_map") -> None:
         get_line_color="line_color",
         line_width_min_pixels=2,
     )
-    section_header("Kazakhstan map", "Hover over a site for details. Select a marker to zoom in and open its information card.")
+    section_header("Choose a village", "Select a marker to inspect its demand, resource data, and saved planning results.")
     event = st.pydeck_chart(
         pdk.Deck(
             layers=[layer],
@@ -176,7 +176,7 @@ def render_compare_sites(registry: SiteRegistry) -> None:
         rows.append({"Site":site.name,"Value":values[category],"Identity":FEATURED_SITE_LABEL if site.site_id==FEATURED_SITE_ID else "Site"})
     if rows:
         frame=pd.DataFrame(rows)
-        chart=alt.Chart(frame).mark_bar().encode(x=alt.X("Site:N",sort=None),y=alt.Y("Value:Q",title=category),color=alt.Color("Identity:N",scale=alt.Scale(domain=["Site",FEATURED_SITE_LABEL],range=["#1F6B5B","#2878D8"]),legend=alt.Legend(title="Identity")),tooltip=["Site","Value","Identity"])
+        chart=alt.Chart(frame).mark_bar(cornerRadiusTopLeft=2, cornerRadiusTopRight=2).encode(x=alt.X("Site:N",sort=None),y=alt.Y("Value:Q",title=category),color=alt.Color("Identity:N",scale=alt.Scale(domain=["Site",FEATURED_SITE_LABEL],range=["#0F6B5C","#D89D2B"]),legend=alt.Legend(title="Identity")),tooltip=["Site","Value","Identity"]).configure_view(strokeWidth=0).configure_axis(gridColor="#E4E7E2",labelColor="#53656C",titleColor="#33474F")
         st.altair_chart(chart,width="stretch"); st.dataframe(frame,hide_index=True,width="stretch")
         section_header("Pair comparison", "Select two saved site results for a direct metric comparison.")
         left,right=st.columns(2); names=frame["Site"].tolist()
