@@ -383,20 +383,21 @@ if "app_mode" not in st.session_state:
     st.session_state.app_mode = "Explore Benchmark"
 with st.sidebar:
     st.markdown("## ⚡ SteppeGrid")
-    left, middle, compare, right = st.columns(4)
-    with left:
+    explore_col, plan_col = st.columns(2)
+    with explore_col:
         if st.button("Explore", type="primary" if st.session_state.app_mode == "Explore Benchmark" else "tertiary", width="stretch"):
             st.session_state.app_mode = "Explore Benchmark"
             st.rerun()
-    with right:
+    with plan_col:
         if st.button("Plan", type="primary" if st.session_state.app_mode == "Plan a System" else "tertiary", width="stretch"):
             st.session_state.app_mode = "Plan a System"
             st.rerun()
-    with middle:
+    sites_col, compare_col = st.columns(2)
+    with sites_col:
         if st.button("Sites", type="primary" if st.session_state.app_mode == "Sites" else "tertiary", width="stretch"):
             st.session_state.app_mode = "Sites"
             st.rerun()
-    with compare:
+    with compare_col:
         if st.button("Compare", type="primary" if st.session_state.app_mode == "Compare Sites" else "tertiary", width="stretch"):
             st.session_state.app_mode = "Compare Sites"
             st.rerun()

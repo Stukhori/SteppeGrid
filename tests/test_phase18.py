@@ -60,6 +60,15 @@ def test_visual_system_includes_hero_focus_and_map_guidance():
     assert ".sg-map-dot--featured{background:#2878D8}" in theme
     assert ".sg-map-dot--site{background:#D33939}" in theme
 
+def test_sidebar_navigation_uses_readable_grid_and_tinted_controls():
+    app_text=(ROOT/"app.py").read_text(encoding="utf-8")
+    theme=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
+    assert "explore_col, plan_col = st.columns(2)" in app_text
+    assert "sites_col, compare_col = st.columns(2)" in app_text
+    assert "st.columns(4)" not in app_text[app_text.index("with st.sidebar:"):]
+    assert 'background:linear-gradient(180deg,#F7FBF9 0%,#EEF5F1 100%)' in theme
+    assert "white-space:nowrap" in theme
+
 def test_public_site_and_compare_views_hide_lineage_fields():
     columns=set(site_rows(SiteRegistry())[0])
     assert "Demand evidence" not in columns; assert "Demand confidence" not in columns
