@@ -84,6 +84,9 @@ def render_site_map(registry: SiteRegistry, *, key: str = "site_map") -> None:
         st.session_state[selected_key] = objects[0]["site_id"]
         st.rerun()
     if selected:
+        if st.button("Reset Kazakhstan view", key=f"{key}_reset"):
+            st.session_state.pop(selected_key, None)
+            st.rerun()
         with st.container(border=True):
             st.markdown(f"#### {selected['name']}")
             st.write(f"{selected['region']} · {selected['identity']}")
