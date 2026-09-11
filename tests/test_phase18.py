@@ -49,6 +49,17 @@ def test_overview_actions_and_compact_layout_are_present():
     assert 'st.button("Compare saved sites"' in app_text
     assert "@media(max-width:640px)" in theme_text
 
+def test_visual_system_includes_hero_focus_and_map_guidance():
+    components=(ROOT/"steppegrid/app/components.py").read_text(encoding="utf-8")
+    sites=(ROOT/"steppegrid/app/sites.py").read_text(encoding="utf-8")
+    theme=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
+    assert 'class="sg-hero"' in components
+    assert 'class="sg-hero__turbine"' in components
+    assert 'class="sg-map-legend"' in sites
+    assert ":focus-visible" in theme
+    assert ".sg-map-dot--featured{background:#2878D8}" in theme
+    assert ".sg-map-dot--site{background:#D33939}" in theme
+
 def test_public_site_and_compare_views_hide_lineage_fields():
     columns=set(site_rows(SiteRegistry())[0])
     assert "Demand evidence" not in columns; assert "Demand confidence" not in columns

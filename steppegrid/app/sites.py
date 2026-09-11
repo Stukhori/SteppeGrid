@@ -114,7 +114,13 @@ def render_site_map(registry: SiteRegistry, *, key: str = "site_map") -> None:
             with b: metric("Weather data", selected["weather"])
             st.write(f"Saved planning results: 95% target — {selected['result_95']} · 99% target — {selected['result_99']}")
             st.caption(f"Coordinates: {selected['latitude']:.4f}° N, {selected['longitude']:.4f}° E")
-    st.caption("🔵 MY VILLAGE — Shamshi Kaldayakova · 🔴 Other markers — SteppeGrid sites")
+    st.markdown(
+        '<div class="sg-map-legend" aria-label="Map legend">'
+        '<span><i class="sg-map-dot sg-map-dot--featured"></i>My Village · Shamshi Kaldayakova</span>'
+        '<span><i class="sg-map-dot sg-map-dot--site"></i>Other SteppeGrid sites</span>'
+        '<span class="sg-map-hint">Hover for details · select to zoom</span></div>',
+        unsafe_allow_html=True,
+    )
 
 def render_sites(registry: SiteRegistry) -> None:
     page_header("Explore Kazakhstan", "Sites", "Seven rural settlements with registered demand and cached hourly weather.", [("7 VILLAGES", "success"), ("8,760 HOURS", "info")])

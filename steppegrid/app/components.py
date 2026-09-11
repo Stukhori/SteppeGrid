@@ -24,12 +24,19 @@ GLOSSARY = {
 
 
 def page_header(eyebrow: str, title: str, lead: str, badges: Iterable[tuple[str, str]] = ()) -> None:
-    st.markdown(f'<div class="sg-eyebrow">{escape(eyebrow)}</div>', unsafe_allow_html=True)
-    st.title(title)
-    st.markdown(f'<div class="sg-lead">{escape(lead)}</div>', unsafe_allow_html=True)
-    if badges:
-        rendered = "".join(f'<span class="sg-badge sg-badge--{escape(tone)}">{escape(label)}</span>' for label, tone in badges)
-        st.markdown(f'<div class="sg-badges">{rendered}</div>', unsafe_allow_html=True)
+    rendered = "".join(f'<span class="sg-badge sg-badge--{escape(tone)}">{escape(label)}</span>' for label, tone in badges)
+    badge_row = f'<div class="sg-badges">{rendered}</div>' if rendered else ""
+    turbine = (
+        '<svg class="sg-hero__turbine" viewBox="0 0 96 96" aria-hidden="true">'
+        '<path d="M48 42V88M38 88h20"/><circle cx="48" cy="38" r="5"/>'
+        '<path d="M48 33C43 19 35 10 28 8c-1 10 4 23 16 31M53 39c14-2 25-8 29-15-9-5-23-2-31 10M44 42c-9 11-12 23-9 30 10-3 18-14 18-29"/>'
+        '</svg>'
+    )
+    st.markdown(
+        f'<header class="sg-hero"><div class="sg-hero__copy"><div class="sg-eyebrow">{escape(eyebrow)}</div>'
+        f'<h1>{escape(title)}</h1><div class="sg-lead">{escape(lead)}</div>{badge_row}</div>{turbine}</header>',
+        unsafe_allow_html=True,
+    )
 
 
 def section_header(title: str, description: str = "") -> None:
