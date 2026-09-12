@@ -23,26 +23,57 @@ GLOSSARY = {
 }
 
 
+def app_header() -> None:
+    st.markdown(
+        '<header class="sg-appbar"><div class="sg-appbar__brand"><span class="sg-appbar__mark">SG</span>'
+        '<span><strong>SteppeGrid</strong><small>Village microgrid planning</small></span></div>'
+        '<div class="sg-appbar__context"><span>Kazakhstan</span><a href="https://github.com/Stukhori/SteppeGrid" '
+        'target="_blank" rel="noopener noreferrer">Project methods ↗</a></div></header>',
+        unsafe_allow_html=True,
+    )
+
+
+def overview_intro() -> None:
+    st.markdown(
+        '<section class="sg-overview-intro"><div class="sg-eyebrow">Kazakhstan village energy planning</div>'
+        '<h1>Plan a resilient village microgrid</h1><p>Explore how hourly demand and local weather shape '
+        'wind, solar, storage, reliability, and lifetime cost.</p></section>',
+        unsafe_allow_html=True,
+    )
+
+
+def microgrid_schematic() -> None:
+    st.markdown(
+        '<figure class="sg-schematic" aria-label="Energy flows from wind and solar generation through battery storage to village electricity demand">'
+        '<svg viewBox="0 0 680 280" role="img"><title>Village microgrid energy-flow schematic</title>'
+        '<path class="sg-grid" d="M30 224H650M52 248H628"/><path class="sg-flowline" d="M157 171H284M392 171H522"/>'
+        '<g class="sg-wind"><path d="M130 94v110M112 204h36"/><circle cx="130" cy="88" r="7"/>'
+        '<path d="M130 80l-8-52M136 90l48-24M126 94l-38 37"/></g>'
+        '<g class="sg-sun"><circle cx="236" cy="48" r="19"/><path d="M236 15v-9M236 90v-9M203 48h-9M278 48h-9M213 25l-7-7M266 78l-7-7M259 25l7-7M206 78l7-7"/></g>'
+        '<g class="sg-solar"><path d="M196 132h82l16 55h-114zM207 132l-8 55M234 132v55M261 132l8 55M188 158h98M218 187l-8 18M270 187l8 18"/></g>'
+        '<g class="sg-battery"><rect x="304" y="124" width="88" height="96" rx="7"/><path d="M337 111h22v13M326 151h44M326 174h44M326 197h26"/></g>'
+        '<g class="sg-village"><path d="M500 159l46-38 46 38v62h-92zM516 221v-35h24v35M566 221v-29h15v29M612 221v-48h22v48M607 173h32"/></g>'
+        '<text x="92" y="242">Wind</text><text x="205" y="242">Solar</text><text x="310" y="242">Storage</text><text x="512" y="242">Village load</text>'
+        '</svg><figcaption>Hourly renewable generation → storage dispatch → village load</figcaption></figure>',
+        unsafe_allow_html=True,
+    )
+
+
+def resource_strip() -> None:
+    items = (
+        ("7", "villages"),
+        ("8,760", "hourly steps"),
+        ("Wind + solar", "resource models"),
+        ("95% / 99%", "planning targets"),
+    )
+    rendered = "".join(f'<div><strong>{escape(value)}</strong><span>{escape(label)}</span></div>' for value, label in items)
+    st.markdown(f'<div class="sg-resource-strip">{rendered}</div>', unsafe_allow_html=True)
+
+
 def page_header(eyebrow: str, title: str, lead: str, badges: Iterable[tuple[str, str]] = ()) -> None:
     rendered = "".join(f'<span class="sg-badge sg-badge--{escape(tone)}">{escape(label)}</span>' for label, tone in badges)
     badge_row = f'<div class="sg-badges">{rendered}</div>' if rendered else ""
-    st.markdown(
-        f'<header class="sg-hero"><div class="sg-hero__body"><div class="sg-hero__copy">'
-        f'<div class="sg-eyebrow">{escape(eyebrow)}</div><h1>{escape(title)}</h1>'
-        f'<div class="sg-lead">{escape(lead)}</div></div>'
-        '<div class="sg-hero__stamp"><span>Energy planning</span><strong>SG</strong><span>Kazakhstan</span></div>'
-        f'</div>{badge_row}</header>',
-        unsafe_allow_html=True,
-    )
-
-
-def sidebar_brand() -> None:
-    st.markdown(
-        '<div class="sg-brand"><div class="sg-brand__mark">SG</div>'
-        '<div><div class="sg-brand__name">SteppeGrid</div>'
-        '<span class="sg-brand__sub">Microgrid planner</span></div></div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown(f'<header class="sg-pagehead"><div class="sg-eyebrow">{escape(eyebrow)}</div><h1>{escape(title)}</h1><p>{escape(lead)}</p>{badge_row}</header>', unsafe_allow_html=True)
 
 
 def section_header(title: str, description: str = "") -> None:
@@ -100,11 +131,6 @@ def limitations(groups: Mapping[str, Iterable[str]]) -> None:
     for title, items in groups.items():
         with st.expander(title, expanded=False):
             for item in items: st.markdown(f"- {item}")
-
-
-def sidebar_status() -> None:
-    st.markdown('<div class="sg-sidebar-status"><b>RODINA BENCHMARK</b><span>Validated · 95% and 99% results</span></div>', unsafe_allow_html=True)
-    st.markdown('<div class="sg-sidebar-status sg-featured-site"><b>MY VILLAGE</b><span>Shamshi Kaldayakova · 95% result</span></div>', unsafe_allow_html=True)
 
 
 def design_comparison_rows(lower: dict, higher: dict) -> list[dict]:

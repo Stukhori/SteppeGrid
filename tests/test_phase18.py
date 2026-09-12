@@ -1,8 +1,10 @@
 from pathlib import Path
+from streamlit.testing.v1 import AppTest
 from steppegrid.app.data import FrozenDataRepository
 from steppegrid.app.product import FEATURED_SITE_ID, _resource_metrics, latest_result, site_rows, weather_summary
 from steppegrid.app.sites import _map_rows
 from steppegrid.app.services import PlanningService
+from steppegrid.app.state import PAGES, PRIMARY_DESTINATIONS, RESEARCH_PAGES
 from steppegrid.app.theme import COLORS, GLOBAL_CSS
 from steppegrid.sites import SiteRegistry
 
@@ -19,8 +21,8 @@ def test_resource_summaries_reuse_the_frozen_table():
     assert _resource_metrics.cache_info().misses==1
     assert _resource_metrics.cache_info().hits==1
 def test_featured_site_semantics_are_amber_and_textual():
-    assert COLORS["featured_site"]=="#D89D2B"; assert "--sg-featured-site" in GLOBAL_CSS
-    assert "MY VILLAGE" in (ROOT/"app.py").read_text(encoding="utf-8")
+    assert COLORS["featured_site"]=="#DFA52F"; assert "--sg-amber" in GLOBAL_CSS
+    assert "My Village" in (ROOT/"steppegrid/app/sites.py").read_text(encoding="utf-8")
 
 def test_overview_renders_the_interactive_site_map():
     text=(ROOT/"app.py").read_text(encoding="utf-8")
@@ -31,13 +33,13 @@ def test_map_distinguishes_my_village_and_supports_selection():
     rows=_map_rows(SiteRegistry())
     featured=next(row for row in rows if row["site_id"]==FEATURED_SITE_ID)
     others=[row for row in rows if row["site_id"]!=FEATURED_SITE_ID]
-    assert featured["color"]==[216,157,43,235]
-    assert {tuple(row["color"]) for row in others}=={(15,107,92,220)}
+    assert featured["color"]==[223,165,47,235]
+    assert {tuple(row["color"]) for row in others}=={(13,118,100,220)}
     text=(ROOT/"steppegrid/app/sites.py").read_text(encoding="utf-8")
     assert 'on_select="rerun"' in text
     assert 'selection_mode="single-object"' in text
-    assert "zoom=7 if selected else 3.15" in text
-    assert "Choose a site without using the map" in text
+    assert "zoom=7 if is_focused else 3.15" in text
+    assert '"Village"' in text
     assert "Reset Kazakhstan view" in text
     assert '"result_95": site["95% result"]' in text
     assert '"radius": 38_000 if row["site_id"] == selected_id' in text
@@ -47,30 +49,70 @@ def test_overview_actions_and_compact_layout_are_present():
     theme_text=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
     assert 'st.button("Build a village scenario"' in app_text
     assert 'st.button("Compare village results"' in app_text
-    assert "@media(max-width:640px)" in theme_text
+    assert "@media(max-width:600px)" in theme_text
 
-def test_visual_system_includes_hero_focus_and_map_guidance():
+def test_visual_system_includes_schematic_focus_and_map_guidance():
     components=(ROOT/"steppegrid/app/components.py").read_text(encoding="utf-8")
     sites=(ROOT/"steppegrid/app/sites.py").read_text(encoding="utf-8")
     theme=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
-    assert 'class="sg-hero"' in components
-    assert 'class="sg-hero__stamp"' in components
+    assert 'class="sg-overview-intro"' in components
+    assert 'class="sg-schematic"' in components
+    assert 'aria-label="Energy flows from wind and solar generation' in components
     assert 'class="sg-map-legend"' in sites
     assert ":focus-visible" in theme
-    assert ".sg-map-dot--featured { background:#D89D2B; }" in theme
-    assert ".sg-map-dot--site { background:#0F6B5C; }" in theme
+    assert ".sg-map-dot--featured{background:var(--sg-amber)}" in theme
+    assert ".sg-map-dot--site{background:var(--sg-primary)}" in theme
 
-def test_sidebar_navigation_uses_readable_grid_and_tinted_controls():
+def test_horizontal_navigation_replaces_sidebar_and_keeps_routes():
     app_text=(ROOT/"app.py").read_text(encoding="utf-8")
     theme=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
-    assert "explore_col, plan_col = st.columns(2)" in app_text
-    assert "sites_col, compare_col = st.columns(2)" in app_text
-    assert "st.columns(4)" not in app_text[app_text.index("with st.sidebar:"):]
-    assert "white-space:nowrap" in theme
-    assert "background:#F1F0EA" in theme
-    assert "background:#FFFFFF" in theme
-    assert "color:var(--sg-ink)" in theme
-    assert "background:var(--sg-primary)" in theme
+    assert PRIMARY_DESTINATIONS == ("Overview", "Sites", "Plan a System", "Compare", "Research")
+    assert set(RESEARCH_PAGES) == set(PAGES) - {"Overview"}
+    assert "with st.sidebar:" not in app_text
+    assert 'initial_sidebar_state="collapsed"' in app_text
+    assert 'st.segmented_control(' in app_text
+    assert 'button[role="radio"][data-selected="true"]' in theme
+    assert 'button[role="radio"][data-selected="true"] p' in theme
+    assert 'button[role="radio"][data-selected="true"]:hover:not(:disabled)' in theme
+    assert '[data-testid="stButtonGroup"]' in theme
+    assert "color:#FFFFFF!important" in theme
+
+def test_wide_workspace_and_responsive_breakpoints_are_explicit():
+    theme=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
+    assert "width:min(92vw,1560px)" in theme
+    assert "@media(max-width:900px)" in theme
+    assert "@media(max-width:600px)" in theme
+    assert "overflow-x:hidden" in theme
+
+def test_no_heavy_dashboard_dependency_was_added():
+    project=(ROOT/"pyproject.toml").read_text(encoding="utf-8").lower()
+    lock=(ROOT/"uv.lock").read_text(encoding="utf-8").lower()
+    assert "streamlit-elements" not in project
+    assert "streamlit-shadcn-ui" not in project
+    assert 'name = "streamlit-elements"' not in lock
+    assert 'name = "streamlit-shadcn-ui"' not in lock
+
+def _contrast(foreground: str, background: str) -> float:
+    def luminance(color: str) -> float:
+        channels=[int(color[index:index+2],16)/255 for index in (1,3,5)]
+        linear=[value/12.92 if value<=.04045 else ((value+.055)/1.055)**2.4 for value in channels]
+        return .2126*linear[0]+.7152*linear[1]+.0722*linear[2]
+    first,second=luminance(foreground),luminance(background)
+    return (max(first,second)+.05)/(min(first,second)+.05)
+
+def test_core_text_pairs_meet_wcag_aa_contrast():
+    assert _contrast("#FFFFFF","#0D7664")>=4.5
+    assert _contrast("#102D35","#DFA52F")>=4.5
+    assert _contrast("#5B6E73","#F6F2E8")>=4.5
+    assert _contrast("#142A31","#FFFDF8")>=4.5
+
+def test_all_primary_destinations_render_from_horizontal_navigation():
+    app=AppTest.from_file(ROOT/"app.py").run(timeout=90)
+    expected_modes={"Overview":"Explore Benchmark","Sites":"Sites","Plan a System":"Plan a System","Compare":"Compare Sites","Research":"Explore Benchmark"}
+    for destination in PRIMARY_DESTINATIONS:
+        next(control for control in app.segmented_control if control.label=="Primary navigation").set_value(destination).run(timeout=120)
+        assert app.session_state["app_mode"]==expected_modes[destination]
+        assert not app.exception
 
 def test_public_site_and_compare_views_hide_lineage_fields():
     columns=set(site_rows(SiteRegistry())[0])
