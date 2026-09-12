@@ -5,7 +5,7 @@ from streamlit.testing.v1 import AppTest
 
 def test_sites_page_uses_dynamic_registry_and_exposes_onboarding():
     app = AppTest.from_file(Path(__file__).parents[1] / "app.py").run(timeout=90)
-    next(button for button in app.button if button.label == "Sites").click().run(timeout=90)
+    next(control for control in app.segmented_control if control.label == "Primary navigation").set_value("Sites").run(timeout=90)
     assert app.session_state["app_mode"] == "Sites"
     assert not app.exception
     assert any(box.label == "Inspect site" for box in app.selectbox)
@@ -17,9 +17,9 @@ def test_sites_page_uses_dynamic_registry_and_exposes_onboarding():
 
 def test_builtin_site_has_no_delete_action_but_custom_temporary_planning_remains():
     app = AppTest.from_file(Path(__file__).parents[1] / "app.py").run(timeout=90)
-    next(button for button in app.button if button.label == "Sites").click().run(timeout=90)
+    next(control for control in app.segmented_control if control.label == "Primary navigation").set_value("Sites").run(timeout=90)
     assert not any(button.label == "Remove user site" for button in app.button)
-    next(button for button in app.button if button.label == "Plan").click().run(timeout=90)
+    next(control for control in app.segmented_control if control.label == "Primary navigation").set_value("Plan a System").run(timeout=90)
     site = next(box for box in app.selectbox if box.label == "Site preset")
     assert "Custom coordinates" in site.options
     for expected in (

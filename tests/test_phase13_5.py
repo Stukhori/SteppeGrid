@@ -70,22 +70,20 @@ def test_deficit_events_reconcile_to_existing_reliability_outputs():
 
 def test_all_pages_and_primary_interactions_render():
     app = AppTest.from_file(Path(__file__).parents[1] / "app.py").run(timeout=60)
-    for page in PAGES:
-        app.session_state["active_page"] = page
-        app.run(timeout=150)
+    for page in PAGES[1:]:
+        next(control for control in app.segmented_control if control.label == "Primary navigation").set_value("Research").run(timeout=150)
+        next(control for control in app.segmented_control if control.label == "Research page").set_value(page).run(timeout=150)
         assert not app.exception, (page, [item.value for item in app.exception])
         assert not app.error, (page, [item.value for item in app.error])
 
-    app.session_state["active_page"] = "System Design"
-    app.run(timeout=150)
-    app.segmented_control[0].set_value("99% annual served-energy target").run(timeout=150)
+    next(control for control in app.segmented_control if control.label == "Research page").set_value("System Design").run(timeout=150)
+    next(control for control in app.segmented_control if control.label == "Reliability target").set_value("99% annual served-energy target").run(timeout=150)
     app.selectbox[0].set_value("Flat within month").run(timeout=150)
-    assert app.segmented_control[0].value == "99% annual served-energy target"
+    assert next(control for control in app.segmented_control if control.label == "Reliability target").value == "99% annual served-energy target"
     assert app.selectbox[0].value == "Flat within month"
 
-    app.session_state["active_page"] = "Sensitivity"
-    app.run(timeout=60)
-    app.segmented_control[0].set_value("99% annual served-energy target").run(timeout=60)
+    next(control for control in app.segmented_control if control.label == "Research page").set_value("Sensitivity").run(timeout=60)
+    next(control for control in app.segmented_control if control.label == "Reliability target").set_value("99% annual served-energy target").run(timeout=60)
     app.selectbox[0].set_value("Resource Stress").run(timeout=60)
     assert app.selectbox[0].value == "resource_stress"
     assert not app.exception

@@ -12,22 +12,23 @@ from steppegrid.app.charts import (
     sensitivity_chart, wind_comparison,
 )
 from steppegrid.app.components import (
-    GLOSSARY, audit_status, callout, comparison_table, design_card,
+    app_header, audit_status, callout, comparison_table, design_card,
     design_comparison_rows, energy_flow, equipment_card, limitations, metric,
-    page_header, section_header, sidebar_brand, sidebar_status, site_status, workflow,
+    microgrid_schematic, overview_intro, page_header, resource_strip, section_header,
+    site_status, workflow,
 )
 from steppegrid.app.data import AppDataError
 from steppegrid.app.formatting import RECONSTRUCTION_NOTICE, SCENARIO_NOTICE, energy, money, percent, power, readable
 from steppegrid.app.services import PlanningService
 from steppegrid.app.planner import render_planner
 from steppegrid.app.sites import render_compare_sites, render_site_map, render_sites
-from steppegrid.app.product import FEATURED_SITE_ID, latest_result, phase17_findings, site_rows, weather_summary
-from steppegrid.app.state import NAVIGATION, PROFILE_LABELS, SHAMSHI_STATUS, TARGET_LABELS
+from steppegrid.app.product import FEATURED_SITE_ID, latest_result, phase17_findings
+from steppegrid.app.state import PRIMARY_DESTINATIONS, PROFILE_LABELS, RESEARCH_PAGES, TARGET_LABELS
 from steppegrid.app.theme import COLORS, apply_theme
 from steppegrid.planning.service import ScenarioPlanningService
 from steppegrid.sites import SiteRegistry
 
-st.set_page_config(page_title="SteppeGrid | Rural Kazakhstan Microgrid Planning", page_icon="⚡", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="SteppeGrid | Rural Kazakhstan Microgrid Planning", page_icon="⚡", layout="wide", initial_sidebar_state="collapsed")
 apply_theme()
 
 
@@ -94,57 +95,43 @@ def rodina_overview(api: PlanningService) -> None:
 
 def overview(api: PlanningService) -> None:
     registry = site_registry()
-    sites = registry.list_sites()
-    page_header(
-        "Decision support · Rural Kazakhstan",
-        "Plan a resilient village microgrid",
-        "Explore how local demand and weather shape wind, solar, storage, reliability, and lifetime cost.",
-        [("7 villages", "success"), ("8,760 hourly steps", "info"), ("95% / 99% targets", "warning")],
-    )
-    section_header("Start an analysis", "Choose a planning task, or select a village on the map below.")
-    plan_action, compare_action = st.columns(2)
-    with plan_action:
-        if st.button("Build a village scenario", type="primary", key="overview_plan_action", width="stretch"):
-            st.session_state.app_mode = "Plan a System"
-            st.rerun()
-    with compare_action:
-        if st.button("Compare village results", key="overview_compare_action", width="stretch"):
-            st.session_state.app_mode = "Compare Sites"
-            st.rerun()
-    workflow(("Choose a site", "Review hourly inputs", "Size the system", "Compare trade-offs"))
+    hero_copy, hero_visual = st.columns([1.05, .95], gap="large", vertical_alignment="center")
+    with hero_copy:
+        overview_intro()
+        plan_action, compare_action = st.columns(2)
+        with plan_action:
+            if st.button("Build a village scenario", type="primary", key="overview_plan_action", width="stretch"):
+                st.session_state["_pending_primary_destination"] = "Plan a System"
+                st.rerun()
+        with compare_action:
+            if st.button("Compare village results", key="overview_compare_action", width="stretch"):
+                st.session_state["_pending_primary_destination"] = "Compare"
+                st.rerun()
+    with hero_visual:
+        microgrid_schematic()
+    resource_strip()
     render_site_map(registry, key="overview_site_map")
-    shamshi = registry.get_site(FEATURED_SITE_ID)
-    demand = shamshi.demand_datasets[0].annual_energy_kwh
-    resource = weather_summary(shamshi)
     result = latest_result(FEATURED_SITE_ID, .95)
-    st.markdown('<div class="sg-site-detail sg-featured-site"><span class="sg-featured-badge">MY VILLAGE</span><h2>Shamshi Kaldayakova</h2><p>Aktobe Region</p></div>', unsafe_allow_html=True)
-    a,b,c,d = st.columns(4)
-    with a: metric("Annual demand", energy(demand))
-    with b: metric("Modeled wind capacity factor", percent(resource["wind_capacity_factor"], 2))
-    with c: metric("Modeled PV yield", f"{resource['pv_specific_yield_kwh_per_kwp']:,.0f} kWh/kWp")
-    with d: metric("Planning targets", "95% and 99% available")
+    section_header("Planning snapshot", "Saved results and cross-village context from the existing validated artifacts.")
+    system_panel, insight_panel = st.columns([1.65, 1], gap="large")
     if result:
         design, performance, economics_data = result["design"], result["metrics"], result["economics"]
-        section_header("My Village selected system", "Latest saved 95% annual energy served planning result.")
-        w,s,b,e = st.columns(4)
-        with w: metric("Wind", power(design["wind_capacity_kw"]))
-        with s: metric("Solar", f"{power(design['pv_dc_capacity_kw'])} DC")
-        with b: metric("Storage", energy(design["battery_usable_capacity_kwh"]))
-        with e: metric("NPC", money(economics_data["net_present_cost_usd"]))
-        callout("Annual performance", f"This system supplies {percent(performance['served_fraction'], 2)} of modeled annual electricity demand. The longest continuous modeled deficit lasts {performance['longest_deficit_hours']} hours.")
-        higher = latest_result(FEATURED_SITE_ID, .99)
-        if higher:
-            hd, hm, he = higher["design"], higher["metrics"], higher["economics"]
-            callout("99% planning result", f"{power(hd['wind_capacity_kw'])} wind · {power(hd['pv_ac_capacity_kw'])} solar AC · {energy(hd['battery_usable_capacity_kwh'])} storage · {percent(hm['served_fraction'], 2)} annual energy served · {money(he['net_present_cost_usd'])} NPC")
-    section_header("All seven villages", "Open Sites for detailed records or Compare for normalized results.")
-    st.dataframe(pd.DataFrame(site_rows(registry))[["Site","Region","Annual demand (GWh/year)","95% result","99% result"]], hide_index=True, width="stretch")
+        with system_panel:
+            st.markdown('<div class="sg-panel-kicker">My Village · saved 95% system</div>', unsafe_allow_html=True)
+            w,s,b,e = st.columns(4)
+            with w: metric("Wind", power(design["wind_capacity_kw"]))
+            with s: metric("Solar", f"{power(design['pv_dc_capacity_kw'])} DC")
+            with b: metric("Storage", energy(design["battery_usable_capacity_kwh"]))
+            with e: metric("NPC", money(economics_data["net_present_cost_usd"]))
+            callout("Reliability-cost snapshot", f"The saved design supplies {percent(performance['served_fraction'], 2)} of modeled annual demand. Its longest continuous modeled deficit is {performance['longest_deficit_hours']} hours.")
     findings = phase17_findings()
-    section_header("Cross-village findings", "Standardized findings within the five-site common-demand-method cohort.")
-    a,b,c,d = st.columns(4)
-    with a: metric("Highest solar yield", findings["highest_solar"])
-    with b: metric("Highest wind resource", findings["highest_wind"])
-    with c: metric("Lowest normalized 95% NPC", findings["lowest_normalized_npc"])
-    with d: metric("Largest 95%→99% NPC increase", findings["largest_escalation"])
+    with insight_panel:
+        st.markdown('<div class="sg-panel-kicker">Cross-village finding</div>', unsafe_allow_html=True)
+        callout("Resource leaders", f"{findings['highest_solar']} has the highest solar yield; {findings['highest_wind']} has the highest representative wind resource in the common-method cohort.")
+        st.markdown(f'<div class="sg-compact-stat"><span>Lowest normalized 95% NPC</span><strong>{findings["lowest_normalized_npc"]}</strong></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="sg-compact-stat"><span>Largest 95%→99% NPC increase</span><strong>{findings["largest_escalation"]}</strong></div>', unsafe_allow_html=True)
+    section_header("How planning works", "A compact path from village inputs to comparable planning evidence.")
+    workflow(("Choose a site", "Review hourly inputs", "Size the system", "Compare trade-offs"))
 
 
 def demand_weather(api: PlanningService) -> None:
@@ -379,59 +366,57 @@ ROUTES = {
 
 if "active_page" not in st.session_state:
     st.session_state.active_page = "Overview"
+elif st.session_state.active_page not in ROUTES:
+    st.session_state.active_page = "Overview"
 if "app_mode" not in st.session_state:
     st.session_state.app_mode = "Explore Benchmark"
-with st.sidebar:
-    sidebar_brand()
-    st.markdown('<div class="sg-mode-label">Workspace</div>', unsafe_allow_html=True)
-    explore_col, plan_col = st.columns(2)
-    with explore_col:
-        if st.button("Explore", type="primary" if st.session_state.app_mode == "Explore Benchmark" else "tertiary", width="stretch"):
-            st.session_state.app_mode = "Explore Benchmark"
-            st.rerun()
-    with plan_col:
-        if st.button("Plan", type="primary" if st.session_state.app_mode == "Plan a System" else "tertiary", width="stretch"):
-            st.session_state.app_mode = "Plan a System"
-            st.rerun()
-    sites_col, compare_col = st.columns(2)
-    with sites_col:
-        if st.button("Sites", type="primary" if st.session_state.app_mode == "Sites" else "tertiary", width="stretch"):
-            st.session_state.app_mode = "Sites"
-            st.rerun()
-    with compare_col:
-        if st.button("Compare", type="primary" if st.session_state.app_mode == "Compare Sites" else "tertiary", width="stretch"):
-            st.session_state.app_mode = "Compare Sites"
-            st.rerun()
-    if st.session_state.app_mode == "Explore Benchmark":
-        st.caption("EXPLORE BENCHMARK · RODINA")
-        for group, pages in NAVIGATION.items():
-            st.markdown(f'<div class="sg-nav-group">{group}</div>', unsafe_allow_html=True)
-            for name in pages:
-                public_name = "How SteppeGrid Works" if name == "Methodology & Provenance" else name
-                if st.button(public_name, key=f"nav_{name}", type="primary" if st.session_state.active_page == name else "tertiary", width="stretch"):
-                    st.session_state.active_page = name
-                    st.rerun()
-        st.divider()
-        sidebar_status()
-    elif st.session_state.app_mode == "Plan a System":
-        st.caption("PLAN A SYSTEM · USER SCENARIO")
-        st.info("Demand is always explicit. User scenarios are isolated from frozen benchmark outputs.")
-    elif st.session_state.app_mode == "Sites":
-        st.caption("SITES · KAZAKHSTAN")
-        st.info("Browse the seven production villages and their registered planning values.")
-    else:
-        st.caption("COMPARE SITES")
-        st.info("Compare saved planning results using normalized metrics.")
+pending_destination = st.session_state.pop("_pending_primary_destination", None)
+if st.session_state.get("primary_navigation") not in PRIMARY_DESTINATIONS:
+    st.session_state.primary_navigation = "Overview"
+if pending_destination in PRIMARY_DESTINATIONS:
+    st.session_state.primary_navigation = pending_destination
+app_header()
+primary_destination = st.segmented_control(
+    "Primary navigation",
+    PRIMARY_DESTINATIONS,
+    key="primary_navigation",
+    label_visibility="collapsed",
+)
+if primary_destination is None:
+    primary_destination = "Overview"
+if primary_destination == "Research":
+    current_research_page = st.session_state.active_page if st.session_state.active_page in RESEARCH_PAGES else RESEARCH_PAGES[0]
+    if st.session_state.get("research_navigation") not in RESEARCH_PAGES:
+        st.session_state.research_navigation = current_research_page
+    research_page = st.segmented_control(
+        "Research page",
+        RESEARCH_PAGES,
+        key="research_navigation",
+        format_func=lambda page: "How SteppeGrid Works" if page == "Methodology & Provenance" else page,
+        label_visibility="collapsed",
+    )
+    st.session_state.active_page = research_page or RESEARCH_PAGES[0]
+
+MODE_BY_DESTINATION = {
+    "Overview": "Explore Benchmark",
+    "Sites": "Sites",
+    "Plan a System": "Plan a System",
+    "Compare": "Compare Sites",
+    "Research": "Explore Benchmark",
+}
+st.session_state.app_mode = MODE_BY_DESTINATION[primary_destination]
 
 try:
-    if st.session_state.app_mode == "Plan a System":
+    if primary_destination == "Plan a System":
         render_planner(scenario_service(), site_registry())
-    elif st.session_state.app_mode == "Sites":
+    elif primary_destination == "Sites":
         render_sites(site_registry())
-    elif st.session_state.app_mode == "Compare Sites":
+    elif primary_destination == "Compare":
         render_compare_sites(site_registry())
-    else:
+    elif primary_destination == "Research":
         ROUTES[st.session_state.active_page](service())
+    else:
+        overview(service())
 except AppDataError as error:
     st.error(str(error))
     st.code("python scripts/run_phase12.py --mode verify", language="powershell")

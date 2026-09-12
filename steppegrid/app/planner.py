@@ -59,6 +59,10 @@ def _build_inputs(registry: SiteRegistry) -> tuple[PlanningScenario | None, obje
         for site in sites
     }
     options["Custom coordinates"] = None
+    pending_site_id = st.session_state.pop("_pending_planner_site_id", None)
+    pending_label = next((label for label, site_id in options.items() if site_id == pending_site_id), None)
+    if pending_label is not None:
+        st.session_state["planner_site"] = pending_label
     site_label = st.selectbox("Site preset", list(options), key="planner_site")
     selected_site_id = options[site_label]
     registered_site = registry.get_site(selected_site_id) if selected_site_id else None

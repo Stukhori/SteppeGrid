@@ -61,7 +61,7 @@ def test_shamshi_explicit_estimate_executes_and_stays_isolated(monkeypatch, tmp_
 
 def test_plan_mode_renders_review_without_running_optimizer():
     app = AppTest.from_file(Path(__file__).parents[1] / "app.py").run(timeout=90)
-    next(button for button in app.button if button.label == "Plan").click().run(timeout=90)
+    next(control for control in app.segmented_control if control.label == "Primary navigation").set_value("Plan a System").run(timeout=90)
     assert app.session_state["app_mode"] == "Plan a System"
     assert not app.exception
     assert {selectbox.label for selectbox in app.selectbox} >= {
@@ -73,7 +73,7 @@ def test_plan_mode_renders_review_without_running_optimizer():
 
 def test_shamshi_ui_rejects_missing_estimate_then_reaches_review():
     app = AppTest.from_file(Path(__file__).parents[1] / "app.py").run(timeout=90)
-    next(button for button in app.button if button.label == "Plan").click().run(timeout=90)
+    next(control for control in app.segmented_control if control.label == "Primary navigation").set_value("Plan a System").run(timeout=90)
     next(box for box in app.selectbox if box.label == "Site preset").set_value("Shamshi Kaldayakova").run(timeout=90)
     assert app.warning
     assert not any(button.label == "Run Planner" for button in app.button)

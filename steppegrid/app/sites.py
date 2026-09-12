@@ -1,5 +1,6 @@
 """Production views for the seven SteppeGrid settlements."""
 from __future__ import annotations
+from html import escape
 import pandas as pd
 import streamlit as st
 import altair as alt
@@ -35,31 +36,50 @@ def _map_rows(registry: SiteRegistry) -> list[dict]:
             "result_95": site["95% result"],
             "result_99": site["99% result"],
             "identity": FEATURED_SITE_LABEL if featured else "SteppeGrid site",
-            "color": [216, 157, 43, 235] if featured else [15, 107, 92, 220],
+            "color": [223, 165, 47, 235] if featured else [13, 118, 100, 220],
         })
     return rows
 
 def render_site_map(registry: SiteRegistry, *, key: str = "site_map") -> None:
-    """Render the shared selectable map of registered Kazakhstan sites."""
+    """Render a map-led, keyboard-accessible village planning workspace."""
     rows = _map_rows(registry)
     selected_key = f"{key}_selected_site"
-    selected_id = st.session_state.get(selected_key)
-    selected = next((row for row in rows if row["site_id"] == selected_id), None)
-    keyboard_choice = st.selectbox(
-        "Choose a site without using the map",
-        [None, *[row["site_id"] for row in rows]],
-        index=None,
-        format_func=lambda site_id: "Select a site" if site_id is None else next(row["name"] for row in rows if row["site_id"] == site_id),
-        key=f"{key}_keyboard_choice",
-    )
-    if keyboard_choice and keyboard_choice != selected_id:
+    selector_key = f"{key}_keyboard_choice"
+    pending_key = f"{key}_pending_selection"
+    options = [row["site_id"] for row in rows]
+    pending_selection = st.session_state.pop(pending_key, None)
+    if pending_selection in options:
+        st.session_state[selected_key] = pending_selection
+        st.session_state[selector_key] = pending_selection
+    is_focused = selected_key in st.session_state
+    selected_id = st.session_state.get(selected_key, FEATURED_SITE_ID)
+    if selected_id not in options:
+        selected_id = FEATURED_SITE_ID
+        st.session_state.pop(selected_key, None)
+        is_focused = False
+    if selector_key not in st.session_state or st.session_state[selector_key] not in options:
+        st.session_state[selector_key] = selected_id
+    section_header("Village planning map", "Select a marker or use the village field to inspect demand, resource data, and saved results.")
+    map_column, summary_column = st.columns([2.15, 1], gap="large")
+    with summary_column:
+        keyboard_choice = st.selectbox(
+            "Village",
+            options,
+            format_func=lambda site_id: next(row["name"] for row in rows if row["site_id"] == site_id),
+            key=selector_key,
+            help="Keyboard-accessible alternative to selecting a map marker.",
+        )
+    if keyboard_choice != selected_id:
         selected_id = keyboard_choice
         st.session_state[selected_key] = selected_id
-        selected = next(row for row in rows if row["site_id"] == selected_id)
+        is_focused = True
+    selected = next(row for row in rows if row["site_id"] == selected_id)
+    selected_site = registry.get_site(selected_id)
+    resource = weather_summary(selected_site)
     view = pdk.ViewState(
-        latitude=selected["latitude"] if selected else 48.0,
-        longitude=selected["longitude"] if selected else 67.0,
-        zoom=7 if selected else 3.15,
+        latitude=selected["latitude"] if is_focused else 48.0,
+        longitude=selected["longitude"] if is_focused else 67.0,
+        zoom=7 if is_focused else 3.15,
         pitch=0,
     )
     deck_rows = [
@@ -85,42 +105,62 @@ def render_site_map(registry: SiteRegistry, *, key: str = "site_map") -> None:
         get_line_color="line_color",
         line_width_min_pixels=2,
     )
-    section_header("Choose a village", "Select a marker to inspect its demand, resource data, and saved planning results.")
-    event = st.pydeck_chart(
-        pdk.Deck(
-            layers=[layer],
-            initial_view_state=view,
-            map_style=None,
-            tooltip={"html": "<b>{name}</b><br>{region}<br>{identity}<br>Demand: {annual_demand}<br>Weather: {weather}<br>95% result: {result_95}<br>99% result: {result_99}"},
-        ),
-        on_select="rerun",
-        selection_mode="single-object",
-        key=key,
-        height=480,
-    )
-    objects = event.selection.get("objects", {}).get(f"{key}-sites", [])
-    if objects and objects[0]["site_id"] != selected_id:
-        st.session_state[selected_key] = objects[0]["site_id"]
-        st.rerun()
-    if selected:
-        if st.button("Reset Kazakhstan view", key=f"{key}_reset"):
+    with map_column:
+        event = st.pydeck_chart(
+            pdk.Deck(
+                layers=[layer],
+                initial_view_state=view,
+                map_style=None,
+                tooltip={"html": "<b>{name}</b><br>{region}<br>{identity}<br>Demand: {annual_demand}<br>Weather: {weather}<br>95% result: {result_95}<br>99% result: {result_99}"},
+            ),
+            on_select="rerun",
+            selection_mode="single-object",
+            key=key,
+            height=500,
+        )
+        st.markdown(
+            '<div class="sg-map-legend" aria-label="Map legend">'
+            '<span><i class="sg-map-dot sg-map-dot--featured"></i>My Village</span>'
+            '<span><i class="sg-map-dot sg-map-dot--site"></i>Registered site</span>'
+            '<span class="sg-map-hint">Hover for details · select to zoom</span></div>',
+            unsafe_allow_html=True,
+        )
+        if is_focused and st.button("Reset Kazakhstan view", key=f"{key}_reset"):
             st.session_state.pop(selected_key, None)
             st.rerun()
-        with st.container(border=True):
-            st.markdown(f"#### {selected['name']}")
-            st.write(f"{selected['region']} · {selected['identity']}")
-            a, b = st.columns(2)
-            with a: metric("Annual demand", selected["annual_demand"])
-            with b: metric("Weather data", selected["weather"])
-            st.write(f"Saved planning results: 95% target — {selected['result_95']} · 99% target — {selected['result_99']}")
-            st.caption(f"Coordinates: {selected['latitude']:.4f}° N, {selected['longitude']:.4f}° E")
-    st.markdown(
-        '<div class="sg-map-legend" aria-label="Map legend">'
-        '<span><i class="sg-map-dot sg-map-dot--featured"></i>My Village · Shamshi Kaldayakova</span>'
-        '<span><i class="sg-map-dot sg-map-dot--site"></i>Other SteppeGrid sites</span>'
-        '<span class="sg-map-hint">Hover for details · select to zoom</span></div>',
-        unsafe_allow_html=True,
-    )
+    objects = event.selection.get("objects", {}).get(f"{key}-sites", [])
+    if objects and (objects[0]["site_id"] != selected_id or not is_focused):
+        st.session_state[pending_key] = objects[0]["site_id"]
+        st.rerun()
+    with summary_column:
+        badge = '<span class="sg-village-badge">My Village</span>' if selected_id == FEATURED_SITE_ID else '<span class="sg-village-badge sg-village-badge--site">Registered site</span>'
+        st.markdown(
+            f'<div class="sg-village-summary">{badge}<h3>{escape(selected["name"])}</h3>'
+            f'<p>{escape(selected["region"])}</p><small>{selected["latitude"]:.4f}° N · {selected["longitude"]:.4f}° E</small></div>',
+            unsafe_allow_html=True,
+        )
+        demand_col, wind_col = st.columns(2)
+        with demand_col: metric("Annual demand", selected["annual_demand"])
+        with wind_col: metric("Wind CF", percent(resource["wind_capacity_factor"], 2))
+        pv_col, weather_col = st.columns(2)
+        with pv_col: metric("PV yield", f'{resource["pv_specific_yield_kwh_per_kwp"]:,.0f} kWh/kWp')
+        with weather_col: metric("Weather", selected["weather"])
+        st.markdown(
+            f'<div class="sg-result-row"><span>95% result <b>{escape(selected["result_95"])}</b></span>'
+            f'<span>99% result <b>{escape(selected["result_99"])}</b></span></div>',
+            unsafe_allow_html=True,
+        )
+        inspect_col, plan_col = st.columns(2)
+        with inspect_col:
+            if st.button("Inspect site", key=f"{key}_inspect", width="stretch"):
+                st.session_state["_pending_inspect_site_id"] = selected_id
+                st.session_state["_pending_primary_destination"] = "Sites"
+                st.rerun()
+        with plan_col:
+            if st.button("Plan for site", type="primary", key=f"{key}_plan", width="stretch"):
+                st.session_state["_pending_planner_site_id"] = selected_id
+                st.session_state["_pending_primary_destination"] = "Plan a System"
+                st.rerun()
 
 def render_sites(registry: SiteRegistry) -> None:
     page_header("Explore Kazakhstan", "Sites", "Seven rural settlements with registered demand and cached hourly weather.", [("7 VILLAGES", "success"), ("8,760 HOURS", "info")])
@@ -134,7 +174,10 @@ def render_sites(registry: SiteRegistry) -> None:
     st.dataframe(pd.DataFrame(rows).drop(columns=["site_id", "lat", "lon", "featured_site"]), hide_index=True, width="stretch")
     render_site_map(registry, key="sites_page_map")
     ids = [r["site_id"] for r in rows]
-    selected_id = st.selectbox("Inspect site", ids, index=ids.index(FEATURED_SITE_ID), format_func=lambda value: registry.get_site(value).name)
+    pending_inspect = st.session_state.pop("_pending_inspect_site_id", None)
+    if pending_inspect in ids:
+        st.session_state["site_inspector"] = pending_inspect
+    selected_id = st.selectbox("Inspect site", ids, index=ids.index(FEATURED_SITE_ID), format_func=lambda value: registry.get_site(value).name, key="site_inspector")
     site = registry.get_site(selected_id)
     st.download_button("Export site JSON", registry.export_site(selected_id), file_name=f"{selected_id}.site.json", mime="application/json")
     css = " sg-featured-site" if selected_id == FEATURED_SITE_ID else ""

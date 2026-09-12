@@ -18,6 +18,17 @@ NAVIGATION = {
     "Research": ("Methodology & Provenance",),
 }
 
+PRIMARY_DESTINATIONS = ("Overview", "Sites", "Plan a System", "Compare", "Research")
+RESEARCH_PAGES = (
+    "Demand & Weather",
+    "Renewable Generation",
+    "System Design",
+    "Reliability",
+    "Economics",
+    "Sensitivity",
+    "Methodology & Provenance",
+)
+
 TARGET_LABELS = {"95% annual served-energy target": 0.95, "99% annual served-energy target": 0.99}
 PROFILE_LABELS = {
     "Residential-like": "residential_like",
