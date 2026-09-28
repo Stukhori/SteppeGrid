@@ -33,10 +33,10 @@ def test_semantic_palette_and_glossary_cover_core_concepts():
 def test_design_comparison_is_calculated_from_frozen_values():
     service = PlanningService()
     rows = {row["Measure"]: row for row in design_comparison_rows(service.design(0.95), service.design(0.99))}
-    assert rows["Мощность ветра"] == {"Measure": "Мощность ветра", "95%": "2.04 MW", "99%": "4.98 MW", "Change": "+143.5%"}
-    assert rows["Чистая приведённая стоимость"]["95%"] == "$49.38M"
-    assert rows["Чистая приведённая стоимость"]["99%"] == "$105.79M"
-    assert rows["Часы потери нагрузки"]["Change"] == "-79.5%"
+    assert rows["Wind capacity"] == {"Measure": "Wind capacity", "95%": "2.04 MW", "99%": "4.98 MW", "Change": "+143.5%"}
+    assert rows["Net present cost"]["95%"] == "$49.38M"
+    assert rows["Net present cost"]["99%"] == "$105.79M"
+    assert rows["Loss-of-load hours"]["Change"] == "-79.5%"
 
 
 def test_dispatch_date_filters_and_presets_are_data_driven():
@@ -73,19 +73,19 @@ def test_deficit_events_reconcile_to_existing_reliability_outputs():
 def test_all_pages_and_primary_interactions_render():
     app = AppTest.from_file(Path(__file__).parents[1] / "app.py").run(timeout=60)
     for page in PAGES[1:]:
-        next(control for control in app.segmented_control if control.label == translate("Primary navigation", "ru")).set_value("Research").run(timeout=150)
-        next(control for control in app.segmented_control if control.label == translate("Research page", "ru")).set_value(page).run(timeout=150)
+        next(control for control in app.segmented_control if control.label == translate("Primary navigation", "en")).set_value("Research").run(timeout=150)
+        next(control for control in app.segmented_control if control.label == translate("Research page", "en")).set_value(page).run(timeout=150)
         assert not app.exception, (page, [item.value for item in app.exception])
         assert not app.error, (page, [item.value for item in app.error])
 
-    next(control for control in app.segmented_control if control.label == translate("Research page", "ru")).set_value("System Design").run(timeout=150)
-    next(control for control in app.segmented_control if control.label == "Цель надёжности").set_value("99% annual served-energy target").run(timeout=150)
-    app.selectbox[0].set_value("Равномерно внутри месяца").run(timeout=150)
-    assert next(control for control in app.segmented_control if control.label == "Цель надёжности").value == "99% annual served-energy target"
+    next(control for control in app.segmented_control if control.label == translate("Research page", "en")).set_value("System Design").run(timeout=150)
+    next(control for control in app.segmented_control if control.label == "Reliability target").set_value("99% annual served-energy target").run(timeout=150)
+    app.selectbox[0].set_value("Flat within month").run(timeout=150)
+    assert next(control for control in app.segmented_control if control.label == "Reliability target").value == "99% annual served-energy target"
     assert app.selectbox[0].value == "Flat within month"
 
-    next(control for control in app.segmented_control if control.label == translate("Research page", "ru")).set_value("Sensitivity").run(timeout=60)
-    next(control for control in app.segmented_control if control.label == "Цель надёжности").set_value("99% annual served-energy target").run(timeout=60)
+    next(control for control in app.segmented_control if control.label == translate("Research page", "en")).set_value("Sensitivity").run(timeout=60)
+    next(control for control in app.segmented_control if control.label == "Reliability target").set_value("99% annual served-energy target").run(timeout=60)
     app.selectbox[0].set_value("Resource Stress").run(timeout=60)
     assert app.selectbox[0].value == "resource_stress"
     assert not app.exception

@@ -60,7 +60,8 @@ def test_visual_system_includes_schematic_focus_and_map_guidance():
     theme=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
     assert 'class="sg-overview-intro"' in components
     assert 'class="sg-schematic"' in components
-    assert 'aria = loc("Потоки энергии от ветра и солнца' in components
+    from steppegrid.app.english_catalog import ENGLISH_INLINE
+    assert any(value.startswith("Energy flows from wind and solar generation") for value in ENGLISH_INLINE.values())
     assert 'class="sg-map-legend"' in sites
     assert ":focus-visible" in theme
     assert ".sg-map-dot--featured{background:var(--sg-amber)}" in theme
@@ -113,7 +114,7 @@ def test_all_primary_destinations_render_from_horizontal_navigation():
     app=AppTest.from_file(ROOT/"app.py").run(timeout=90)
     expected_modes={"Overview":"Explore Benchmark","Sites":"Sites","Plan a System":"Plan a System","Compare":"Compare Sites","Research":"Explore Benchmark"}
     for destination in PRIMARY_DESTINATIONS:
-        next(control for control in app.segmented_control if control.label==translate("Primary navigation", "ru")).set_value(destination).run(timeout=120)
+        next(control for control in app.segmented_control if control.label==translate("Primary navigation", "en")).set_value(destination).run(timeout=120)
         assert app.session_state["app_mode"]==expected_modes[destination]
         assert not app.exception
 

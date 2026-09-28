@@ -7,33 +7,35 @@ from typing import Final
 
 import streamlit as st
 
-DEFAULT_LANGUAGE: Final = "ru"
+from steppegrid.app.english_catalog import ENGLISH_INLINE
+
+DEFAULT_LANGUAGE: Final = "en"
 LANGUAGE_STATE_KEY: Final = "interface_language"
-LANGUAGE_LABELS: Final = {"ru": "Русский", "kk": "Қазақша"}
+LANGUAGE_LABELS: Final = {"en": "English", "ru": "Русский", "kk": "Қазақша"}
 
 TRANSLATIONS: dict[str, dict[str, str]] = {
-    "language": {"ru": "Язык", "kk": "Тіл"},
-    "Explore": {"ru": "Обзор", "kk": "Шолу"},
-    "Sites": {"ru": "Сёла", "kk": "Ауылдар"},
-    "Compare": {"ru": "Сравнение", "kk": "Салыстыру"},
-    "Plan": {"ru": "Планирование", "kk": "Жоспарлау"},
-    "Overview": {"ru": "Обзор", "kk": "Шолу"},
-    "Demand & Weather": {"ru": "Спрос и погода", "kk": "Сұраныс пен ауа райы"},
-    "Renewable Generation": {"ru": "Возобновляемая генерация", "kk": "Жаңартылатын генерация"},
-    "System Design": {"ru": "Конфигурация системы", "kk": "Жүйе конфигурациясы"},
-    "Reliability": {"ru": "Надёжность", "kk": "Сенімділік"},
-    "Economics": {"ru": "Экономика", "kk": "Экономика"},
-    "Sensitivity": {"ru": "Чувствительность", "kk": "Сезімталдық"},
-    "How SteppeGrid Works": {"ru": "Как работает SteppeGrid", "kk": "SteppeGrid қалай жұмыс істейді"},
-    "Research pages": {"ru": "Исследовательские разделы", "kk": "Зерттеу бөлімдері"},
-    "Plan a System": {"ru": "Спроектировать систему", "kk": "Жүйені жобалау"},
-    "Research": {"ru": "Исследование", "kk": "Зерттеу"},
-    "Primary navigation": {"ru": "Основная навигация", "kk": "Негізгі навигация"},
-    "Research page": {"ru": "Раздел исследования", "kk": "Зерттеу бөлімі"},
-    "Methodology & Provenance": {"ru": "Методология и происхождение данных", "kk": "Әдіснама және деректердің шығу тегі"},
-    "Village microgrid planning": {"ru": "Планирование сельских микросетей", "kk": "Ауылдық микрожелілерді жоспарлау"},
-    "Kazakhstan": {"ru": "Казахстан", "kk": "Қазақстан"},
-    "Project methods": {"ru": "Методы проекта ↗", "kk": "Жоба әдістері ↗"},
+    "language": {"en": "Language", "ru": "Язык", "kk": "Тіл"},
+    "Explore": {"en": "Explore", "ru": "Обзор", "kk": "Шолу"},
+    "Sites": {"en": "Sites", "ru": "Сёла", "kk": "Ауылдар"},
+    "Compare": {"en": "Compare", "ru": "Сравнение", "kk": "Салыстыру"},
+    "Plan": {"en": "Plan", "ru": "Планирование", "kk": "Жоспарлау"},
+    "Overview": {"en": "Overview", "ru": "Обзор", "kk": "Шолу"},
+    "Demand & Weather": {"en": "Demand & Weather", "ru": "Спрос и погода", "kk": "Сұраныс пен ауа райы"},
+    "Renewable Generation": {"en": "Renewable Generation", "ru": "Возобновляемая генерация", "kk": "Жаңартылатын генерация"},
+    "System Design": {"en": "System Design", "ru": "Конфигурация системы", "kk": "Жүйе конфигурациясы"},
+    "Reliability": {"en": "Reliability", "ru": "Надёжность", "kk": "Сенімділік"},
+    "Economics": {"en": "Economics", "ru": "Экономика", "kk": "Экономика"},
+    "Sensitivity": {"en": "Sensitivity", "ru": "Чувствительность", "kk": "Сезімталдық"},
+    "How SteppeGrid Works": {"en": "How SteppeGrid Works", "ru": "Как работает SteppeGrid", "kk": "SteppeGrid қалай жұмыс істейді"},
+    "Research pages": {"en": "Research pages", "ru": "Исследовательские разделы", "kk": "Зерттеу бөлімдері"},
+    "Plan a System": {"en": "Plan a System", "ru": "Спроектировать систему", "kk": "Жүйені жобалау"},
+    "Research": {"en": "Research", "ru": "Исследование", "kk": "Зерттеу"},
+    "Primary navigation": {"en": "Primary navigation", "ru": "Основная навигация", "kk": "Негізгі навигация"},
+    "Research page": {"en": "Research page", "ru": "Раздел исследования", "kk": "Зерттеу бөлімі"},
+    "Methodology & Provenance": {"en": "Methodology & Provenance", "ru": "Методология и происхождение данных", "kk": "Әдіснама және деректердің шығу тегі"},
+    "Village microgrid planning": {"en": "Village microgrid planning", "ru": "Планирование сельских микросетей", "kk": "Ауылдық микрожелілерді жоспарлау"},
+    "Kazakhstan": {"en": "Kazakhstan", "ru": "Казахстан", "kk": "Қазақстан"},
+    "Project methods": {"en": "Project methods ↗", "ru": "Методы проекта ↗", "kk": "Жоба әдістері ↗"},
 }
 
 
@@ -63,15 +65,22 @@ def tr(key: str, **values: object) -> str:
 
 
 def loc(ru: str, kk: str, **values: object) -> str:
-    """Select an inline localized string for copy that is unique to one view."""
-    template = ru if current_language() == "ru" else kk
+    """Select English, Russian, or Kazakh copy unique to one view."""
+    language = current_language()
+    if language == "en":
+        try:
+            template = ENGLISH_INLINE[ru]
+        except KeyError as error:
+            raise KeyError(f"missing en inline translation for {ru!r}") from error
+    else:
+        template = ru if language == "ru" else kk
     return template.format(**values)
 
 
 def language_switch() -> str:
     """Render the global language control and persist its stable language code."""
     selected = st.segmented_control(
-        "Язык / Тіл",
+        "Language / Язык / Тіл",
         tuple(LANGUAGE_LABELS),
         default=current_language(),
         format_func=LANGUAGE_LABELS.__getitem__,

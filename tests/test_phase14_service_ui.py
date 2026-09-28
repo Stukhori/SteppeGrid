@@ -62,27 +62,27 @@ def test_shamshi_explicit_estimate_executes_and_stays_isolated(monkeypatch, tmp_
 
 def test_plan_mode_renders_review_without_running_optimizer():
     app = AppTest.from_file(Path(__file__).parents[1] / "app.py").run(timeout=90)
-    next(control for control in app.segmented_control if control.label == translate("Primary navigation", "ru")).set_value("Plan a System").run(timeout=90)
+    next(control for control in app.segmented_control if control.label == translate("Primary navigation", "en")).set_value("Plan a System").run(timeout=90)
     assert app.session_state["app_mode"] == "Plan a System"
     assert not app.exception
     assert {selectbox.label for selectbox in app.selectbox} >= {
-        "Шаблон площадки", "Сценарий спроса", "Детерминированный почасовой профиль"
+        "Site preset", "Demand workflow", "Deterministic hourly shape"
     }
-    next(box for box in app.selectbox if box.label == "Шаблон площадки").set_value("Custom coordinates").run(timeout=90)
-    next(field for field in app.number_input if field.label == "Оценочный годовой спрос (кВт·ч/год)").set_value(500_000).run(timeout=90)
-    assert any(button.label == "Запустить планировщик" for button in app.button)
+    next(box for box in app.selectbox if box.label == "Site preset").set_value("Custom coordinates").run(timeout=90)
+    next(field for field in app.number_input if field.label == "Estimated annual demand (kWh/year)").set_value(500_000).run(timeout=90)
+    assert any(button.label == "Run Planner" for button in app.button)
     assert not app.error
 
 
 def test_custom_site_ui_rejects_missing_estimate_then_reaches_review():
     app = AppTest.from_file(Path(__file__).parents[1] / "app.py").run(timeout=90)
-    next(control for control in app.segmented_control if control.label == translate("Primary navigation", "ru")).set_value("Plan a System").run(timeout=90)
-    next(box for box in app.selectbox if box.label == "Шаблон площадки").set_value("Custom coordinates").run(timeout=90)
+    next(control for control in app.segmented_control if control.label == translate("Primary navigation", "en")).set_value("Plan a System").run(timeout=90)
+    next(box for box in app.selectbox if box.label == "Site preset").set_value("Custom coordinates").run(timeout=90)
     assert app.warning
-    assert not any(button.label == "Запустить планировщик" for button in app.button)
-    next(field for field in app.number_input if field.label == "Оценочный годовой спрос (кВт·ч/год)").set_value(500_000).run(timeout=90)
+    assert not any(button.label == "Run Planner" for button in app.button)
+    next(field for field in app.number_input if field.label == "Estimated annual demand (kWh/year)").set_value(500_000).run(timeout=90)
     assert not app.warning
-    assert any(button.label == "Запустить планировщик" for button in app.button)
+    assert any(button.label == "Run Planner" for button in app.button)
     assert not app.exception
 
 
