@@ -48,8 +48,8 @@ def test_map_distinguishes_my_village_and_supports_selection():
 def test_overview_actions_and_compact_layout_are_present():
     app_text=(ROOT/"app.py").read_text(encoding="utf-8")
     theme_text=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
-    assert 'st.button("Build a village scenario"' in app_text
-    assert 'st.button("Compare village results"' in app_text
+    assert 'key="overview_plan_action"' in app_text
+    assert 'key="overview_compare_action"' in app_text
     assert "@media(max-width:600px)" in theme_text
 
 def test_visual_system_includes_schematic_focus_and_map_guidance():
@@ -121,7 +121,9 @@ def test_public_site_and_compare_views_hide_lineage_fields():
 def test_methodology_has_no_dedicated_limitations_section():
     text=(ROOT/"app.py").read_text(encoding="utf-8")
     body=text[text.index("def methodology"):text.index("ROUTES =")]
-    assert "Scientific limitations" not in body; assert "How SteppeGrid Works" in body
+    assert "Scientific limitations" not in body
+    assert "Как работает SteppeGrid" in body
+    assert "SteppeGrid қалай жұмыс істейді" in body
 def test_internal_lineage_is_retained():
     registry=SiteRegistry()
     for site in registry.list_sites():

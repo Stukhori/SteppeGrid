@@ -62,6 +62,12 @@ def tr(key: str, **values: object) -> str:
     return translate(key, current_language(), **values)
 
 
+def loc(ru: str, kk: str, **values: object) -> str:
+    """Select an inline localized string for copy that is unique to one view."""
+    template = ru if current_language() == "ru" else kk
+    return template.format(**values)
+
+
 def language_switch() -> str:
     """Render the global language control and persist its stable language code."""
     selected = st.segmented_control(

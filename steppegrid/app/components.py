@@ -9,7 +9,7 @@ import pandas as pd
 import streamlit as st
 
 from steppegrid.app.formatting import energy, money, power
-from steppegrid.app.i18n import tr
+from steppegrid.app.i18n import loc, tr
 
 GLOSSARY = {
     "served_energy": "Share of annual electricity demand supplied. It is not the percentage of uninterrupted hours.",
@@ -36,9 +36,8 @@ def app_header() -> None:
 
 def overview_intro() -> None:
     st.markdown(
-        '<section class="sg-overview-intro"><div class="sg-eyebrow">Kazakhstan village energy planning</div>'
-        '<h1>Plan a resilient village microgrid</h1><p>Explore how hourly demand and local weather shape '
-        'wind, solar, storage, reliability, and lifetime cost.</p></section>',
+        f'<section class="sg-overview-intro"><div class="sg-eyebrow">{escape(loc("Энергопланирование сёл Казахстана", "Қазақстан ауылдарын энергиямен жоспарлау"))}</div>'
+        f'<h1>{escape(loc("Спроектируйте устойчивую сельскую микросеть", "Тұрақты ауылдық микрожеліні жобалаңыз"))}</h1><p>{escape(loc("Изучите, как почасовой спрос и местная погода определяют ветер, солнце, накопители, надёжность и стоимость жизненного цикла.", "Сағаттық сұраныс пен жергілікті ауа райының желге, күнге, жинақтау жүйесіне, сенімділікке және өмірлік цикл құнына әсерін зерттеңіз."))}</p></section>',
         unsafe_allow_html=True,
     )
 
@@ -62,10 +61,10 @@ def microgrid_schematic() -> None:
 
 def resource_strip() -> None:
     items = (
-        ("7", "villages"),
-        ("8,760", "hourly steps"),
-        ("Wind + solar", "resource models"),
-        ("95% / 99%", "planning targets"),
+        ("7", loc("сёл", "ауыл")),
+        ("8,760", loc("часовых шагов", "сағаттық қадам")),
+        (loc("Ветер + солнце", "Жел + күн"), loc("модели ресурсов", "ресурс модельдері")),
+        ("95% / 99%", loc("цели планирования", "жоспарлау мақсаттары")),
     )
     rendered = "".join(f'<div><strong>{escape(value)}</strong><span>{escape(label)}</span></div>' for value, label in items)
     st.markdown(f'<div class="sg-resource-strip">{rendered}</div>', unsafe_allow_html=True)
