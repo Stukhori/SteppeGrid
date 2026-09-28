@@ -23,7 +23,8 @@ def test_resource_summaries_reuse_the_frozen_table():
     assert _resource_metrics.cache_info().hits==1
 def test_featured_site_semantics_are_amber_and_textual():
     assert COLORS["featured_site"]=="#DFA52F"; assert "--sg-amber" in GLOBAL_CSS
-    assert "My Village" in (ROOT/"steppegrid/app/sites.py").read_text(encoding="utf-8")
+    text=(ROOT/"steppegrid/app/sites.py").read_text(encoding="utf-8")
+    assert "Моё село" in text and "Менің ауылым" in text
 
 def test_overview_renders_the_interactive_site_map():
     text=(ROOT/"app.py").read_text(encoding="utf-8")
@@ -40,9 +41,10 @@ def test_map_distinguishes_my_village_and_supports_selection():
     assert 'on_select="rerun"' in text
     assert 'selection_mode="single-object"' in text
     assert "zoom=7 if is_focused else 3.15" in text
-    assert '"Village"' in text
-    assert "Reset Kazakhstan view" in text
-    assert '"result_95": site["95% result"]' in text
+    assert 'loc("Село", "Ауыл")' in text
+    assert "Показать весь Казахстан" in text
+    assert '"result_95": loc(' in text
+    assert 'site["95% result"] == "Available"' in text
     assert '"radius": 38_000 if row["site_id"] == selected_id' in text
 
 def test_overview_actions_and_compact_layout_are_present():
