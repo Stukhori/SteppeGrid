@@ -1,6 +1,7 @@
 from pathlib import Path
 from streamlit.testing.v1 import AppTest
 from steppegrid.app.data import FrozenDataRepository
+from steppegrid.app.i18n import translate
 from steppegrid.app.product import FEATURED_SITE_ID, _resource_metrics, latest_result, site_rows, weather_summary
 from steppegrid.app.sites import _map_rows
 from steppegrid.app.services import PlanningService
@@ -110,7 +111,7 @@ def test_all_primary_destinations_render_from_horizontal_navigation():
     app=AppTest.from_file(ROOT/"app.py").run(timeout=90)
     expected_modes={"Overview":"Explore Benchmark","Sites":"Sites","Plan a System":"Plan a System","Compare":"Compare Sites","Research":"Explore Benchmark"}
     for destination in PRIMARY_DESTINATIONS:
-        next(control for control in app.segmented_control if control.label=="Primary navigation").set_value(destination).run(timeout=120)
+        next(control for control in app.segmented_control if control.label==translate("Primary navigation", "ru")).set_value(destination).run(timeout=120)
         assert app.session_state["app_mode"]==expected_modes[destination]
         assert not app.exception
 

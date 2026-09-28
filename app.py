@@ -21,6 +21,7 @@ from steppegrid.app.data import AppDataError
 from steppegrid.app.formatting import RECONSTRUCTION_NOTICE, SCENARIO_NOTICE, energy, money, percent, power, readable
 from steppegrid.app.services import PlanningService
 from steppegrid.app.planner import render_planner
+from steppegrid.app.i18n import language_switch, tr
 from steppegrid.app.sites import render_compare_sites, render_site_map, render_sites
 from steppegrid.app.product import FEATURED_SITE_ID, latest_result, phase17_findings
 from steppegrid.app.state import PRIMARY_DESTINATIONS, PROFILE_LABELS, RESEARCH_PAGES, TARGET_LABELS
@@ -375,11 +376,13 @@ if st.session_state.get("primary_navigation") not in PRIMARY_DESTINATIONS:
     st.session_state.primary_navigation = "Overview"
 if pending_destination in PRIMARY_DESTINATIONS:
     st.session_state.primary_navigation = pending_destination
+language_switch()
 app_header()
 primary_destination = st.segmented_control(
-    "Primary navigation",
+    tr("Primary navigation"),
     PRIMARY_DESTINATIONS,
     key="primary_navigation",
+    format_func=lambda destination: tr(destination),
     label_visibility="collapsed",
 )
 if primary_destination is None:
@@ -389,10 +392,10 @@ if primary_destination == "Research":
     if st.session_state.get("research_navigation") not in RESEARCH_PAGES:
         st.session_state.research_navigation = current_research_page
     research_page = st.segmented_control(
-        "Research page",
+        tr("Research page"),
         RESEARCH_PAGES,
         key="research_navigation",
-        format_func=lambda page: "How SteppeGrid Works" if page == "Methodology & Provenance" else page,
+        format_func=lambda page: tr("How SteppeGrid Works") if page == "Methodology & Provenance" else tr(page),
         label_visibility="collapsed",
     )
     st.session_state.active_page = research_page or RESEARCH_PAGES[0]

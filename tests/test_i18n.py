@@ -14,6 +14,8 @@ def test_language_catalog_is_complete_and_placeholder_safe():
 def test_translation_is_explicit_and_strict():
     assert translate("Sites", "ru") == "Сёла"
     assert translate("Sites", "kk") == "Ауылдар"
+    assert translate("Plan a System", "ru") == "Спроектировать систему"
+    assert translate("How SteppeGrid Works", "kk") == "SteppeGrid қалай жұмыс істейді"
     with pytest.raises(KeyError, match="missing kk interface translation"):
         translate("not registered", "kk")
     with pytest.raises(ValueError, match="unsupported interface language"):

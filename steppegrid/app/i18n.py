@@ -26,6 +26,14 @@ TRANSLATIONS: dict[str, dict[str, str]] = {
     "Sensitivity": {"ru": "Чувствительность", "kk": "Сезімталдық"},
     "How SteppeGrid Works": {"ru": "Как работает SteppeGrid", "kk": "SteppeGrid қалай жұмыс істейді"},
     "Research pages": {"ru": "Исследовательские разделы", "kk": "Зерттеу бөлімдері"},
+    "Plan a System": {"ru": "Спроектировать систему", "kk": "Жүйені жобалау"},
+    "Research": {"ru": "Исследование", "kk": "Зерттеу"},
+    "Primary navigation": {"ru": "Основная навигация", "kk": "Негізгі навигация"},
+    "Research page": {"ru": "Раздел исследования", "kk": "Зерттеу бөлімі"},
+    "Methodology & Provenance": {"ru": "Методология и происхождение данных", "kk": "Әдіснама және деректердің шығу тегі"},
+    "Village microgrid planning": {"ru": "Планирование сельских микросетей", "kk": "Ауылдық микрожелілерді жоспарлау"},
+    "Kazakhstan": {"ru": "Казахстан", "kk": "Қазақстан"},
+    "Project methods": {"ru": "Методы проекта ↗", "kk": "Жоба әдістері ↗"},
 }
 
 
@@ -52,6 +60,20 @@ def translate(key: str, language: str, **values: object) -> str:
 def tr(key: str, **values: object) -> str:
     """Translate with the language stored in the current Streamlit session."""
     return translate(key, current_language(), **values)
+
+
+def language_switch() -> str:
+    """Render the global language control and persist its stable language code."""
+    selected = st.segmented_control(
+        "Язык / Тіл",
+        tuple(LANGUAGE_LABELS),
+        default=current_language(),
+        format_func=LANGUAGE_LABELS.__getitem__,
+        key="_interface_language_switch",
+    )
+    language = selected or DEFAULT_LANGUAGE
+    st.session_state[LANGUAGE_STATE_KEY] = language
+    return language
 
 
 def placeholders(text: str) -> set[str]:

@@ -9,6 +9,7 @@ import pandas as pd
 import streamlit as st
 
 from steppegrid.app.formatting import energy, money, power
+from steppegrid.app.i18n import tr
 
 GLOSSARY = {
     "served_energy": "Share of annual electricity demand supplied. It is not the percentage of uninterrupted hours.",
@@ -26,9 +27,9 @@ GLOSSARY = {
 def app_header() -> None:
     st.markdown(
         '<header class="sg-appbar"><div class="sg-appbar__brand"><span class="sg-appbar__mark">SG</span>'
-        '<span><strong>SteppeGrid</strong><small>Village microgrid planning</small></span></div>'
-        '<div class="sg-appbar__context"><span>Kazakhstan</span><a href="https://github.com/Stukhori/SteppeGrid" '
-        'target="_blank" rel="noopener noreferrer">Project methods ↗</a></div></header>',
+        f'<span><strong>SteppeGrid</strong><small>{escape(tr("Village microgrid planning"))}</small></span></div>'
+        f'<div class="sg-appbar__context"><span>{escape(tr("Kazakhstan"))}</span><a href="https://github.com/Stukhori/SteppeGrid" '
+        f'target="_blank" rel="noopener noreferrer">{escape(tr("Project methods"))}</a></div></header>',
         unsafe_allow_html=True,
     )
 
