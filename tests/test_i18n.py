@@ -1,4 +1,6 @@
 import pytest
+from pathlib import Path
+from streamlit.testing.v1 import AppTest
 
 from steppegrid.app.i18n import LANGUAGE_LABELS, TRANSLATIONS, placeholders, translate
 
@@ -20,3 +22,23 @@ def test_translation_is_explicit_and_strict():
         translate("not registered", "kk")
     with pytest.raises(ValueError, match="unsupported interface language"):
         translate("Sites", "en")
+
+
+def test_global_switch_changes_navigation_to_kazakh():
+    app = AppTest.from_file(Path(__file__).parents[1] / "app.py").run(timeout=90)
+    switch = next(control for control in app.segmented_control if control.label == "Язык / Тіл")
+    switch.set_value("kk").run(timeout=90)
+
+    navigation = next(
+        control for control in app.segmented_control
+        if control.label == translate("Primary navigation", "kk")
+    )
+    assert navigation.options == [
+        translate("Overview", "kk"),
+        translate("Sites", "kk"),
+        translate("Plan a System", "kk"),
+        translate("Compare", "kk"),
+        translate("Research", "kk"),
+    ]
+    assert app.session_state["interface_language"] == "kk"
+    assert not app.exception

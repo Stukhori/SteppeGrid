@@ -60,7 +60,7 @@ def test_visual_system_includes_schematic_focus_and_map_guidance():
     theme=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
     assert 'class="sg-overview-intro"' in components
     assert 'class="sg-schematic"' in components
-    assert 'aria-label="Energy flows from wind and solar generation' in components
+    assert 'aria = loc("Потоки энергии от ветра и солнца' in components
     assert 'class="sg-map-legend"' in sites
     assert ":focus-visible" in theme
     assert ".sg-map-dot--featured{background:var(--sg-amber)}" in theme
