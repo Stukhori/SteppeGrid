@@ -21,8 +21,8 @@ def test_builtin_site_has_no_delete_action_but_custom_temporary_planning_remains
     next(control for control in app.segmented_control if control.label == translate("Primary navigation", "ru")).set_value("Sites").run(timeout=90)
     assert not any(button.label == "Remove user site" for button in app.button)
     next(control for control in app.segmented_control if control.label == translate("Primary navigation", "ru")).set_value("Plan a System").run(timeout=90)
-    site = next(box for box in app.selectbox if box.label == "Site preset")
-    assert "Custom coordinates" in site.options
+    site = next(box for box in app.selectbox if box.label == "Шаблон площадки")
+    assert "Пользовательские координаты" in site.options
     for expected in (
         "Shamshi Kaldayakova", "Katon-Karagay", "Kegen", "Shayan", "Sai-Otes", "Togyzkuduk"
     ):
