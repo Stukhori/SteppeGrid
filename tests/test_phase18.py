@@ -90,6 +90,10 @@ def test_layout_reflows_for_browser_zoom_and_narrow_viewports():
     assert '[data-testid="stHorizontalBlock"]>[data-testid="stColumn"]{flex:1 1 18rem!important' in theme
     assert '@media(max-width:700px)' in theme
     assert "flex:1 1 100%!important;width:100%!important" in theme
+    assert '@media(max-width:480px)' in theme
+    assert "overflow-wrap:anywhere" in theme
+    assert '[data-testid="stDataFrame"]{overflow-x:auto}' in theme
+    assert '[data-baseweb="tab-list"]{max-width:100%' in theme
 def test_wide_workspace_and_responsive_breakpoints_are_explicit():
     theme=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
     assert "width:100%;max-width:1560px" in theme
