@@ -81,11 +81,21 @@ def test_horizontal_navigation_replaces_sidebar_and_keeps_routes():
     assert '[data-testid="stButtonGroup"]' in theme
     assert "color:#FFFFFF!important" in theme
 
+
+def test_layout_reflows_for_browser_zoom_and_narrow_viewports():
+    theme=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
+    assert "text-size-adjust:100%" in theme
+    assert ".block-container{width:100%;max-width:1560px" in theme
+    assert '@media(max-width:1200px){[data-testid="stHorizontalBlock"]{flex-wrap:wrap!important}' in theme
+    assert '[data-testid="stHorizontalBlock"]>[data-testid="stColumn"]{flex:1 1 18rem!important' in theme
+    assert '@media(max-width:700px)' in theme
+    assert "flex:1 1 100%!important;width:100%!important" in theme
 def test_wide_workspace_and_responsive_breakpoints_are_explicit():
     theme=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
-    assert "width:min(92vw,1560px)" in theme
+    assert "width:100%;max-width:1560px" in theme
+    assert "@media(max-width:1200px)" in theme
     assert "@media(max-width:900px)" in theme
-    assert "@media(max-width:600px)" in theme
+    assert "@media(max-width:700px)" in theme
     assert "overflow-x:hidden" in theme
 
 def test_no_heavy_dashboard_dependency_was_added():
