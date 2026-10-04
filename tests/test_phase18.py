@@ -52,7 +52,7 @@ def test_overview_actions_and_compact_layout_are_present():
     theme_text=(ROOT/"steppegrid/app/theme.py").read_text(encoding="utf-8")
     assert 'key="overview_plan_action"' in app_text
     assert 'key="overview_compare_action"' in app_text
-    assert "@media(max-width:600px)" in theme_text
+    assert "@media(max-width:700px)" in theme_text
 
 def test_visual_system_includes_schematic_focus_and_map_guidance():
     components=(ROOT/"steppegrid/app/components.py").read_text(encoding="utf-8")
