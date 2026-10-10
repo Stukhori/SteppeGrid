@@ -123,6 +123,12 @@ uv run streamlit run app.py
 
 Open `http://localhost:8501` if Streamlit does not open a browser automatically.
 
+On Streamlit Community Cloud, the app hides the creator-avatar profile link
+with a same-origin stylesheet while retaining the hosting badge. This is a
+presentation preference, not access control; the creator's public profile still
+exists. The selector may need updating if Community Cloud changes its wrapper
+markup. Unrelated cross-origin embeds are left alone.
+
 ## Reproducibility and Validation
 
 The authoritative workflow is in [docs/reproduce_steppegrid.md](docs/reproduce_steppegrid.md). Frozen Rodina artifacts can be checked without changing the selected designs:

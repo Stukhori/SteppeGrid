@@ -7,6 +7,7 @@ from datetime import timedelta
 import pandas as pd
 import streamlit as st
 
+from steppegrid.app.chrome import hide_creator_profile
 from steppegrid.app.charts import (
     area_chart, bar_chart, date_window, line_chart, monthly_energy, preset_dates,
     sensitivity_chart, wind_comparison,
@@ -30,6 +31,7 @@ from steppegrid.planning.service import ScenarioPlanningService
 from steppegrid.sites import SiteRegistry
 
 st.set_page_config(page_title="SteppeGrid | Rural Kazakhstan Microgrid Planning", page_icon="⚡", layout="wide", initial_sidebar_state="collapsed")
+hide_creator_profile()
 apply_theme()
 
 
