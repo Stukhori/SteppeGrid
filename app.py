@@ -388,15 +388,21 @@ if st.session_state.get("primary_navigation") not in PRIMARY_DESTINATIONS:
     st.session_state.primary_navigation = "Overview"
 if pending_destination in PRIMARY_DESTINATIONS:
     st.session_state.primary_navigation = pending_destination
-language_switch()
-app_header()
-primary_destination = st.segmented_control(
-    tr("Primary navigation"),
-    PRIMARY_DESTINATIONS,
-    key="primary_navigation",
-    format_func=lambda destination: tr(destination),
-    label_visibility="collapsed",
-)
+with st.container(key="sg_topbar"):
+    navigation_column, identity_column, language_column = st.columns([6, 5, 1.3], gap="small", vertical_alignment="center")
+    # Render the language widget first so all labels use this rerun's selection.
+    with language_column:
+        language_switch()
+    with navigation_column:
+        primary_destination = st.segmented_control(
+            tr("Primary navigation"),
+            PRIMARY_DESTINATIONS,
+            key="primary_navigation",
+            format_func=lambda destination: tr(destination),
+            label_visibility="collapsed",
+        )
+    with identity_column:
+        app_header()
 if primary_destination is None:
     primary_destination = "Overview"
 if primary_destination == "Research":

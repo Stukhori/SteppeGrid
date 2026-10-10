@@ -27,7 +27,7 @@ GLOSSARY = {
 def app_header() -> None:
     st.markdown(
         '<header class="sg-appbar"><div class="sg-appbar__brand"><span class="sg-appbar__mark">SG</span>'
-        f'<span><strong>SteppeGrid</strong><small>{escape(tr("Village microgrid planning"))}</small></span></div>'
+        '<span><strong>SteppeGrid</strong></span></div>'
         f'<div class="sg-appbar__context"><span>{escape(tr("Kazakhstan"))}</span><a href="https://github.com/Stukhori/SteppeGrid" '
         f'target="_blank" rel="noopener noreferrer">{escape(tr("Project methods"))}</a></div></header>',
         unsafe_allow_html=True,

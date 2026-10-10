@@ -50,8 +50,9 @@ def test_translation_is_explicit_and_strict():
 @pytest.mark.parametrize("language", ["ru", "kk"])
 def test_global_switch_changes_navigation(language):
     app = AppTest.from_file(Path(__file__).parents[1] / "app.py").run(timeout=90)
-    switch = next(control for control in app.segmented_control if control.label == "Language / Язык / Тіл")
+    switch = app.selectbox(key="_interface_language_switch")
     assert switch.value == "en"
+    assert not any(control.label == "Language / Язык / Тіл" for control in app.segmented_control)
     switch.set_value(language).run(timeout=90)
 
     navigation = next(

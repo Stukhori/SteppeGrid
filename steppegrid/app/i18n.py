@@ -79,12 +79,13 @@ def loc(ru: str, kk: str, **values: object) -> str:
 
 def language_switch() -> str:
     """Render the global language control and persist its stable language code."""
-    selected = st.segmented_control(
+    selected = st.selectbox(
         "Language / Язык / Тіл",
         tuple(LANGUAGE_LABELS),
-        default=current_language(),
+        index=tuple(LANGUAGE_LABELS).index(current_language()),
         format_func=LANGUAGE_LABELS.__getitem__,
         key="_interface_language_switch",
+        label_visibility="collapsed",
     )
     language = selected or DEFAULT_LANGUAGE
     st.session_state[LANGUAGE_STATE_KEY] = language
