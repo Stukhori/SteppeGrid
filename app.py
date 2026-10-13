@@ -15,7 +15,7 @@ from steppegrid.app.charts import (
 from steppegrid.app.components import (
     app_header, audit_status, callout, comparison_table, design_card,
     design_comparison_rows, energy_flow, equipment_card, limitations, metric,
-    microgrid_schematic, overview_intro, page_header, resource_strip, section_header,
+    page_header, section_header,
     site_status, workflow,
 )
 from steppegrid.app.data import AppDataError
@@ -23,6 +23,7 @@ from steppegrid.app.formatting import RECONSTRUCTION_NOTICE, SCENARIO_NOTICE, en
 from steppegrid.app.services import PlanningService
 from steppegrid.app.planner import render_planner
 from steppegrid.app.i18n import language_switch, loc, tr
+from steppegrid.app.landing import render_landing
 from steppegrid.app.sites import render_compare_sites, render_site_map, render_sites
 from steppegrid.app.product import FEATURED_SITE_ID, latest_result, phase17_findings
 from steppegrid.app.state import PRIMARY_DESTINATIONS, PROFILE_LABELS, RESEARCH_PAGES, TARGET_LABELS
@@ -107,21 +108,16 @@ def rodina_overview(api: PlanningService) -> None:
 
 def overview(api: PlanningService) -> None:
     registry = site_registry()
-    hero_copy, hero_visual = st.columns([1.05, .95], gap="large", vertical_alignment="center")
-    with hero_copy:
-        overview_intro()
-        plan_action, compare_action = st.columns(2)
-        with plan_action:
-            if st.button(loc("Создать сценарий для села", "Ауыл сценарийін құру"), type="primary", key="overview_plan_action", width="stretch"):
-                st.session_state["_pending_primary_destination"] = "Plan a System"
-                st.rerun()
-        with compare_action:
-            if st.button(loc("Сравнить результаты сёл", "Ауыл нәтижелерін салыстыру"), key="overview_compare_action", width="stretch"):
-                st.session_state["_pending_primary_destination"] = "Compare"
-                st.rerun()
-    with hero_visual:
-        microgrid_schematic()
-    resource_strip()
+    render_landing(registry)
+    plan_action, compare_action = st.columns(2)
+    with plan_action:
+        if st.button(loc("Создать сценарий для села", "Ауыл сценарийін құру"), type="primary", key="overview_plan_action", width="stretch"):
+            st.session_state["_pending_primary_destination"] = "Plan a System"
+            st.rerun()
+    with compare_action:
+        if st.button(loc("Сравнить результаты сёл", "Ауыл нәтижелерін салыстыру"), key="overview_compare_action", width="stretch"):
+            st.session_state["_pending_primary_destination"] = "Compare"
+            st.rerun()
     render_site_map(registry, key="overview_site_map")
     result = latest_result(FEATURED_SITE_ID, .95)
     section_header(loc("Сводка планирования", "Жоспарлау қорытындысы"), loc("Сохранённые результаты и межсельский контекст из проверенных материалов.", "Тексерілген материалдардағы сақталған нәтижелер мен ауылдар арасындағы контекст."))
