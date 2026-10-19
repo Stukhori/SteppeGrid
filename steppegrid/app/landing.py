@@ -20,7 +20,8 @@ COPY = {
     "start": ("Start planning", "Начать планирование", "Жоспарлауды бастау"),
     "see_case": ("Explore the village case", "Изучить пример села", "Ауыл мысалын зерттеу"),
     "photo_title": ("Wind. Solar. Storage.", "Ветер. Солнце. Накопители.", "Жел. Күн. Жинақтау."),
-    "photo_note": ("Kazakhstan renewable-energy sites · Context photos, not the modeled village", "Объекты ВИЭ Казахстана · Контекстные фото, не моделируемое село", "Қазақстанның ЖЭК нысандары · Модельденген ауылдың суреттері емес"),
+    "photo_note": ("Kazakhstan renewable-energy sites", "Объекты ВИЭ Казахстана", "Қазақстанның ЖЭК нысандары"),
+    "residents": ("residents", "жителей", "тұрғын"),
     "villages": ("registered villages", "зарегистрированных сёл", "тіркелген ауыл"),
     "hours": ("hourly steps in one year", "часовых шагов за год", "бір жылдағы сағаттық қадам"),
     "targets": ("annual energy-served targets", "цели годового энергообеспечения", "жылдық энергияны қамту мақсаттары"),
@@ -109,7 +110,7 @@ def render_landing(registry: SiteRegistry) -> None:
         f'<div class="sg-lp-actions"><a class="sg-lp-primary" href="#planning-workspace" target="_self">{_t("start")} ↓</a><a href="#village-case" target="_self">{_t("see_case")} ↗</a></div></div>'
         f'<figure class="sg-lp-photos"><div class="sg-lp-photo-grid"><img src="{_image("korday-wind.jpg")}" alt="Korday wind farm near Moozbel, Kazakhstan"><img src="{_image("qonaev-solar.jpg")}" alt="Kapshagay solar power plant, Qonaev, Kazakhstan"><div class="sg-lp-photo-title">{_t("photo_title")}</div></div><figcaption>{_t("photo_note")}</figcaption></figure></div>'
         f'<div class="sg-lp-stats">{stats}</div><div class="sg-lp-section-heading"><div class="sg-eyebrow">{_t("workflow_kicker")}</div><h2>{_t("workflow_title")}</h2></div><div class="sg-lp-workflow">{workflow}</div>'
-        f'<div id="village-case" class="sg-lp-case-heading"><div><div class="sg-eyebrow">{_t("main_case")}</div><h2>{escape(site.name)}</h2><span>{escape(site.region)} · {site.latitude:.4f}°N, {site.longitude:.4f}°E</span></div><p>{_t("case_body")}</p></div><p class="sg-lp-estimate">{_t("estimate")}</p></section>',
+        f'<div id="village-case" class="sg-lp-case-heading"><div><div class="sg-eyebrow">{_t("main_case")}</div><h2>{escape(site.name)}</h2><span>{escape(site.region)} · {site.population:,} {_t("residents")} · {site.latitude:.4f}°N, {site.longitude:.4f}°E</span></div><p>{_t("case_body")}</p></div><p class="sg-lp-estimate">{_t("estimate")}</p></section>',
         unsafe_allow_html=True,
     )
     target = st.segmented_control(_t("choose"), (.95, .99), default=.95, key="landing_target", format_func=lambda value: _t("target", value=f"{value:.0%}")) or .95

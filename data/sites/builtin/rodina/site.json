@@ -12,8 +12,8 @@
   "timezone_offset": "+05:00",
   "classification": "BENCHMARK",
   "origin": "BUILT_IN",
-  "population": null,
-  "population_year": null,
+  "population": 1184,
+  "population_year": 2024,
   "household_count": null,
   "household_count_year": null,
   "elevation_m": null,
@@ -79,6 +79,15 @@
     }
   ],
   "provenance": [
+    {
+      "field": "population",
+      "source_name": "Rodina rural district administration: village population as of 1 July 2024",
+      "source_type": "AUTHORITATIVE_SOURCE",
+      "source_url": "https://www.gov.kz/org/aqmola-selinograd-rodina/activities/49162",
+      "source_year": 2024,
+      "retrieved_date": "2026-10-19",
+      "notes": "The official statistics list 1,184 residents for Rodina village as of 1 July 2024. The rural district total of 1,722 includes Zeleny Gai and Sadovoe and is not the village population. No population extrapolation was made; registered demand and saved benchmark results are unchanged."
+    },
     {
       "field": "coordinates",
       "source_name": "SteppeGrid Rodina benchmark research brief",

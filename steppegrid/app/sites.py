@@ -134,10 +134,14 @@ def render_site_map(registry: SiteRegistry, *, key: str = "site_map") -> None:
         st.session_state[pending_key] = objects[0]["site_id"]
         st.rerun()
     with summary_column:
+        selected_site = registry.get_site(selected_id)
+        population = f'{"~" if selected_site.population_is_approximate else ""}{selected_site.population:,}' if selected_site.population is not None else loc("Недоступно", "Қолжетімсіз")
+        population_year = f" ({selected_site.population_year})" if selected_site.population_year else ""
         badge = f'<span class="sg-village-badge">{escape(loc("Моё село", "Менің ауылым"))}</span>' if selected_id == FEATURED_SITE_ID else f'<span class="sg-village-badge sg-village-badge--site">{escape(loc("Зарегистрированное село", "Тіркелген ауыл"))}</span>'
         st.markdown(
             f'<div class="sg-village-summary">{badge}<h3>{escape(selected["name"])}</h3>'
-            f'<p>{escape(selected["region"])}</p><small>{selected["latitude"]:.4f}° N · {selected["longitude"]:.4f}° E</small></div>',
+            f'<p>{escape(selected["region"])}</p><small>{selected["latitude"]:.4f}° N · {selected["longitude"]:.4f}° E</small>'
+            f'<p>{escape(loc("Население", "Халық"))}{population_year}: {population}</p></div>',
             unsafe_allow_html=True,
         )
         demand_col, wind_col = st.columns(2)
@@ -188,7 +192,7 @@ def render_sites(registry: SiteRegistry) -> None:
     section_header(loc("Расположение и электроэнергия", "Орналасуы және электр энергиясы"))
     a,b,c,d = st.columns(4)
     with a: metric(loc("Годовой спрос", "Жылдық сұраныс"), energy(_demand(site)) if _demand(site) else loc("Недоступно", "Қолжетімсіз"))
-    with b: metric(loc("Население", "Халық"), f"{site.population:,}" if site.population else loc("Недоступно", "Қолжетімсіз"))
+    with b: metric(f'{loc("Население", "Халық")}' + (f" ({site.population_year})" if site.population_year else ""), f"{site.population:,}" if site.population else loc("Недоступно", "Қолжетімсіз"))
     with c: metric(loc("Погода", "Ауа райы"), loc("В кэше · 2025", "Кэште · 2025"))
     with d: metric(loc("Почасовое покрытие", "Сағаттық қамту"), loc("8 760 часов", "8 760 сағат"))
     resource = weather_summary(site)

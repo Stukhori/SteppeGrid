@@ -12,7 +12,7 @@
   "timezone_offset": "+05:00",
   "classification": "FIELD_CASE",
   "origin": "BUILT_IN",
-  "population": null,
+  "population": 4673,
   "population_year": null,
   "household_count": null,
   "household_count_year": null,
@@ -79,6 +79,15 @@
     }
   ],
   "provenance": [
+    {
+      "field": "population",
+      "source_name": "Population supplied by the project owner",
+      "source_type": "USER_PROVIDED",
+      "source_url": null,
+      "source_year": null,
+      "retrieved_date": "2026-10-19",
+      "notes": "The project owner supplied 4,673 residents for Shamshi Kaldayakova. No reference year or census source was supplied. This metadata update does not change the registered demand scenario or saved planning results."
+    },
     {
       "field": "coordinates",
       "source_name": "SteppeGrid Phase 14 site definition",
